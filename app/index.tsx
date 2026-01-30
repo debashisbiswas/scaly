@@ -1,4 +1,5 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { BlackButton } from "./components/BlackButton";
 
 export default function Index() {
   return (
@@ -9,7 +10,21 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>Scaly is running in a native app!</Text>
+      <View
+        style={{
+          gap: 16,
+          width: 200,
+        }}
+      >
+        <BlackButton
+          title="New Flow"
+          onPress={() => console.log("New Flow pressed")}
+        />
+        <BlackButton
+          title="Flow Library"
+          onPress={() => console.log("Flow Library pressed")}
+        />
+      </View>
     </View>
   );
 }
