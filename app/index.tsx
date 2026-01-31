@@ -1,7 +1,10 @@
 import { View } from "react-native";
+import { useRouter } from "expo-router";
 import { BlackButton } from "./components/BlackButton";
 
 export default function Index() {
+  const router = useRouter();
+
   return (
     <View
       style={{
@@ -18,7 +21,7 @@ export default function Index() {
       >
         <BlackButton
           title="New Flow"
-          onPress={() => console.log("New Flow pressed")}
+          onPress={() => router.push("/new-flow")}
         />
         <BlackButton
           title="Flow Library"
