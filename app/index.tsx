@@ -21,7 +21,7 @@ export default function Index() {
       >
         <BlackButton
           title="New Flow"
-          onPress={() => router.push("/new-flow")}
+          onPress={() => router.push("/choose-keys")}
         />
         <BlackButton
           title="Flow Library"

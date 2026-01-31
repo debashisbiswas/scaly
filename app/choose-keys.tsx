@@ -41,7 +41,7 @@ function NoteButton({
   );
 }
 
-export default function NewFlow() {
+export default function ChooseKey() {
   const router = useRouter();
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
 
@@ -100,7 +100,7 @@ export default function NewFlow() {
         </View>
         <Text
           style={{ padding: 8, borderWidth: 1 }}
-          onPress={() => router.navigate("/")}
+          onPress={() => router.navigate("/choose-instrument")}
         >
           &gt;
         </Text>
@@ -150,6 +150,28 @@ export default function NewFlow() {
           ))}
           <View style={{ flex: 1 }} />
         </View>
+
+        {/* Select All Button */}
+        <Pressable
+          onPress={() => {
+            const allNotes = ["C", ...SHARP_KEYS, "F#/Gb", ...FLAT_KEYS];
+            const allSelected = allNotes.every((note) =>
+              selectedNotes.has(note),
+            );
+            setSelectedNotes(allSelected ? new Set() : new Set(allNotes));
+          }}
+          style={{
+            marginTop: 16,
+            paddingVertical: 12,
+            paddingHorizontal: 24,
+            borderWidth: 1,
+            borderColor: "#000",
+            borderRadius: 8,
+            alignSelf: "center",
+          }}
+        >
+          <Text style={{ fontWeight: "600" }}>Select All</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
