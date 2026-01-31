@@ -64,11 +64,13 @@ export default function ChooseInstrument() {
         title="Instrument"
         subtitle="Select what clef you want to play"
         onBack={() => router.back()}
-        onNext={() => router.navigate("/")}
+        onNext={() => router.navigate("/choose-range")}
       />
 
       <View style={{ flex: 1, paddingHorizontal: 16 }}>
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
           <View style={{ flexDirection: "row", gap: 12 }}>
             {CLEFS.map((clef) => (
               <ClefButton
