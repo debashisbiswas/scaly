@@ -3,6 +3,8 @@ import { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { TopBar } from "./components/TopBar";
+
 const SHARP_KEYS = ["G", "D", "A", "E", "B"];
 const FLAT_KEYS = ["F", "Bb", "Eb", "Ab", "Db"];
 
@@ -59,52 +61,12 @@ export default function ChooseKey() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View
-        style={{
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexDirection: "row",
-          paddingTop: 14,
-        }}
-      >
-        <Text
-          style={{ padding: 8, borderWidth: 1 }}
-          onPress={() => router.back()}
-        >
-          &lt;
-        </Text>
-        <View
-          style={{
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
-          <Text
-            style={{
-              fontWeight: "semibold",
-              fontSize: 20,
-            }}
-          >
-            Choose your keys
-          </Text>
-
-          <Text
-            style={{
-              fontWeight: "semibold",
-              opacity: 0.5,
-            }}
-          >
-            Select all that apply
-          </Text>
-        </View>
-        <Text
-          style={{ padding: 8, borderWidth: 1 }}
-          onPress={() => router.navigate("/choose-instrument")}
-        >
-          &gt;
-        </Text>
-      </View>
+      <TopBar
+        title="Choose your keys"
+        subtitle="Select all that apply"
+        onBack={() => router.back()}
+        onNext={() => router.navigate("/choose-instrument")}
+      />
 
       {/* Notes Grid */}
       <View
