@@ -11,7 +11,7 @@ export default function ChooseKey() {
         title="Range"
         subtitle="Use the two sliders to select your highest and lowest range"
         onBack={() => router.back()}
-        onNext={() => console.log("TODO")}
+        onNext={() => router.push("/choose-mode")}
       />
     </SafeAreaView>
   );
