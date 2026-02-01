@@ -4,7 +4,7 @@ interface TopBarProps {
   title: string;
   subtitle: string;
   onBack: () => void;
-  onNext: () => void;
+  onNext?: () => void;
 }
 
 export function TopBar({ title, subtitle, onBack, onNext }: TopBarProps) {
@@ -45,7 +45,14 @@ export function TopBar({ title, subtitle, onBack, onNext }: TopBarProps) {
           {subtitle}
         </Text>
       </View>
-      <Text style={{ padding: 8, borderWidth: 1 }} onPress={onNext}>
+      <Text
+        style={{
+          padding: 8,
+          borderWidth: 1,
+          opacity: onNext ? 100 : 0,
+        }}
+        onPress={onNext}
+      >
         {">"}
       </Text>
     </View>

@@ -64,7 +64,6 @@ export default function ChooseMode() {
         title="Choose your mode"
         subtitle="Select all that apply"
         onBack={() => router.back()}
-        onNext={() => console.log("TODO")}
       />
 
       <View style={{ flex: 1, paddingHorizontal: 16 }}>
