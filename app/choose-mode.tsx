@@ -64,6 +64,7 @@ export default function ChooseMode() {
         title="Choose your mode"
         subtitle="Select all that apply"
         onBack={() => router.back()}
+        onNext={() => router.push("/choose-tempo")}
       />
 
       <View style={{ flex: 1, paddingHorizontal: 16 }}>
