@@ -9,10 +9,9 @@ export default function ChooseTempo() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <TopBar
-        title="Choose your tempo"
-        subtitle="Use the slider or input your desired tempo"
+        title="Rhythm and Articulation"
+        subtitle="Select all that apply"
         onBack={() => router.back()}
-        onNext={() => router.push("/choose-rhythm-and-articulation")}
       />
     </SafeAreaView>
   );
