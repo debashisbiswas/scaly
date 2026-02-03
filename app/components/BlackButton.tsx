@@ -5,7 +5,7 @@ interface BlackButtonProps {
   onPress: () => void;
 }
 
-export function BlackButton({ title, onPress }: BlackButtonProps) {
+export default function BlackButton({ title, onPress }: BlackButtonProps) {
   return (
     <TouchableOpacity style={styles.blackButton} onPress={onPress}>
       <Text style={styles.buttonText}>{title}</Text>

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { TopBar } from "./components/TopBar";
+import TopBar from "./components/TopBar";
 
 const SHARP_KEYS = ["G", "D", "A", "E", "B"];
 const FLAT_KEYS = ["F", "Bb", "Eb", "Ab", "Db"];

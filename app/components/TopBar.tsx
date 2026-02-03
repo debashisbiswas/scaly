@@ -7,7 +7,12 @@ interface TopBarProps {
   onNext?: () => void;
 }
 
-export function TopBar({ title, subtitle, onBack, onNext }: TopBarProps) {
+export default function TopBar({
+  title,
+  subtitle,
+  onBack,
+  onNext,
+}: TopBarProps) {
   return (
     <View
       style={{

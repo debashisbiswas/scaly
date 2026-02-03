@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { TopBar } from "./components/TopBar";
+import TopBar from "./components/TopBar";
 
 export default function ChooseKey() {
   const router = useRouter();
