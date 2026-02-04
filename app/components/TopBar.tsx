@@ -1,10 +1,10 @@
-import { View, Text } from "react-native";
+import { View, Text } from "react-native"
 
 interface TopBarProps {
-  title: string;
-  subtitle: string;
-  onBack: () => void;
-  onNext?: () => void;
+  title: string
+  subtitle: string
+  onBack: () => void
+  onNext?: () => void
 }
 
 export default function TopBar({
@@ -61,5 +61,5 @@ export default function TopBar({
         {">"}
       </Text>
     </View>
-  );
+  )
 }

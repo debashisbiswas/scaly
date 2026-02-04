@@ -1,20 +1,20 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import { View, Text, Pressable } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router"
+import { useState } from "react"
+import { View, Text, Pressable } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 
-import TopBar from "./components/TopBar";
+import TopBar from "./components/TopBar"
 
-const MODES = ["Major", "Natural Minor", "Harmonic Minor", "Melodic Minor"];
+const MODES = ["Major", "Natural Minor", "Harmonic Minor", "Melodic Minor"]
 
 function ModeButton({
   label,
   selected,
   onPress,
 }: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
+  label: string
+  selected: boolean
+  onPress: () => void
 }) {
   return (
     <Pressable
@@ -39,24 +39,24 @@ function ModeButton({
         {label}
       </Text>
     </Pressable>
-  );
+  )
 }
 
 export default function ChooseMode() {
-  const router = useRouter();
-  const [selectedModes, setSelectedModes] = useState<Set<string>>(new Set());
+  const router = useRouter()
+  const [selectedModes, setSelectedModes] = useState<Set<string>>(new Set())
 
   const toggleMode = (mode: string) => {
     setSelectedModes((prev) => {
-      const next = new Set(prev);
+      const next = new Set(prev)
       if (next.has(mode)) {
-        next.delete(mode);
+        next.delete(mode)
       } else {
-        next.add(mode);
+        next.add(mode)
       }
-      return next;
-    });
-  };
+      return next
+    })
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -89,8 +89,8 @@ export default function ChooseMode() {
 
         <Pressable
           onPress={() => {
-            const allSelected = MODES.every((mode) => selectedModes.has(mode));
-            setSelectedModes(allSelected ? new Set() : new Set(MODES));
+            const allSelected = MODES.every((mode) => selectedModes.has(mode))
+            setSelectedModes(allSelected ? new Set() : new Set(MODES))
           }}
           style={{
             marginBottom: 16,
@@ -106,5 +106,5 @@ export default function ChooseMode() {
         </Pressable>
       </View>
     </SafeAreaView>
-  );
+  )
 }

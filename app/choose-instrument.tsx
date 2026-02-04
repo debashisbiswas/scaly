@@ -1,20 +1,20 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import { View, Text, Pressable } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router"
+import { useState } from "react"
+import { View, Text, Pressable } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 
-import TopBar from "./components/TopBar";
+import TopBar from "./components/TopBar"
 
-const CLEFS = ["Bass Clef", "Treble Clef"];
+const CLEFS = ["Bass Clef", "Treble Clef"]
 
 function ClefButton({
   label,
   selected,
   onPress,
 }: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
+  label: string
+  selected: boolean
+  onPress: () => void
 }) {
   return (
     <Pressable
@@ -39,24 +39,24 @@ function ClefButton({
         {label}
       </Text>
     </Pressable>
-  );
+  )
 }
 
 export default function ChooseInstrument() {
-  const router = useRouter();
-  const [selectedClefs, setSelectedClefs] = useState<Set<string>>(new Set());
+  const router = useRouter()
+  const [selectedClefs, setSelectedClefs] = useState<Set<string>>(new Set())
 
   const toggleClef = (clef: string) => {
     setSelectedClefs((prev) => {
-      const next = new Set(prev);
+      const next = new Set(prev)
       if (next.has(clef)) {
-        next.delete(clef);
+        next.delete(clef)
       } else {
-        next.add(clef);
+        next.add(clef)
       }
-      return next;
-    });
-  };
+      return next
+    })
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -85,8 +85,8 @@ export default function ChooseInstrument() {
 
         <Pressable
           onPress={() => {
-            const allSelected = CLEFS.every((clef) => selectedClefs.has(clef));
-            setSelectedClefs(allSelected ? new Set() : new Set(CLEFS));
+            const allSelected = CLEFS.every((clef) => selectedClefs.has(clef))
+            setSelectedClefs(allSelected ? new Set() : new Set(CLEFS))
           }}
           style={{
             marginBottom: 16,
@@ -102,5 +102,5 @@ export default function ChooseInstrument() {
         </Pressable>
       </View>
     </SafeAreaView>
-  );
+  )
 }

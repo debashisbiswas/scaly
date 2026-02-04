@@ -1,8 +1,8 @@
-import { Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Text, TouchableOpacity, StyleSheet } from "react-native"
 
 interface BlackButtonProps {
-  title: string;
-  onPress: () => void;
+  title: string
+  onPress: () => void
 }
 
 export default function BlackButton({ title, onPress }: BlackButtonProps) {
@@ -10,7 +10,7 @@ export default function BlackButton({ title, onPress }: BlackButtonProps) {
     <TouchableOpacity style={styles.blackButton} onPress={onPress}>
       <Text style={styles.buttonText}>{title}</Text>
     </TouchableOpacity>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -26,4 +26,4 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     textAlign: "center",
   },
-});
+})

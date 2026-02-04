@@ -1,9 +1,9 @@
-import { View } from "react-native";
-import { useRouter } from "expo-router";
-import BlackButton from "./components/BlackButton";
+import { View } from "react-native"
+import { useRouter } from "expo-router"
+import BlackButton from "./components/BlackButton"
 
 export default function Index() {
-  const router = useRouter();
+  const router = useRouter()
 
   return (
     <View
@@ -29,5 +29,5 @@ export default function Index() {
         />
       </View>
     </View>
-  );
+  )
 }

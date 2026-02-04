@@ -1,10 +1,10 @@
-import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router"
+import { SafeAreaView } from "react-native-safe-area-context"
 
-import TopBar from "./components/TopBar";
+import TopBar from "./components/TopBar"
 
 export default function ChooseRhythm() {
-  const router = useRouter();
+  const router = useRouter()
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -15,5 +15,5 @@ export default function ChooseRhythm() {
         onNext={() => router.push("/name-flow")}
       />
     </SafeAreaView>
-  );
+  )
 }

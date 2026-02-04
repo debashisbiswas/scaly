@@ -1,21 +1,21 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import { View, Text, Pressable } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router"
+import { useState } from "react"
+import { View, Text, Pressable } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 
-import TopBar from "./components/TopBar";
+import TopBar from "./components/TopBar"
 
-const SHARP_KEYS = ["G", "D", "A", "E", "B"];
-const FLAT_KEYS = ["F", "Bb", "Eb", "Ab", "Db"];
+const SHARP_KEYS = ["G", "D", "A", "E", "B"]
+const FLAT_KEYS = ["F", "Bb", "Eb", "Ab", "Db"]
 
 function NoteButton({
   note,
   selected,
   onPress,
 }: {
-  note: string;
-  selected: boolean;
-  onPress: () => void;
+  note: string
+  selected: boolean
+  onPress: () => void
 }) {
   return (
     <Pressable
@@ -40,24 +40,24 @@ function NoteButton({
         {note}
       </Text>
     </Pressable>
-  );
+  )
 }
 
 export default function ChooseKey() {
-  const router = useRouter();
-  const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
+  const router = useRouter()
+  const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set())
 
   const toggleNote = (note: string) => {
     setSelectedNotes((prev) => {
-      const next = new Set(prev);
+      const next = new Set(prev)
       if (next.has(note)) {
-        next.delete(note);
+        next.delete(note)
       } else {
-        next.add(note);
+        next.add(note)
       }
-      return next;
-    });
-  };
+      return next
+    })
+  }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -116,11 +116,11 @@ export default function ChooseKey() {
         {/* Select All Button */}
         <Pressable
           onPress={() => {
-            const allNotes = ["C", ...SHARP_KEYS, "F#/Gb", ...FLAT_KEYS];
+            const allNotes = ["C", ...SHARP_KEYS, "F#/Gb", ...FLAT_KEYS]
             const allSelected = allNotes.every((note) =>
               selectedNotes.has(note),
-            );
-            setSelectedNotes(allSelected ? new Set() : new Set(allNotes));
+            )
+            setSelectedNotes(allSelected ? new Set() : new Set(allNotes))
           }}
           style={{
             marginTop: 16,
@@ -136,5 +136,5 @@ export default function ChooseKey() {
         </Pressable>
       </View>
     </SafeAreaView>
-  );
+  )
 }

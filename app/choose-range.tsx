@@ -1,10 +1,10 @@
-import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router"
+import { SafeAreaView } from "react-native-safe-area-context"
 
-import TopBar from "./components/TopBar";
+import TopBar from "./components/TopBar"
 
 export default function ChooseKey() {
-  const router = useRouter();
+  const router = useRouter()
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <TopBar
@@ -14,5 +14,5 @@ export default function ChooseKey() {
         onNext={() => router.push("/choose-mode")}
       />
     </SafeAreaView>
-  );
+  )
 }
