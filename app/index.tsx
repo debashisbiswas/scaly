@@ -25,7 +25,7 @@ export default function Index() {
         />
         <BlackButton
           title="Flow Library"
-          onPress={() => console.log("Flow Library pressed")}
+          onPress={() => router.push("/flow-library")}
         />
       </View>
     </View>
