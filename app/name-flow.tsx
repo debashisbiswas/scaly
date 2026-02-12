@@ -1,10 +1,13 @@
 import { useRouter } from "expo-router"
+import { useState } from "react"
+import { TextInput, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 import TopBar from "./components/TopBar"
 
 export default function ChooseTempo() {
   const router = useRouter()
+  const [flowName, setFlowName] = useState("")
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -12,7 +15,33 @@ export default function ChooseTempo() {
         title="Name this Flow"
         subtitle="This can be changed later"
         onBack={() => router.back()}
+        onNext={() => router.push("/")}
+        nextLabel="✓"
       />
+
+      <View
+        style={{
+          flex: 1,
+          paddingHorizontal: 16,
+          paddingTop: 24,
+        }}
+      >
+        <TextInput
+          value={flowName}
+          onChangeText={setFlowName}
+          placeholder="My Scale Routine"
+          style={{
+            borderWidth: 1,
+            borderColor: "#000",
+            borderRadius: 10,
+            paddingHorizontal: 12,
+            paddingVertical: 12,
+            fontSize: 16,
+          }}
+          autoCorrect={false}
+          returnKeyType="done"
+        />
+      </View>
     </SafeAreaView>
   )
 }
