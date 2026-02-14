@@ -1,6 +1,6 @@
 import { View } from "react-native"
 import { useRouter } from "expo-router"
-import BlackButton from "./components/BlackButton"
+import MainScreenButton from "./components/MainScreenButton"
 
 export default function Index() {
   const router = useRouter()
@@ -15,15 +15,15 @@ export default function Index() {
     >
       <View
         style={{
-          gap: 16,
-          width: 200,
+          gap: 40,
+          width: 232,
         }}
       >
-        <BlackButton
-          title="New Flow"
+        <MainScreenButton
+          title="Create Flow"
           onPress={() => router.push("/choose-keys")}
         />
-        <BlackButton
+        <MainScreenButton
           title="Flow Library"
           onPress={() => router.push("/flow-library")}
         />
