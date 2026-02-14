@@ -1,4 +1,4 @@
-import { View } from "react-native"
+import { View, ImageBackground } from "react-native"
 import { useRouter } from "expo-router"
 import MainScreenButton from "./components/MainScreenButton"
 
@@ -6,12 +6,14 @@ export default function Index() {
   const router = useRouter()
 
   return (
-    <View
+    <ImageBackground
+      source={require("../assets/images/mainsplash.png")}
       style={{
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
       }}
+      resizeMode="cover"
     >
       <View
         style={{
@@ -28,6 +30,6 @@ export default function Index() {
           onPress={() => router.push("/flow-library")}
         />
       </View>
-    </View>
+    </ImageBackground>
   )
 }
