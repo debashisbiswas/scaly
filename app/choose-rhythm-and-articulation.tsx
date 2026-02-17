@@ -9,50 +9,22 @@ import {
 } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
+import { SLUR_PATTERN_OPTIONS, SlurPatternId } from "@/core/flows"
+
 import SlurPatternStaff from "./components/SlurPatternStaff"
 import TopBar from "./components/TopBar"
-
-type SlurSpan = [number, number]
-
-type SlurPatternOption = {
-  id: string
-  slurSpans: SlurSpan[]
-}
-
-const SLUR_PATTERN_OPTIONS: SlurPatternOption[] = [
-  {
-    id: "full-phrase",
-    slurSpans: [[0, 13]],
-  },
-  {
-    id: "every-beat",
-    slurSpans: [
-      [0, 2],
-      [3, 6],
-      [7, 9],
-      [10, 13],
-    ],
-  },
-  {
-    id: "tongue-1-slur-3",
-    slurSpans: [
-      [1, 2],
-      [4, 6],
-      [8, 9],
-      [11, 13],
-    ],
-  },
-]
+import { useFlowStore } from "./providers/FlowStoreProvider"
 
 export default function ChooseRhythm() {
   const router = useRouter()
+  const { draft, updateDraft } = useFlowStore()
   const { width: screenWidth } = useWindowDimensions()
-  const [selectedPatterns, setSelectedPatterns] = useState<Set<string>>(
-    new Set(),
+  const [selectedPatterns, setSelectedPatterns] = useState<Set<SlurPatternId>>(
+    new Set(draft.slurPatternIds),
   )
   const staffWidth = Math.max(220, Math.min(screenWidth - 108, 560))
 
-  const togglePattern = (patternId: string) => {
+  const togglePattern = (patternId: SlurPatternId) => {
     setSelectedPatterns((previous) => {
       const next = new Set(previous)
 
@@ -72,7 +44,10 @@ export default function ChooseRhythm() {
         title="Rhythm and Articulation"
         subtitle="Select all that apply"
         onBack={() => router.back()}
-        onNext={() => router.push("/name-flow")}
+        onNext={() => {
+          updateDraft({ slurPatternIds: [...selectedPatterns] })
+          router.push("/name-flow")
+        }}
       />
 
       <ScrollView

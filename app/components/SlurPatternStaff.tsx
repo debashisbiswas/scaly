@@ -2,11 +2,11 @@ import { useMemo } from "react"
 import { View } from "react-native"
 import { WebView } from "react-native-webview"
 
-type SlurSpan = [number, number]
+type SlurSpan = readonly [number, number]
 
 interface SlurPatternStaffProps {
   width: number
-  slurSpans: SlurSpan[]
+  slurSpans: readonly SlurSpan[]
   height?: number
 }
 
@@ -41,7 +41,7 @@ function buildHtml({
 }: {
   width: number
   height: number
-  slurSpans: SlurSpan[]
+  slurSpans: readonly SlurSpan[]
 }) {
   return `<!doctype html>
 <html>

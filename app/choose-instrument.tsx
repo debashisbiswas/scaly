@@ -3,9 +3,12 @@ import { useState } from "react"
 import { View, Text, Pressable } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
-import TopBar from "./components/TopBar"
+import { CLEF_OPTIONS, Clef } from "@/core/flows"
 
-const CLEFS = ["Bass Clef", "Treble Clef"]
+import TopBar from "./components/TopBar"
+import { useFlowStore } from "./providers/FlowStoreProvider"
+
+const CLEFS = CLEF_OPTIONS
 
 function ClefButton({
   label,
@@ -44,9 +47,12 @@ function ClefButton({
 
 export default function ChooseInstrument() {
   const router = useRouter()
-  const [selectedClefs, setSelectedClefs] = useState<Set<string>>(new Set())
+  const { draft, updateDraft } = useFlowStore()
+  const [selectedClefs, setSelectedClefs] = useState<Set<Clef>>(
+    new Set(draft.clefs),
+  )
 
-  const toggleClef = (clef: string) => {
+  const toggleClef = (clef: Clef) => {
     setSelectedClefs((prev) => {
       const next = new Set(prev)
       if (next.has(clef)) {
@@ -64,7 +70,10 @@ export default function ChooseInstrument() {
         title="Instrument"
         subtitle="Select what clef you want to play"
         onBack={() => router.back()}
-        onNext={() => router.navigate("/choose-range")}
+        onNext={() => {
+          updateDraft({ clefs: [...selectedClefs] })
+          router.navigate("/choose-range")
+        }}
       />
 
       <View style={{ flex: 1, paddingHorizontal: 16 }}>
@@ -86,7 +95,7 @@ export default function ChooseInstrument() {
         <Pressable
           onPress={() => {
             const allSelected = CLEFS.every((clef) => selectedClefs.has(clef))
-            setSelectedClefs(allSelected ? new Set() : new Set(CLEFS))
+            setSelectedClefs(allSelected ? new Set<Clef>() : new Set(CLEFS))
           }}
           style={{
             marginBottom: 16,

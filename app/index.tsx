@@ -1,9 +1,11 @@
 import { View, ImageBackground } from "react-native"
 import { useRouter } from "expo-router"
 import MainScreenButton from "./components/MainScreenButton"
+import { useFlowStore } from "./providers/FlowStoreProvider"
 
 export default function Index() {
   const router = useRouter()
+  const { resetDraft } = useFlowStore()
 
   return (
     <ImageBackground
@@ -23,7 +25,10 @@ export default function Index() {
       >
         <MainScreenButton
           title="Create Flow"
-          onPress={() => router.push("/choose-keys")}
+          onPress={() => {
+            resetDraft()
+            router.push("/choose-keys")
+          }}
         />
         <MainScreenButton
           title="Flow Library"

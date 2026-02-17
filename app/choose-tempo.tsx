@@ -4,11 +4,15 @@ import { Pressable, Text, View, useWindowDimensions } from "react-native"
 import { Slider } from "@miblanchard/react-native-slider"
 import { SafeAreaView } from "react-native-safe-area-context"
 
-import TopBar from "./components/TopBar"
+import {
+  DEFAULT_SINGLE_BPM,
+  MAX_BPM,
+  MIN_BPM,
+  TempoSetting,
+} from "@/core/flows"
 
-const MIN_BPM = 40
-const MAX_BPM = 200
-const DEFAULT_SINGLE_BPM = 96
+import TopBar from "./components/TopBar"
+import { useFlowStore } from "./providers/FlowStoreProvider"
 
 const TEMPO_BANDS = [
   { name: "Largo", min: 40, max: 60 },
@@ -29,11 +33,20 @@ function asArray(value: number[] | number) {
 
 export default function ChooseTempo() {
   const router = useRouter()
+  const { draft, updateDraft } = useFlowStore()
   const { width: screenWidth } = useWindowDimensions()
   const sliderWidth = Math.max(260, Math.min(screenWidth - 40, 620))
-  const [mode, setMode] = useState<TempoMode>("single")
-  const [singleBpm, setSingleBpm] = useState(DEFAULT_SINGLE_BPM)
-  const [rangeBpm, setRangeBpm] = useState<[number, number]>([88, 124])
+  const [mode, setMode] = useState<TempoMode>(
+    draft.tempo.kind === "range" ? "range" : "single",
+  )
+  const [singleBpm, setSingleBpm] = useState(
+    draft.tempo.kind === "single" ? draft.tempo.bpm : DEFAULT_SINGLE_BPM,
+  )
+  const [rangeBpm, setRangeBpm] = useState<[number, number]>(
+    draft.tempo.kind === "range"
+      ? [draft.tempo.minBpm, draft.tempo.maxBpm]
+      : [88, 124],
+  )
 
   const activeTempoText =
     mode === "single"
@@ -75,7 +88,15 @@ export default function ChooseTempo() {
         title="Choose your tempo"
         subtitle="Use the slider or input your desired tempo"
         onBack={() => router.back()}
-        onNext={() => router.push("/choose-rhythm-and-articulation")}
+        onNext={() => {
+          const tempo: TempoSetting =
+            mode === "single"
+              ? { kind: "single", bpm: singleBpm }
+              : { kind: "range", minBpm: rangeBpm[0], maxBpm: rangeBpm[1] }
+
+          updateDraft({ tempo })
+          router.push("/choose-rhythm-and-articulation")
+        }}
       />
 
       <View

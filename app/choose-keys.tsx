@@ -3,10 +3,16 @@ import { useState } from "react"
 import { View, Text, Pressable } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
+import {
+  FLAT_KEY_SIGNATURE_OPTIONS,
+  KeySignature,
+  SHARP_KEY_SIGNATURE_OPTIONS,
+} from "@/core/flows"
 import TopBar from "./components/TopBar"
+import { useFlowStore } from "./providers/FlowStoreProvider"
 
-const SHARP_KEYS = ["G", "D", "A", "E", "B"]
-const FLAT_KEYS = ["F", "Bb", "Eb", "Ab", "Db"]
+const SHARP_KEYS = SHARP_KEY_SIGNATURE_OPTIONS
+const FLAT_KEYS = FLAT_KEY_SIGNATURE_OPTIONS
 
 function NoteButton({
   note,
@@ -45,9 +51,12 @@ function NoteButton({
 
 export default function ChooseKey() {
   const router = useRouter()
-  const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set())
+  const { draft, updateDraft } = useFlowStore()
+  const [selectedNotes, setSelectedNotes] = useState<Set<KeySignature>>(
+    new Set(draft.keys),
+  )
 
-  const toggleNote = (note: string) => {
+  const toggleNote = (note: KeySignature) => {
     setSelectedNotes((prev) => {
       const next = new Set(prev)
       if (next.has(note)) {
@@ -65,7 +74,10 @@ export default function ChooseKey() {
         title="Choose your keys"
         subtitle="Select all that apply"
         onBack={() => router.back()}
-        onNext={() => router.navigate("/choose-instrument")}
+        onNext={() => {
+          updateDraft({ keys: [...selectedNotes] })
+          router.navigate("/choose-instrument")
+        }}
       />
 
       {/* Notes Grid */}
@@ -116,11 +128,18 @@ export default function ChooseKey() {
         {/* Select All Button */}
         <Pressable
           onPress={() => {
-            const allNotes = ["C", ...SHARP_KEYS, "F#/Gb", ...FLAT_KEYS]
+            const allNotes: KeySignature[] = [
+              "C",
+              ...SHARP_KEYS,
+              "F#/Gb",
+              ...FLAT_KEYS,
+            ]
             const allSelected = allNotes.every((note) =>
               selectedNotes.has(note),
             )
-            setSelectedNotes(allSelected ? new Set() : new Set(allNotes))
+            setSelectedNotes(
+              allSelected ? new Set<KeySignature>() : new Set(allNotes),
+            )
           }}
           style={{
             marginTop: 16,

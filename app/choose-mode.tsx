@@ -3,9 +3,12 @@ import { useState } from "react"
 import { View, Text, Pressable } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
-import TopBar from "./components/TopBar"
+import { MODE_OPTIONS, ScaleMode } from "@/core/flows"
 
-const MODES = ["Major", "Natural Minor", "Harmonic Minor", "Melodic Minor"]
+import TopBar from "./components/TopBar"
+import { useFlowStore } from "./providers/FlowStoreProvider"
+
+const MODES = MODE_OPTIONS
 
 function ModeButton({
   label,
@@ -44,9 +47,12 @@ function ModeButton({
 
 export default function ChooseMode() {
   const router = useRouter()
-  const [selectedModes, setSelectedModes] = useState<Set<string>>(new Set())
+  const { draft, updateDraft } = useFlowStore()
+  const [selectedModes, setSelectedModes] = useState<Set<ScaleMode>>(
+    new Set(draft.modes),
+  )
 
-  const toggleMode = (mode: string) => {
+  const toggleMode = (mode: ScaleMode) => {
     setSelectedModes((prev) => {
       const next = new Set(prev)
       if (next.has(mode)) {
@@ -64,7 +70,10 @@ export default function ChooseMode() {
         title="Choose your mode"
         subtitle="Select all that apply"
         onBack={() => router.back()}
-        onNext={() => router.push("/choose-tempo")}
+        onNext={() => {
+          updateDraft({ modes: [...selectedModes] })
+          router.push("/choose-tempo")
+        }}
       />
 
       <View style={{ flex: 1, paddingHorizontal: 16 }}>
@@ -90,7 +99,9 @@ export default function ChooseMode() {
         <Pressable
           onPress={() => {
             const allSelected = MODES.every((mode) => selectedModes.has(mode))
-            setSelectedModes(allSelected ? new Set() : new Set(MODES))
+            setSelectedModes(
+              allSelected ? new Set<ScaleMode>() : new Set(MODES),
+            )
           }}
           style={{
             marginBottom: 16,

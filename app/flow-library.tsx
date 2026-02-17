@@ -4,14 +4,26 @@ import { Pressable, ScrollView, Text, View } from "react-native"
 import { LinearGradient } from "expo-linear-gradient"
 import { SafeAreaView } from "react-native-safe-area-context"
 
+import { Flow } from "@/core/flows"
+
+import { useFlowStore } from "./providers/FlowStoreProvider"
+
 type LibraryTab = "saved" | "premade"
 
-const FLOWS = [
+const PREMADE_FLOWS = [
   { id: "flow-1", name: "First-year jury 2026", progress: 52 },
   { id: "flow-2", name: "Triple-tonguing rhythms", progress: 41 },
   { id: "flow-3", name: "All sharps", progress: 76 },
   { id: "flow-4", name: "Third-octave scales", progress: 29 },
 ]
+
+function flowToCard(flow: Flow) {
+  return {
+    id: flow.id,
+    name: flow.name,
+    progress: flow.progressPercent,
+  }
+}
 
 function ActionButton({
   label,
@@ -44,11 +56,14 @@ function ActionButton({
 
 export default function FlowLibrary() {
   const router = useRouter()
+  const { flows } = useFlowStore()
   const [activeTab, setActiveTab] = useState<LibraryTab>("saved")
 
   const panelPadding = 16
   const gap = 10
   const cardWidth = "48.6%"
+  const displayedFlows =
+    activeTab === "saved" ? flows.map(flowToCard) : PREMADE_FLOWS
 
   return (
     <LinearGradient
@@ -150,7 +165,7 @@ export default function FlowLibrary() {
                 rowGap: gap,
               }}
             >
-              {FLOWS.map((flow) => (
+              {displayedFlows.map((flow) => (
                 <View
                   key={`${activeTab}-${flow.id}`}
                   style={{
@@ -219,6 +234,17 @@ export default function FlowLibrary() {
                 </View>
               ))}
             </View>
+
+            {activeTab === "saved" && displayedFlows.length === 0 ? (
+              <View style={{ paddingVertical: 24, alignItems: "center" }}>
+                <Text style={{ color: "#667085", fontWeight: "600" }}>
+                  No saved flows yet.
+                </Text>
+                <Text style={{ color: "#667085", marginTop: 4 }}>
+                  Create one from the home screen.
+                </Text>
+              </View>
+            ) : null}
           </ScrollView>
         </View>
       </SafeAreaView>

@@ -1,12 +1,16 @@
 import { useRouter } from "expo-router"
 import { useState } from "react"
-import { TextInput, View } from "react-native"
+import { Alert, TextInput, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
+import { getFlowCreationErrorMessage } from "@/core/flows"
+
 import TopBar from "./components/TopBar"
+import { useFlowStore } from "./providers/FlowStoreProvider"
 
 export default function ChooseTempo() {
   const router = useRouter()
+  const { createFlow } = useFlowStore()
   const [flowName, setFlowName] = useState("")
 
   return (
@@ -15,7 +19,19 @@ export default function ChooseTempo() {
         title="Name this Flow"
         subtitle="This can be changed later"
         onBack={() => router.back()}
-        onNext={() => router.push("/")}
+        onNext={() => {
+          const result = createFlow(flowName)
+
+          if (!result.ok) {
+            Alert.alert(
+              "Unable to create flow",
+              getFlowCreationErrorMessage(result.errors, flowName),
+            )
+            return
+          }
+
+          router.push("/flow-library")
+        }}
         nextLabel="✓"
       />
 

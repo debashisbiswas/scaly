@@ -3,37 +3,29 @@ import { useState } from "react"
 import { Text, View, useWindowDimensions } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
+import { NOTE_STEP_OPTIONS } from "@/core/flows"
+
 import RangeStaff from "./components/RangeStaff"
 import TopBar from "./components/TopBar"
 import VerticalNoteSlider from "./components/VerticalNoteSlider"
+import { useFlowStore } from "./providers/FlowStoreProvider"
 
-const NOTE_NAMES = ["C", "D", "E", "F", "G", "A", "B"] as const
-
-type NoteStep = {
-  label: string
-  vexflowKey: string
-}
-
-const NOTE_STEPS: NoteStep[] = []
-
-for (let octave = 3; octave <= 6; octave += 1) {
-  for (const noteName of NOTE_NAMES) {
-    if (octave === 6 && noteName !== "C") {
-      continue
-    }
-
-    NOTE_STEPS.push({
-      label: `${noteName}${octave}`,
-      vexflowKey: `${noteName.toLowerCase()}/${octave}`,
-    })
-  }
-}
+const NOTE_STEPS = NOTE_STEP_OPTIONS
 
 export default function ChooseKey() {
   const router = useRouter()
+  const { draft, updateDraft } = useFlowStore()
   const { width: screenWidth } = useWindowDimensions()
-  const [leftIndex, setLeftIndex] = useState(4)
-  const [rightIndex, setRightIndex] = useState(16)
+  const [leftIndex, setLeftIndex] = useState(() => {
+    const index = NOTE_STEPS.findIndex((step) => step.label === draft.range.low)
+    return index >= 0 ? index : 4
+  })
+  const [rightIndex, setRightIndex] = useState(() => {
+    const index = NOTE_STEPS.findIndex(
+      (step) => step.label === draft.range.high,
+    )
+    return index >= 0 ? index : 16
+  })
 
   const leftNote = NOTE_STEPS[leftIndex]
   const rightNote = NOTE_STEPS[rightIndex]
@@ -46,7 +38,18 @@ export default function ChooseKey() {
         title="Range"
         subtitle="Use the two sliders to select your highest and lowest range"
         onBack={() => router.back()}
-        onNext={() => router.push("/choose-mode")}
+        onNext={() => {
+          const lowIndex = Math.min(leftIndex, rightIndex)
+          const highIndex = Math.max(leftIndex, rightIndex)
+
+          updateDraft({
+            range: {
+              low: NOTE_STEPS[lowIndex].label,
+              high: NOTE_STEPS[highIndex].label,
+            },
+          })
+          router.push("/choose-mode")
+        }}
       />
 
       <View
