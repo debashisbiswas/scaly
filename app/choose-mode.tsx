@@ -1,49 +1,15 @@
 import { useRouter } from "expo-router"
 import { useState } from "react"
-import { View, Text, Pressable } from "react-native"
+import { StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 import { MODE_OPTIONS, ScaleMode } from "@/core/flows"
 
+import SelectableButton from "./components/SelectableButton"
 import TopBar from "./components/TopBar"
 import { useFlowStore } from "./providers/FlowStoreProvider"
 
 const MODES = MODE_OPTIONS
-
-function ModeButton({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string
-  selected: boolean
-  onPress: () => void
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        paddingVertical: 16,
-        paddingHorizontal: 20,
-        borderWidth: 1,
-        borderColor: "#000",
-        borderRadius: 8,
-        backgroundColor: selected ? "#000" : "#fff",
-        minWidth: 150,
-        alignItems: "center",
-      }}
-    >
-      <Text
-        style={{
-          fontWeight: "600",
-          color: selected ? "#fff" : "#000",
-        }}
-      >
-        {label}
-      </Text>
-    </Pressable>
-  )
-}
 
 export default function ChooseMode() {
   const router = useRouter()
@@ -63,6 +29,8 @@ export default function ChooseMode() {
       return next
     })
   }
+
+  const allSelected = MODES.every((mode) => selectedModes.has(mode))
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -84,38 +52,59 @@ export default function ChooseMode() {
             alignItems: "center",
           }}
         >
-          <View style={{ flexDirection: "row", gap: 12, flexWrap: "wrap" }}>
+          <View style={styles.modesWrap}>
             {MODES.map((mode) => (
-              <ModeButton
+              <SelectableButton
                 key={mode}
                 label={mode}
                 selected={selectedModes.has(mode)}
                 onPress={() => toggleMode(mode)}
+                style={styles.modeButton}
+                labelStyle={styles.modeLabel}
               />
             ))}
           </View>
         </View>
 
-        <Pressable
+        <SelectableButton
+          label="Select All"
+          selected={allSelected}
           onPress={() => {
-            const allSelected = MODES.every((mode) => selectedModes.has(mode))
             setSelectedModes(
               allSelected ? new Set<ScaleMode>() : new Set(MODES),
             )
           }}
-          style={{
-            marginBottom: 16,
-            paddingVertical: 12,
-            paddingHorizontal: 24,
-            borderWidth: 1,
-            borderColor: "#000",
-            borderRadius: 8,
-            alignSelf: "center",
-          }}
-        >
-          <Text style={{ fontWeight: "600" }}>Select All</Text>
-        </Pressable>
+          style={styles.selectAllButton}
+          labelStyle={styles.selectAllLabel}
+        />
       </View>
     </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  modesWrap: {
+    flexDirection: "row",
+    gap: 12,
+    flexWrap: "wrap",
+    justifyContent: "center",
+  },
+  modeButton: {
+    width: 150,
+    height: 56,
+  },
+  modeLabel: {
+    fontSize: 16,
+    textAlign: "center",
+  },
+  selectAllButton: {
+    marginBottom: 16,
+    width: 150,
+    height: 50,
+    alignSelf: "center",
+  },
+  selectAllLabel: {
+    fontSize: 16,
+    textAlign: "center",
+  },
+})
