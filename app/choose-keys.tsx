@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router"
 import { useState } from "react"
-import { View, Text, Pressable } from "react-native"
+import { StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 import {
@@ -8,46 +8,13 @@ import {
   KeySignature,
   SHARP_KEY_SIGNATURE_OPTIONS,
 } from "@/core/flows"
+import SelectableButton from "./components/SelectableButton"
 import TopBar from "./components/TopBar"
 import { useFlowStore } from "./providers/FlowStoreProvider"
 
 const SHARP_KEYS = SHARP_KEY_SIGNATURE_OPTIONS
 const FLAT_KEYS = FLAT_KEY_SIGNATURE_OPTIONS
-
-function NoteButton({
-  note,
-  selected,
-  onPress,
-}: {
-  note: string
-  selected: boolean
-  onPress: () => void
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        flex: 1,
-        aspectRatio: 1,
-        borderWidth: 1,
-        borderColor: "#000",
-        borderRadius: 8,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: selected ? "#000" : "#fff",
-      }}
-    >
-      <Text
-        style={{
-          fontWeight: "600",
-          color: selected ? "#fff" : "#000",
-        }}
-      >
-        {note}
-      </Text>
-    </Pressable>
-  )
-}
+const ALL_KEYS: KeySignature[] = ["C", ...SHARP_KEYS, "F#/Gb", ...FLAT_KEYS]
 
 export default function ChooseKey() {
   const router = useRouter()
@@ -68,8 +35,10 @@ export default function ChooseKey() {
     })
   }
 
+  const allSelected = ALL_KEYS.every((note) => selectedNotes.has(note))
+
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
       <TopBar
         title="Choose your keys"
         subtitle="Select all that apply"
@@ -80,80 +49,89 @@ export default function ChooseKey() {
         }}
       />
 
-      {/* Notes Grid */}
       <View
         style={{
           flex: 1,
           justifyContent: "center",
-          paddingHorizontal: 16,
-          gap: 8,
+          alignItems: "center",
+          paddingHorizontal: 20,
+          gap: 24,
         }}
       >
-        {/* Top row: C + 5 sharps + F#/Gb */}
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          <NoteButton
-            note="C"
+        {/* Parent row */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 24 }}>
+          <SelectableButton
+            label="C"
             selected={selectedNotes.has("C")}
             onPress={() => toggleNote("C")}
+            style={styles.noteButton}
           />
-          {SHARP_KEYS.map((note) => (
-            <NoteButton
-              key={note}
-              note={note}
-              selected={selectedNotes.has(note)}
-              onPress={() => toggleNote(note)}
-            />
-          ))}
-          <NoteButton
-            note="F#/Gb"
+
+          <View style={{ gap: 14 }}>
+            {/* Top row */}
+            <View style={{ flexDirection: "row", gap: 24 }}>
+              {SHARP_KEYS.map((note) => (
+                <SelectableButton
+                  key={note}
+                  label={note}
+                  selected={selectedNotes.has(note)}
+                  onPress={() => toggleNote(note)}
+                  style={styles.noteButton}
+                />
+              ))}
+            </View>
+
+            {/* Bottom row */}
+            <View style={{ flexDirection: "row", gap: 24 }}>
+              {FLAT_KEYS.map((note) => (
+                <SelectableButton
+                  key={note}
+                  label={note}
+                  selected={selectedNotes.has(note)}
+                  onPress={() => toggleNote(note)}
+                  style={styles.noteButton}
+                />
+              ))}
+            </View>
+          </View>
+
+          <SelectableButton
+            label="F#/Gb"
             selected={selectedNotes.has("F#/Gb")}
             onPress={() => toggleNote("F#/Gb")}
+            style={styles.noteButton}
           />
         </View>
 
-        {/* Bottom row: spacer + 5 flats + spacer */}
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          <View style={{ flex: 1 }} />
-          {FLAT_KEYS.map((note) => (
-            <NoteButton
-              key={note}
-              note={note}
-              selected={selectedNotes.has(note)}
-              onPress={() => toggleNote(note)}
-            />
-          ))}
-          <View style={{ flex: 1 }} />
-        </View>
-
-        {/* Select All Button */}
-        <Pressable
+        <SelectableButton
+          label="Select All"
+          selected={allSelected}
           onPress={() => {
-            const allNotes: KeySignature[] = [
-              "C",
-              ...SHARP_KEYS,
-              "F#/Gb",
-              ...FLAT_KEYS,
-            ]
-            const allSelected = allNotes.every((note) =>
-              selectedNotes.has(note),
-            )
             setSelectedNotes(
-              allSelected ? new Set<KeySignature>() : new Set(allNotes),
+              allSelected ? new Set<KeySignature>() : new Set(ALL_KEYS),
             )
           }}
-          style={{
-            marginTop: 16,
-            paddingVertical: 12,
-            paddingHorizontal: 24,
-            borderWidth: 1,
-            borderColor: "#000",
-            borderRadius: 8,
-            alignSelf: "center",
-          }}
-        >
-          <Text style={{ fontWeight: "600" }}>Select All</Text>
-        </Pressable>
+          style={styles.selectAllButton}
+          labelStyle={styles.selectAllLabel}
+        />
       </View>
     </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  noteButton: {
+    width: 60,
+    height: 50,
+  },
+  selectAllButton: {
+    marginTop: 26,
+    width: 150,
+    height: 50,
+    alignSelf: "center",
+  },
+  selectAllLabel: {
+    fontSize: 16,
+    textAlign: "center",
+  },
+})
