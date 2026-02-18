@@ -1,49 +1,15 @@
 import { useRouter } from "expo-router"
 import { useState } from "react"
-import { View, Text, Pressable } from "react-native"
+import { StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 import { CLEF_OPTIONS, Clef } from "@/core/flows"
 
+import SelectableButton from "./components/SelectableButton"
 import TopBar from "./components/TopBar"
 import { useFlowStore } from "./providers/FlowStoreProvider"
 
 const CLEFS = CLEF_OPTIONS
-
-function ClefButton({
-  label,
-  selected,
-  onPress,
-}: {
-  label: string
-  selected: boolean
-  onPress: () => void
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        paddingVertical: 16,
-        paddingHorizontal: 20,
-        borderWidth: 1,
-        borderColor: "#000",
-        borderRadius: 8,
-        backgroundColor: selected ? "#000" : "#fff",
-        minWidth: 130,
-        alignItems: "center",
-      }}
-    >
-      <Text
-        style={{
-          fontWeight: "600",
-          color: selected ? "#fff" : "#000",
-        }}
-      >
-        {label}
-      </Text>
-    </Pressable>
-  )
-}
 
 export default function ChooseInstrument() {
   const router = useRouter()
@@ -64,6 +30,8 @@ export default function ChooseInstrument() {
     })
   }
 
+  const allSelected = CLEFS.every((clef) => selectedClefs.has(clef))
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <TopBar
@@ -82,34 +50,48 @@ export default function ChooseInstrument() {
         >
           <View style={{ flexDirection: "row", gap: 12 }}>
             {CLEFS.map((clef) => (
-              <ClefButton
+              <SelectableButton
                 key={clef}
                 label={clef}
                 selected={selectedClefs.has(clef)}
                 onPress={() => toggleClef(clef)}
+                style={styles.clefButton}
+                labelStyle={styles.clefLabel}
               />
             ))}
           </View>
         </View>
 
-        <Pressable
+        <SelectableButton
+          label="Select All"
+          selected={allSelected}
           onPress={() => {
-            const allSelected = CLEFS.every((clef) => selectedClefs.has(clef))
             setSelectedClefs(allSelected ? new Set<Clef>() : new Set(CLEFS))
           }}
-          style={{
-            marginBottom: 16,
-            paddingVertical: 12,
-            paddingHorizontal: 24,
-            borderWidth: 1,
-            borderColor: "#000",
-            borderRadius: 8,
-            alignSelf: "center",
-          }}
-        >
-          <Text style={{ fontWeight: "600" }}>Select All</Text>
-        </Pressable>
+          style={styles.selectAllButton}
+          labelStyle={styles.selectAllLabel}
+        />
       </View>
     </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  clefButton: {
+    width: 130,
+    height: 56,
+  },
+  clefLabel: {
+    fontSize: 16,
+  },
+  selectAllButton: {
+    marginBottom: 16,
+    width: 150,
+    height: 50,
+    alignSelf: "center",
+  },
+  selectAllLabel: {
+    fontSize: 16,
+    textAlign: "center",
+  },
+})
