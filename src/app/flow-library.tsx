@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 
 import { Flow } from "@/core/flows"
 
-import { useFlowStore } from "./providers/FlowStoreProvider"
+import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 type LibraryTab = "saved" | "premade"
 

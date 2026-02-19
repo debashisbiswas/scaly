@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest"
 
-import { NOTE_STEP_OPTIONS } from "./constants"
+import { NOTE_STEP_OPTIONS } from "@/core/flows/constants"
 import {
   createEmptyFlowDraft,
   createFlowFromDraft,
   normalizeFlowDraft,
   validateFlowDraft,
-} from "./service"
-import { FlowDraft } from "./types"
+} from "@/core/flows/service"
+import { FlowDraft } from "@/core/flows/types"
 
 describe("flow service", () => {
   it("creates an empty draft with expected defaults", () => {

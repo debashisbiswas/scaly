@@ -5,9 +5,9 @@ import { SafeAreaView } from "react-native-safe-area-context"
 
 import { CLEF_OPTIONS, Clef } from "@/core/flows"
 
-import SelectableButton from "../components/SelectableButton"
-import TopBar from "../components/TopBar"
-import { useFlowStore } from "../providers/FlowStoreProvider"
+import SelectableButton from "@/components/SelectableButton"
+import TopBar from "@/components/TopBar"
+import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 const CLEFS = CLEF_OPTIONS
 

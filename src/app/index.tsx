@@ -1,7 +1,7 @@
 import { View, ImageBackground } from "react-native"
 import { useRouter } from "expo-router"
-import MainScreenButton from "./components/MainScreenButton"
-import { useFlowStore } from "./providers/FlowStoreProvider"
+import MainScreenButton from "@/components/MainScreenButton"
+import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 export default function Index() {
   const router = useRouter()
@@ -9,7 +9,7 @@ export default function Index() {
 
   return (
     <ImageBackground
-      source={require("../assets/images/mainsplash.png")}
+      source={require("../../assets/images/mainsplash.png")}
       style={{
         flex: 1,
         justifyContent: "center",

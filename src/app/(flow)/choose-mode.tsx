@@ -5,9 +5,9 @@ import { SafeAreaView } from "react-native-safe-area-context"
 
 import { MODE_OPTIONS, ScaleMode } from "@/core/flows"
 
-import SelectableButton from "../components/SelectableButton"
-import TopBar from "../components/TopBar"
-import { useFlowStore } from "../providers/FlowStoreProvider"
+import SelectableButton from "@/components/SelectableButton"
+import TopBar from "@/components/TopBar"
+import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 const MODES = MODE_OPTIONS
 

@@ -3,7 +3,7 @@ import { Stack } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
 import { useFonts, Inter_600SemiBold } from "@expo-google-fonts/inter"
 
-import { FlowStoreProvider } from "./providers/FlowStoreProvider"
+import { FlowStoreProvider } from "@/providers/FlowStoreProvider"
 
 SplashScreen.preventAutoHideAsync()
 

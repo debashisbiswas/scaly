@@ -5,10 +5,10 @@ import { SafeAreaView } from "react-native-safe-area-context"
 
 import { NOTE_STEP_OPTIONS } from "@/core/flows"
 
-import RangeStaff from "../components/RangeStaff"
-import TopBar from "../components/TopBar"
-import VerticalNoteSlider from "../components/VerticalNoteSlider"
-import { useFlowStore } from "../providers/FlowStoreProvider"
+import RangeStaff from "@/components/RangeStaff"
+import TopBar from "@/components/TopBar"
+import VerticalNoteSlider from "@/components/VerticalNoteSlider"
+import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 const NOTE_STEPS = NOTE_STEP_OPTIONS
 

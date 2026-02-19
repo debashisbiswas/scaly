@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { Pressable, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
-import PracticeStaff from "./components/PracticeStaff"
+import PracticeStaff from "@/components/PracticeStaff"
 
 const FEEDBACK_BUTTONS = [
   { label: "Again", color: "#9199a6" },

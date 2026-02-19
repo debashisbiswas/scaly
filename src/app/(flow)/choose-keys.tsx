@@ -8,9 +8,9 @@ import {
   KeySignature,
   SHARP_KEY_SIGNATURE_OPTIONS,
 } from "@/core/flows"
-import SelectableButton from "../components/SelectableButton"
-import TopBar from "../components/TopBar"
-import { useFlowStore } from "../providers/FlowStoreProvider"
+import SelectableButton from "@/components/SelectableButton"
+import TopBar from "@/components/TopBar"
+import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 const SHARP_KEYS = SHARP_KEY_SIGNATURE_OPTIONS
 const FLAT_KEYS = FLAT_KEY_SIGNATURE_OPTIONS

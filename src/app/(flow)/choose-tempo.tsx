@@ -11,8 +11,8 @@ import {
   TempoSetting,
 } from "@/core/flows"
 
-import TopBar from "../components/TopBar"
-import { useFlowStore } from "../providers/FlowStoreProvider"
+import TopBar from "@/components/TopBar"
+import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 const TEMPO_BANDS = [
   { name: "Largo", min: 40, max: 60 },

@@ -1,8 +1,8 @@
 import { Stack, usePathname } from "expo-router"
 import { StyleSheet, View } from "react-native"
 
-import ProgressDots from "../components/ProgressDots"
-import { FLOW_PROGRESS_TOTAL, getFlowProgressIndex } from "../flowProgress"
+import ProgressDots from "@/components/ProgressDots"
+import { FLOW_PROGRESS_TOTAL, getFlowProgressIndex } from "@/flowProgress"
 
 export default function FlowLayout() {
   const pathname = usePathname()
