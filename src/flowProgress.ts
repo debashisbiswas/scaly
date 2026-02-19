@@ -1,6 +1,6 @@
 export const FLOW_PROGRESS = {
   chooseKeys: { index: 0, route: "/choose-keys" },
-  chooseInstrument: { index: 1, route: "/choose-instrument" },
+  chooseInstrument: { index: 1, route: "/choose-clef" },
   chooseRange: { index: 2, route: "/choose-range" },
   chooseMode: { index: 3, route: "/choose-mode" },
   chooseTempo: { index: 4, route: "/choose-tempo" },

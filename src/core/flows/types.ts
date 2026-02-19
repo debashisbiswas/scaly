@@ -18,7 +18,7 @@ export type TempoSetting =
 
 export type FlowDraft = {
   keys: KeySignature[]
-  clefs: Clef[]
+  clef: Clef | null
   range: {
     low: PitchLabel
     high: PitchLabel
@@ -39,7 +39,7 @@ export type Flow = {
 
 export type FlowDraftValidationError =
   | "missing_keys"
-  | "missing_clefs"
+  | "missing_clef"
   | "missing_modes"
   | "missing_slur_patterns"
   | "invalid_range"

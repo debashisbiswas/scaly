@@ -45,7 +45,7 @@ export default function ChooseKey() {
         onBack={() => router.back()}
         onNext={() => {
           updateDraft({ keys: [...selectedNotes] })
-          router.navigate("/choose-instrument")
+          router.navigate("/choose-clef")
         }}
       />
 

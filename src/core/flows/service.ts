@@ -26,7 +26,7 @@ function createFlowId(now: Date) {
 export function createEmptyFlowDraft(): FlowDraft {
   return {
     keys: [],
-    clefs: [],
+    clef: null,
     range: {
       low: DEFAULT_LOW_PITCH,
       high: DEFAULT_HIGH_PITCH,
@@ -41,7 +41,6 @@ export function normalizeFlowDraft(draft: FlowDraft): FlowDraft {
   return {
     ...draft,
     keys: unique(draft.keys),
-    clefs: unique(draft.clefs),
     modes: unique(draft.modes),
     slurPatternIds: unique(draft.slurPatternIds),
   }
@@ -57,8 +56,8 @@ export function validateFlowDraft(
     errors.push("missing_keys")
   }
 
-  if (draft.clefs.length === 0) {
-    errors.push("missing_clefs")
+  if (draft.clef === null) {
+    errors.push("missing_clef")
   }
 
   if (draft.modes.length === 0) {
@@ -156,8 +155,8 @@ export function getFlowCreationErrorMessage(
     return "Pick at least one key."
   }
 
-  if (errors.includes("missing_clefs")) {
-    return "Pick at least one clef."
+  if (errors.includes("missing_clef")) {
+    return "Pick a clef."
   }
 
   if (errors.includes("missing_modes")) {

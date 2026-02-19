@@ -11,35 +11,23 @@ import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 const CLEFS = CLEF_OPTIONS
 
-export default function ChooseInstrument() {
+export default function ChooseClef() {
   const router = useRouter()
   const { draft, updateDraft } = useFlowStore()
-  const [selectedClefs, setSelectedClefs] = useState<Set<Clef>>(
-    new Set(draft.clefs),
-  )
+  const [selectedClef, setSelectedClef] = useState<Clef | null>(draft.clef)
 
   const toggleClef = (clef: Clef) => {
-    setSelectedClefs((prev) => {
-      const next = new Set(prev)
-      if (next.has(clef)) {
-        next.delete(clef)
-      } else {
-        next.add(clef)
-      }
-      return next
-    })
+    setSelectedClef((current) => (current === clef ? null : clef))
   }
-
-  const allSelected = CLEFS.every((clef) => selectedClefs.has(clef))
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <TopBar
-        title="Instrument"
-        subtitle="Select what clef you want to play"
+        title="Clef"
+        subtitle="Select which clef you want to play"
         onBack={() => router.back()}
         onNext={() => {
-          updateDraft({ clefs: [...selectedClefs] })
+          updateDraft({ clef: selectedClef })
           router.navigate("/choose-range")
         }}
       />
@@ -53,7 +41,7 @@ export default function ChooseInstrument() {
               <SelectableButton
                 key={clef}
                 label={clef}
-                selected={selectedClefs.has(clef)}
+                selected={selectedClef === clef}
                 onPress={() => toggleClef(clef)}
                 style={styles.clefButton}
                 labelStyle={styles.clefLabel}
@@ -61,16 +49,6 @@ export default function ChooseInstrument() {
             ))}
           </View>
         </View>
-
-        <SelectableButton
-          label="Select All"
-          selected={allSelected}
-          onPress={() => {
-            setSelectedClefs(allSelected ? new Set<Clef>() : new Set(CLEFS))
-          }}
-          style={styles.selectAllButton}
-          labelStyle={styles.selectAllLabel}
-        />
       </View>
     </SafeAreaView>
   )
@@ -83,15 +61,5 @@ const styles = StyleSheet.create({
   },
   clefLabel: {
     fontSize: 16,
-  },
-  selectAllButton: {
-    marginBottom: 16,
-    width: 150,
-    height: 50,
-    alignSelf: "center",
-  },
-  selectAllLabel: {
-    fontSize: 16,
-    textAlign: "center",
   },
 })

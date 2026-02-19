@@ -14,7 +14,7 @@ describe("flow service", () => {
     const draft = createEmptyFlowDraft()
 
     expect(draft.keys).toEqual([])
-    expect(draft.clefs).toEqual([])
+    expect(draft.clef).toBeNull()
     expect(draft.modes).toEqual([])
     expect(draft.slurPatternIds).toEqual([])
     expect(draft.tempo).toEqual({ kind: "single", bpm: 96 })
@@ -29,7 +29,7 @@ describe("flow service", () => {
 
     expect(validateFlowDraft(draft)).toEqual([
       "missing_keys",
-      "missing_clefs",
+      "missing_clef",
       "missing_modes",
       "missing_slur_patterns",
     ])
@@ -40,7 +40,7 @@ describe("flow service", () => {
     const draft: FlowDraft = {
       ...createEmptyFlowDraft(),
       keys: ["C"],
-      clefs: ["Treble Clef"],
+      clef: "Treble Clef",
       modes: ["Major"],
       slurPatternIds: ["full-phrase"],
     }
@@ -67,7 +67,7 @@ describe("flow service", () => {
     const draft: FlowDraft = {
       ...createEmptyFlowDraft(),
       keys: ["C"],
-      clefs: ["Treble Clef"],
+      clef: "Treble Clef",
       modes: ["Major"],
       slurPatternIds: ["full-phrase"],
       tempo: { kind: "range", minBpm: 120, maxBpm: 80 } as const,
@@ -82,11 +82,11 @@ describe("flow service", () => {
     expect(result.errors).toEqual(["invalid_tempo"])
   })
 
-  it("normalizes duplicate selections", () => {
+  it("normalizes duplicate selections for multi-select fields", () => {
     const draft: FlowDraft = {
       ...createEmptyFlowDraft(),
       keys: ["C", "C"],
-      clefs: ["Treble Clef", "Treble Clef"],
+      clef: "Treble Clef",
       modes: ["Major", "Major"],
       slurPatternIds: ["full-phrase", "full-phrase"],
     }
@@ -94,7 +94,7 @@ describe("flow service", () => {
     const normalized = normalizeFlowDraft(draft)
 
     expect(normalized.keys).toEqual(["C"])
-    expect(normalized.clefs).toEqual(["Treble Clef"])
+    expect(normalized.clef).toBe("Treble Clef")
     expect(normalized.modes).toEqual(["Major"])
     expect(normalized.slurPatternIds).toEqual(["full-phrase"])
   })
