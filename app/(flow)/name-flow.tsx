@@ -5,8 +5,8 @@ import { SafeAreaView } from "react-native-safe-area-context"
 
 import { getFlowCreationErrorMessage } from "@/core/flows"
 
-import TopBar from "./components/TopBar"
-import { useFlowStore } from "./providers/FlowStoreProvider"
+import TopBar from "../components/TopBar"
+import { useFlowStore } from "../providers/FlowStoreProvider"
 
 export default function ChooseTempo() {
   const router = useRouter()

@@ -11,9 +11,9 @@ import { SafeAreaView } from "react-native-safe-area-context"
 
 import { SLUR_PATTERN_OPTIONS, SlurPatternId } from "@/core/flows"
 
-import SlurPatternStaff from "./components/SlurPatternStaff"
-import TopBar from "./components/TopBar"
-import { useFlowStore } from "./providers/FlowStoreProvider"
+import SlurPatternStaff from "../components/SlurPatternStaff"
+import TopBar from "../components/TopBar"
+import { useFlowStore } from "../providers/FlowStoreProvider"
 
 export default function ChooseRhythm() {
   const router = useRouter()
