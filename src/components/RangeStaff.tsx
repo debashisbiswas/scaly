@@ -75,12 +75,40 @@ function buildHtml({
             width: WIDTH - 20,
           });
 
+          function buildNote(noteKey) {
+            const text = String(noteKey || "c/4");
+            const parts = text.split("/");
+
+            if (parts.length !== 2) {
+              return factory.StaveNote({ keys: ["c/4"], duration: "h" });
+            }
+
+            const pitch = parts[0];
+            const octave = parts[1];
+            const match = pitch.match(/^([a-g])(#{1,2}|b{1,2})?$/i);
+
+            if (!match) {
+              return factory.StaveNote({ keys: ["c/4"], duration: "h" });
+            }
+
+            const baseKey = match[1].toLowerCase() + "/" + octave;
+            const accidental = match[2] || null;
+            const note = factory.StaveNote({ keys: [baseKey], duration: "h" });
+
+            if (accidental) {
+              try {
+                note.addModifier(new VF.Accidental(accidental), 0);
+              } catch (error) {
+                // Leave as natural if accidental application fails.
+              }
+            }
+
+            return note;
+          }
+
           const voice = factory
             .Voice({ numBeats: 2, beatValue: 2 })
-            .addTickables([
-              factory.StaveNote({ keys: [leftKey], duration: "h" }),
-              factory.StaveNote({ keys: [rightKey], duration: "h" }),
-            ]);
+            .addTickables([buildNote(leftKey), buildNote(rightKey)]);
 
           system.addStave({ voices: [voice] }).addClef("treble");
           factory.draw();
