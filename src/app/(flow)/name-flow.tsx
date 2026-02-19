@@ -7,6 +7,7 @@ import { getFlowCreationErrorMessage } from "@/core/flows"
 
 import TopBar from "@/components/TopBar"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
+import { Ionicons } from "@expo/vector-icons"
 
 export default function ChooseTempo() {
   const router = useRouter()
@@ -32,7 +33,7 @@ export default function ChooseTempo() {
 
           router.push("/flow-library")
         }}
-        nextLabel="✓"
+        nextLabel={<Ionicons name="checkmark-sharp" size={34} />}
       />
 
       <View

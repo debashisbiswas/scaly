@@ -1,11 +1,12 @@
 import { View, Text } from "react-native"
+import { Ionicons } from "@expo/vector-icons"
 
 interface TopBarProps {
   title: string
   subtitle: string
   onBack: () => void
   onNext?: () => void
-  nextLabel?: string
+  nextLabel?: string | React.ReactElement
 }
 
 export default function TopBar({
@@ -13,7 +14,7 @@ export default function TopBar({
   subtitle,
   onBack,
   onNext,
-  nextLabel = ">",
+  nextLabel,
 }: TopBarProps) {
   return (
     <View
@@ -24,8 +25,11 @@ export default function TopBar({
         paddingTop: 14,
       }}
     >
-      <Text style={{ padding: 8, borderWidth: 1 }} onPress={onBack}>
-        {"<"}
+      <Text
+        style={{ width: 34, height: 34, textAlign: "center" }}
+        onPress={onBack}
+      >
+        <Ionicons name="arrow-back" size={34} />
       </Text>
       <View
         style={{
@@ -54,13 +58,14 @@ export default function TopBar({
       </View>
       <Text
         style={{
-          padding: 8,
-          borderWidth: 1,
+          width: 34,
+          height: 34,
+          textAlign: "center",
           opacity: onNext ? 1 : 0,
         }}
         onPress={onNext}
       >
-        {nextLabel}
+        {nextLabel ? nextLabel : <Ionicons name="arrow-forward" size={34} />}
       </Text>
     </View>
   )
