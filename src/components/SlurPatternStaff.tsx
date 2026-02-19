@@ -190,16 +190,7 @@ export default function SlurPatternStaff({
   }
 
   return (
-    <View
-      style={{
-        width,
-        height,
-        borderWidth: 1,
-        borderColor: "#d0d0d0",
-        borderRadius: 8,
-        overflow: "hidden",
-      }}
-    >
+    <View style={{ width, height }}>
       <WebView
         source={{ html }}
         originWhitelist={["*"]}

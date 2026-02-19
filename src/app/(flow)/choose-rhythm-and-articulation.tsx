@@ -59,17 +59,6 @@ export default function ChooseRhythm() {
         }}
         showsVerticalScrollIndicator
       >
-        <Text
-          style={{
-            opacity: 0.55,
-            fontSize: 12,
-            marginBottom: 12,
-            textAlign: "center",
-          }}
-        >
-          Scroll to review and select one or more slur patterns.
-        </Text>
-
         <View style={{ gap: 10 }}>
           {SLUR_PATTERN_OPTIONS.map((pattern) => {
             const isSelected = selectedPatterns.has(pattern.id)
@@ -79,9 +68,6 @@ export default function ChooseRhythm() {
                 key={pattern.id}
                 onPress={() => togglePattern(pattern.id)}
                 style={{
-                  borderWidth: 1,
-                  borderColor: isSelected ? "#000" : "#d2d2d2",
-                  borderRadius: 10,
                   backgroundColor: isSelected ? "#f6f6f6" : "#fff",
                   paddingHorizontal: 10,
                   paddingVertical: 10,
