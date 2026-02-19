@@ -3,7 +3,6 @@
 ## create flow
 
 - implement missing "choose how many octaves" screen
-- progress dots at the bottom of the screen
 - would you like to set this as your default range? modal
 - anchor "select all" buttons to the bottom
 - tempo: move tempo with range slider
