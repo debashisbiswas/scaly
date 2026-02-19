@@ -9,7 +9,6 @@
 - tempo: allow tapping on the bpm value to type
 - every screen: disable next button until valid selection
   - remove validation and popup from final page
-- style top bar
 - range up to C7
 
 ## practice screen

@@ -22,7 +22,7 @@ export default function TopBar({
         justifyContent: "space-between",
         alignItems: "center",
         flexDirection: "row",
-        paddingTop: 14,
+        paddingTop: 20,
       }}
     >
       <Text
@@ -40,8 +40,9 @@ export default function TopBar({
       >
         <Text
           style={{
-            fontWeight: "semibold",
             fontSize: 20,
+            fontFamily: "Inter",
+            fontWeight: "600",
           }}
         >
           {title}
@@ -49,8 +50,10 @@ export default function TopBar({
 
         <Text
           style={{
-            fontWeight: "semibold",
+            fontSize: 16,
             opacity: 0.5,
+            fontFamily: "Inter",
+            fontWeight: "600",
           }}
         >
           {subtitle}
