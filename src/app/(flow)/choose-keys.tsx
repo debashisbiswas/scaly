@@ -38,7 +38,7 @@ export default function ChooseKey() {
   const allSelected = ALL_KEYS.every((note) => selectedNotes.has(note))
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFFFFF" }}>
+    <SafeAreaView style={{ flex: 1 }}>
       <TopBar
         title="Choose your keys"
         subtitle="Select all that apply"
