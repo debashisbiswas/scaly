@@ -21,6 +21,9 @@ const TEMPO_BANDS = [
   { name: "Presto", min: 168, max: 200 },
 ] as const
 
+const THUMB_SIZE = 24
+const RANGE_VALUE_INDICATOR_WIDTH = 80
+
 type TempoMode = "single" | "range"
 
 function clampBpm(value: number) {
@@ -47,11 +50,13 @@ export default function ChooseTempo() {
       ? [draft.tempo.minBpm, draft.tempo.maxBpm]
       : [88, 124],
   )
+  const [singleNumberWidth, setSingleNumberWidth] = useState(64)
+  const [rangeRightNumberWidth, setRangeRightNumberWidth] = useState(64)
 
-  const activeTempoText =
-    mode === "single"
-      ? `${singleBpm} BPM`
-      : `${rangeBpm[0]} - ${rangeBpm[1]} BPM`
+  const getThumbCenter = (value: number) => {
+    const ratio = (clampBpm(value) - MIN_BPM) / (MAX_BPM - MIN_BPM)
+    return THUMB_SIZE / 2 + ratio * (sliderWidth - THUMB_SIZE)
+  }
 
   const handleModeChange = (nextMode: TempoMode) => {
     if (nextMode === mode) {
@@ -104,7 +109,7 @@ export default function ChooseTempo() {
           flex: 1,
           justifyContent: "space-between",
           paddingTop: 28,
-          paddingBottom: 36,
+          paddingBottom: 10,
           paddingHorizontal: 12,
           alignItems: "center",
         }}
@@ -159,30 +164,139 @@ export default function ChooseTempo() {
         </View>
 
         <View style={{ width: "100%", alignItems: "center", gap: 22 }}>
-          <Text style={{ fontSize: 32, fontWeight: "600" }}>
-            {activeTempoText}
-          </Text>
+          <View style={{ width: sliderWidth, paddingTop: 52 }}>
+            {mode === "single" ? (
+              <View
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: getThumbCenter(singleBpm) - singleNumberWidth / 2,
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text
+                    onLayout={({ nativeEvent }) => {
+                      const nextWidth = Math.round(nativeEvent.layout.width)
+                      if (nextWidth !== singleNumberWidth) {
+                        setSingleNumberWidth(nextWidth)
+                      }
+                    }}
+                    style={{
+                      fontSize: 32,
+                      fontWeight: "600",
+                      fontFamily: "Inter",
+                      backgroundColor: "#CBCBCB",
+                      paddingHorizontal: 8,
+                      paddingVertical: 5,
+                      borderRadius: 12,
+                    }}
+                  >
+                    {singleBpm}
+                  </Text>
+                  <Text
+                    style={{
+                      color: "#555555",
+                      fontSize: 20,
+                      marginLeft: 6,
+                      fontFamily: "Inter",
+                      fontWeight: "600",
+                    }}
+                  >
+                    BPM
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <>
+                <View
+                  style={{
+                    position: "absolute",
+                    left:
+                      getThumbCenter(rangeBpm[0]) -
+                      RANGE_VALUE_INDICATOR_WIDTH / 2,
+                    width: RANGE_VALUE_INDICATOR_WIDTH,
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 32,
+                      fontWeight: "600",
+                      fontFamily: "Inter",
+                      backgroundColor: "#CBCBCB",
+                      paddingHorizontal: 8,
+                      paddingVertical: 5,
+                      borderRadius: 12,
+                    }}
+                  >
+                    {rangeBpm[0]}
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left:
+                      getThumbCenter(rangeBpm[1]) - rangeRightNumberWidth / 2,
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text
+                      onLayout={({ nativeEvent }) => {
+                        const nextWidth = Math.round(nativeEvent.layout.width)
+                        if (nextWidth !== rangeRightNumberWidth) {
+                          setRangeRightNumberWidth(nextWidth)
+                        }
+                      }}
+                      style={{
+                        fontSize: 32,
+                        fontWeight: "600",
+                        fontFamily: "Inter",
+                        backgroundColor: "#CBCBCB",
+                        paddingHorizontal: 8,
+                        paddingVertical: 5,
+                        borderRadius: 12,
+                      }}
+                    >
+                      {rangeBpm[1]}
+                    </Text>
+                    <Text
+                      style={{
+                        color: "#555555",
+                        fontSize: 20,
+                        marginLeft: 6,
+                        fontFamily: "Inter",
+                        fontWeight: "600",
+                      }}
+                    >
+                      BPM
+                    </Text>
+                  </View>
+                </View>
+              </>
+            )}
 
-          <View style={{ width: sliderWidth }}>
-            <Slider
-              value={
-                mode === "single" ? [singleBpm] : [rangeBpm[0], rangeBpm[1]]
-              }
-              minimumValue={MIN_BPM}
-              maximumValue={MAX_BPM}
-              step={1}
-              onValueChange={handleTempoChange}
-              minimumTrackTintColor="#101010"
-              maximumTrackTintColor="#c5c5c5"
-              trackStyle={{ height: 8, borderRadius: 999 }}
-              thumbStyle={{
-                height: 24,
-                width: 24,
-                borderRadius: 12,
-                backgroundColor: "#101010",
-              }}
-              containerStyle={{ height: 44 }}
-            />
+            <View style={{ marginTop: 6 }}>
+              <Slider
+                value={
+                  mode === "single" ? [singleBpm] : [rangeBpm[0], rangeBpm[1]]
+                }
+                minimumValue={MIN_BPM}
+                maximumValue={MAX_BPM}
+                step={1}
+                onValueChange={handleTempoChange}
+                minimumTrackTintColor="#101010"
+                maximumTrackTintColor="#c5c5c5"
+                trackStyle={{ height: 8, borderRadius: 999 }}
+                thumbStyle={{
+                  height: THUMB_SIZE,
+                  width: THUMB_SIZE,
+                  borderRadius: 12,
+                  backgroundColor: "#101010",
+                }}
+                containerStyle={{ height: 44 }}
+              />
+            </View>
           </View>
 
           <View
