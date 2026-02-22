@@ -13,6 +13,15 @@ import {
 
 const DEFAULT_LOW_PITCH = NOTE_STEP_OPTIONS[4].label
 const DEFAULT_HIGH_PITCH = NOTE_STEP_OPTIONS[16].label
+const NATURAL_NOTE_OFFSET: Record<string, number> = {
+  C: 0,
+  D: 2,
+  E: 4,
+  F: 5,
+  G: 7,
+  A: 9,
+  B: 11,
+}
 
 function unique<T extends string>(values: T[]) {
   return [...new Set(values)]
@@ -21,6 +30,36 @@ function unique<T extends string>(values: T[]) {
 function createFlowId(now: Date) {
   const randomSuffix = Math.random().toString(36).slice(2, 8)
   return `flow_${now.getTime()}_${randomSuffix}`
+}
+
+function parsePitchLabel(label: string) {
+  const match = label.match(/^([A-G])([#b]?)(\d+)$/)
+
+  if (!match) {
+    return null
+  }
+
+  return {
+    noteName: match[1],
+    accidental: match[2] === "#" ? 1 : match[2] === "b" ? -1 : 0,
+    octave: Number(match[3]),
+  }
+}
+
+function pitchLabelToMidi(label: string) {
+  const parsed = parsePitchLabel(label)
+
+  if (!parsed) {
+    return null
+  }
+
+  const naturalOffset = NATURAL_NOTE_OFFSET[parsed.noteName]
+
+  if (naturalOffset === undefined) {
+    return null
+  }
+
+  return (parsed.octave + 1) * 12 + naturalOffset + parsed.accidental
 }
 
 export function createEmptyFlowDraft(): FlowDraft {
@@ -68,14 +107,10 @@ export function validateFlowDraft(
     errors.push("missing_slur_patterns")
   }
 
-  const lowIndex = NOTE_STEP_OPTIONS.findIndex(
-    (step) => step.label === draft.range.low,
-  )
-  const highIndex = NOTE_STEP_OPTIONS.findIndex(
-    (step) => step.label === draft.range.high,
-  )
+  const lowMidi = pitchLabelToMidi(draft.range.low)
+  const highMidi = pitchLabelToMidi(draft.range.high)
 
-  if (lowIndex < 0 || highIndex < 0 || lowIndex > highIndex) {
+  if (lowMidi === null || highMidi === null || lowMidi > highMidi) {
     errors.push("invalid_range")
   }
 

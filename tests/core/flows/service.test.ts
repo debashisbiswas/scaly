@@ -98,4 +98,36 @@ describe("flow service", () => {
     expect(normalized.modes).toEqual(["Major"])
     expect(normalized.slurPatternIds).toEqual(["full-phrase"])
   })
+
+  it("accepts accidental pitch labels in range", () => {
+    const draft: FlowDraft = {
+      ...createEmptyFlowDraft(),
+      keys: ["C"],
+      clef: "Treble Clef",
+      modes: ["Major"],
+      slurPatternIds: ["full-phrase"],
+      range: {
+        low: "Bb3",
+        high: "C#5",
+      },
+    }
+
+    expect(validateFlowDraft(draft)).toEqual([])
+  })
+
+  it("rejects accidental ranges when low is above high", () => {
+    const draft: FlowDraft = {
+      ...createEmptyFlowDraft(),
+      keys: ["C"],
+      clef: "Treble Clef",
+      modes: ["Major"],
+      slurPatternIds: ["full-phrase"],
+      range: {
+        low: "C#5",
+        high: "Bb3",
+      },
+    }
+
+    expect(validateFlowDraft(draft)).toEqual(["invalid_range"])
+  })
 })
