@@ -42,7 +42,11 @@ function buildNote(factory: Factory, noteKey: string) {
 
   const baseKey = `${match[1].toLowerCase()}/${octave}`
   const accidental = match[2]
-  const note = factory.StaveNote({ keys: [baseKey], duration: "h" })
+  const note = factory.StaveNote({
+    keys: [baseKey],
+    duration: "h",
+    autoStem: true,
+  })
 
   if (accidental) {
     try {

@@ -56,9 +56,9 @@ const NOTE_NAMES = ["C", "D", "E", "F", "G", "A", "B"] as const
 export const NOTE_STEP_OPTIONS = (() => {
   const steps: { label: string; vexflowKey: string }[] = []
 
-  for (let octave = 3; octave <= 6; octave += 1) {
+  for (let octave = 3; octave <= 7; octave += 1) {
     for (const noteName of NOTE_NAMES) {
-      if (octave === 6 && noteName !== "C") {
+      if (octave === 7 && noteName !== "C") {
         continue
       }
 
