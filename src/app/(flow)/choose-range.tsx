@@ -87,6 +87,17 @@ type SliderState = {
   accidental: -1 | 0 | 1
 }
 
+function getPitchLabelFromState(state: SliderState) {
+  return formatManualAccidentalLabel(
+    NOTE_STEPS[state.index].label,
+    state.accidental,
+  )
+}
+
+function getMidiFromState(state: SliderState) {
+  return pitchLabelToMidi(getPitchLabelFromState(state))
+}
+
 function AccidentalControls({
   value,
   onChange,
@@ -128,12 +139,16 @@ export default function ChooseKey() {
   const router = useRouter()
   const { draft, updateDraft } = useFlowStore()
   const { width: screenWidth } = useWindowDimensions()
-  const [leftState, setLeftState] = useState<SliderState>(() =>
-    getInitialSliderState(draft.range.low, 4),
-  )
-  const [rightState, setRightState] = useState<SliderState>(() =>
-    getInitialSliderState(draft.range.high, 16),
-  )
+  const [selection, setSelection] = useState<{
+    left: SliderState
+    right: SliderState
+  }>(() => ({
+    left: getInitialSliderState(draft.range.low, 4),
+    right: getInitialSliderState(draft.range.high, 16),
+  }))
+
+  const leftState = selection.left
+  const rightState = selection.right
 
   const leftIndex = leftState.index
   const rightIndex = rightState.index
@@ -141,31 +156,77 @@ export default function ChooseKey() {
   const rightAccidental = rightState.accidental
 
   const setLeftIndex = (index: number) => {
-    setLeftState((previous) => ({ ...previous, index }))
+    setSelection((previous) => {
+      const nextLeft = { ...previous.left, index }
+
+      if (nextLeft.index > previous.right.index) {
+        return previous
+      }
+
+      if (getMidiFromState(nextLeft) >= getMidiFromState(previous.right)) {
+        return previous
+      }
+
+      return {
+        ...previous,
+        left: nextLeft,
+      }
+    })
   }
 
   const setRightIndex = (index: number) => {
-    setRightState((previous) => ({ ...previous, index }))
+    setSelection((previous) => {
+      const nextRight = { ...previous.right, index }
+
+      if (nextRight.index < previous.left.index) {
+        return previous
+      }
+
+      if (getMidiFromState(nextRight) <= getMidiFromState(previous.left)) {
+        return previous
+      }
+
+      return {
+        ...previous,
+        right: nextRight,
+      }
+    })
   }
 
   const setLeftAccidental = (accidental: -1 | 0 | 1) => {
-    setLeftState((previous) => ({ ...previous, accidental }))
+    setSelection((previous) => {
+      const nextLeft = { ...previous.left, accidental }
+
+      if (getMidiFromState(nextLeft) >= getMidiFromState(previous.right)) {
+        return previous
+      }
+
+      return {
+        ...previous,
+        left: nextLeft,
+      }
+    })
   }
 
   const setRightAccidental = (accidental: -1 | 0 | 1) => {
-    setRightState((previous) => ({ ...previous, accidental }))
+    setSelection((previous) => {
+      const nextRight = { ...previous.right, accidental }
+
+      if (getMidiFromState(nextRight) <= getMidiFromState(previous.left)) {
+        return previous
+      }
+
+      return {
+        ...previous,
+        right: nextRight,
+      }
+    })
   }
 
   const leftNote = NOTE_STEPS[leftIndex]
   const rightNote = NOTE_STEPS[rightIndex]
-  const leftPitchLabel = formatManualAccidentalLabel(
-    leftNote.label,
-    leftAccidental,
-  )
-  const rightPitchLabel = formatManualAccidentalLabel(
-    rightNote.label,
-    rightAccidental,
-  )
+  const leftPitchLabel = getPitchLabelFromState(leftState)
+  const rightPitchLabel = getPitchLabelFromState(rightState)
 
   const staffWidth = Math.max(180, Math.min(screenWidth - 152, 420))
 
@@ -173,7 +234,7 @@ export default function ChooseKey() {
     <SafeAreaView style={{ flex: 1 }}>
       <TopBar
         title="Range"
-        subtitle="Use the two sliders to select your highest and lowest range"
+        subtitle="Use the sliders and buttons to select your range"
         onBack={() => router.back()}
         onNext={() => {
           const leftMidi = pitchLabelToMidi(leftPitchLabel)
@@ -215,6 +276,7 @@ export default function ChooseKey() {
               value={leftIndex}
               min={0}
               max={NOTE_STEPS.length - 1}
+              upperLimit={rightIndex}
               onValueChange={setLeftIndex}
               topLabel={NOTE_STEPS[NOTE_STEPS.length - 1].label}
               bottomLabel={NOTE_STEPS[0].label}
@@ -262,6 +324,7 @@ export default function ChooseKey() {
               value={rightIndex}
               min={0}
               max={NOTE_STEPS.length - 1}
+              lowerLimit={leftIndex}
               onValueChange={setRightIndex}
               topLabel={NOTE_STEPS[NOTE_STEPS.length - 1].label}
               bottomLabel={NOTE_STEPS[0].label}

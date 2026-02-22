@@ -5,6 +5,8 @@ interface VerticalNoteSliderProps {
   value: number
   min: number
   max: number
+  lowerLimit?: number
+  upperLimit?: number
   onValueChange: (value: number) => void
   topLabel: string
   bottomLabel: string
@@ -14,6 +16,8 @@ export default function VerticalNoteSlider({
   value,
   min,
   max,
+  lowerLimit,
+  upperLimit,
   onValueChange,
   topLabel,
   bottomLabel,
@@ -38,6 +42,8 @@ export default function VerticalNoteSlider({
           }}
           minimumValue={min}
           maximumValue={max}
+          lowerLimit={lowerLimit}
+          upperLimit={upperLimit}
           value={value}
           step={1}
           onValueChange={onValueChange}
