@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notation Harness</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 18px;
+        color: #1d2430;
+        font:
+          14px/1.4 "Avenir Next",
+          "Segoe UI",
+          sans-serif;
+        background: linear-gradient(170deg, #f5f7fb, #fbf7f2);
+      }
+
+      .panel {
+        max-width: 960px;
+        margin: 0 auto;
+        background: #ffffffd8;
+        border: 1px solid #1d243022;
+        border-radius: 12px;
+        padding: 16px;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: end;
+        margin: 12px 0;
+      }
+
+      .field {
+        display: grid;
+        gap: 4px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      input,
+      select,
+      button {
+        border: 1px solid #1d243033;
+        border-radius: 8px;
+        padding: 7px 9px;
+        font: inherit;
+      }
+
+      button {
+        background: #0f766e;
+        color: white;
+        border-color: #0f766e;
+        cursor: pointer;
+      }
+
+      #score {
+        min-height: 160px;
+        background: #fff;
+        border: 1px solid #1d243022;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      #errors {
+        margin-top: 10px;
+        font-family: Menlo, monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        color: #9f1239;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="panel">
+      <strong>Notation harness</strong>
+      <form id="controls" class="controls">
+        <label class="field"
+          >Renderer
+          <select id="renderer">
+            <option value="practice">Practice</option>
+            <option value="range">Range</option>
+          </select>
+        </label>
+        <label class="field" id="modeField"
+          >Mode
+          <select id="mode">
+            <option value="full">full</option>
+            <option value="rhythm">rhythm</option>
+          </select>
+        </label>
+        <label class="field" id="leftField"
+          >Left note
+          <input id="left" value="c/4" />
+        </label>
+        <label class="field" id="rightField"
+          >Right note
+          <input id="right" value="g/5" />
+        </label>
+        <label class="field"
+          >Width
+          <input id="width" type="number" min="100" value="720" />
+        </label>
+        <label class="field"
+          >Height
+          <input id="height" type="number" min="80" value="214" />
+        </label>
+        <button type="submit">Render</button>
+      </form>
+      <div id="score"></div>
+      <div id="errors"></div>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

@@ -42,6 +42,26 @@ To learn more about developing your project with Expo, look at the following res
 - [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
 - [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
+## Notation harness
+
+Use the local browser harness to iterate on VexFlow rendering without the React Native WebView layer.
+
+1. Install deps if needed:
+
+   ```bash
+   npm install
+   ```
+
+2. Start the harness:
+
+   ```bash
+   npm run notation:harness
+   ```
+
+3. Open the local Vite URL and switch between Range staff / Practice staff renderers.
+
+Range rendering source lives in `src/notation/range.ts`, practice rendering source lives in `src/notation/practice.ts`, and the harness app lives in `tools/notation-harness`.
+
 ## Join the community
 
 Join our community of developers creating universal apps.
