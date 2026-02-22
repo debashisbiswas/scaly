@@ -8,7 +8,7 @@
 - tempo: allow tapping on the bpm value to type
 - every screen: disable next button until valid selection
   - remove validation and popup from final page
-- range up to C7
+- range slider should respect selected clef
 
 ## practice screen
 
