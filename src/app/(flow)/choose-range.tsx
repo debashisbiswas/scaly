@@ -98,9 +98,9 @@ function AccidentalControls({
     borderWidth: 1,
     borderColor: active ? "#0F172A" : "#94A3B8",
     backgroundColor: active ? "#E2E8F0" : "#FFFFFF",
-    width: 28,
-    height: 24,
-    borderRadius: 6,
+    width: 36,
+    height: 32,
+    borderRadius: 8,
     alignItems: "center" as const,
     justifyContent: "center" as const,
   })
@@ -111,14 +111,14 @@ function AccidentalControls({
         style={buttonStyle(value === 1)}
         onPress={() => onChange(value === 1 ? 0 : 1)}
       >
-        <Text style={{ fontSize: 12, fontWeight: "700" }}>#</Text>
+        <Text style={{ fontSize: 16, fontWeight: "700" }}>#</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={buttonStyle(value === -1)}
         onPress={() => onChange(value === -1 ? 0 : -1)}
       >
-        <Text style={{ fontSize: 12, fontWeight: "700" }}>b</Text>
+        <Text style={{ fontSize: 16, fontWeight: "700" }}>b</Text>
       </TouchableOpacity>
     </View>
   )
