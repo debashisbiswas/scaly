@@ -82,6 +82,11 @@ function getInitialSliderState(label: string, fallbackIndex: number) {
   }
 }
 
+type SliderState = {
+  index: number
+  accidental: -1 | 0 | 1
+}
+
 function AccidentalControls({
   value,
   onChange,
@@ -123,18 +128,33 @@ export default function ChooseKey() {
   const router = useRouter()
   const { draft, updateDraft } = useFlowStore()
   const { width: screenWidth } = useWindowDimensions()
-  const [leftIndex, setLeftIndex] = useState(
-    () => getInitialSliderState(draft.range.low, 4).index,
+  const [leftState, setLeftState] = useState<SliderState>(() =>
+    getInitialSliderState(draft.range.low, 4),
   )
-  const [rightIndex, setRightIndex] = useState(
-    () => getInitialSliderState(draft.range.high, 16).index,
+  const [rightState, setRightState] = useState<SliderState>(() =>
+    getInitialSliderState(draft.range.high, 16),
   )
-  const [leftAccidental, setLeftAccidental] = useState<-1 | 0 | 1>(
-    () => getInitialSliderState(draft.range.low, 4).accidental,
-  )
-  const [rightAccidental, setRightAccidental] = useState<-1 | 0 | 1>(
-    () => getInitialSliderState(draft.range.high, 16).accidental,
-  )
+
+  const leftIndex = leftState.index
+  const rightIndex = rightState.index
+  const leftAccidental = leftState.accidental
+  const rightAccidental = rightState.accidental
+
+  const setLeftIndex = (index: number) => {
+    setLeftState((previous) => ({ ...previous, index }))
+  }
+
+  const setRightIndex = (index: number) => {
+    setRightState((previous) => ({ ...previous, index }))
+  }
+
+  const setLeftAccidental = (accidental: -1 | 0 | 1) => {
+    setLeftState((previous) => ({ ...previous, accidental }))
+  }
+
+  const setRightAccidental = (accidental: -1 | 0 | 1) => {
+    setRightState((previous) => ({ ...previous, accidental }))
+  }
 
   const leftNote = NOTE_STEPS[leftIndex]
   const rightNote = NOTE_STEPS[rightIndex]
