@@ -1,6 +1,12 @@
 import { useRouter } from "expo-router"
-import { useState } from "react"
-import { Pressable, Text, View, useWindowDimensions } from "react-native"
+import { useEffect, useState } from "react"
+import {
+  Pressable,
+  Text,
+  TextInput,
+  View,
+  useWindowDimensions,
+} from "react-native"
 import { Slider } from "@miblanchard/react-native-slider"
 import { SafeAreaView } from "react-native-safe-area-context"
 
@@ -25,6 +31,7 @@ const THUMB_SIZE = 24
 const RANGE_VALUE_INDICATOR_WIDTH = 80
 
 type TempoMode = "single" | "range"
+type EditingField = "single" | "range-low" | "range-high" | null
 
 function clampBpm(value: number) {
   return Math.max(MIN_BPM, Math.min(MAX_BPM, Math.round(value)))
@@ -32,6 +39,130 @@ function clampBpm(value: number) {
 
 function asArray(value: number[] | number) {
   return Array.isArray(value) ? value : [value]
+}
+
+function sanitizeTempoInput(value: string) {
+  return value.replace(/[^0-9]/g, "").slice(0, 3)
+}
+
+function parseTempoInput(value: string) {
+  const parsed = Number.parseInt(value, 10)
+  return Number.isFinite(parsed) ? clampBpm(parsed) : null
+}
+
+function getCommittedSingleBpm(inputValue: string, fallback: number) {
+  return parseTempoInput(inputValue) ?? fallback
+}
+
+function getCommittedRangeLowBpm(
+  inputValue: string,
+  currentRange: [number, number],
+) {
+  const parsed = parseTempoInput(inputValue)
+  const nextLow = parsed ?? currentRange[0]
+
+  return Math.min(nextLow, currentRange[1])
+}
+
+function getCommittedRangeHighBpm(
+  inputValue: string,
+  currentRange: [number, number],
+) {
+  const parsed = parseTempoInput(inputValue)
+  const nextHigh = parsed ?? currentRange[1]
+
+  return Math.max(nextHigh, currentRange[0])
+}
+
+type EditableTempoValueProps = {
+  value: number
+  inputValue: string
+  editing: boolean
+  onPress: () => void
+  onChangeText: (value: string) => void
+  onCommit: () => void
+  onWidthChange?: (width: number) => void
+  backgroundColor: string
+  textColor: string
+  minWidth?: number
+  width?: number
+}
+
+function EditableTempoValue({
+  value,
+  inputValue,
+  editing,
+  onPress,
+  onChangeText,
+  onCommit,
+  onWidthChange,
+  backgroundColor,
+  textColor,
+  minWidth = 64,
+  width,
+}: EditableTempoValueProps) {
+  const bubbleStyle = {
+    minWidth,
+    width,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 12,
+    backgroundColor,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+  }
+
+  const textStyle = {
+    fontSize: 32,
+    fontWeight: "600" as const,
+    fontFamily: "Inter",
+    color: textColor,
+  }
+
+  return (
+    <View
+      onLayout={({ nativeEvent }) => {
+        if (!onWidthChange) {
+          return
+        }
+
+        const nextWidth = Math.round(nativeEvent.layout.width)
+        onWidthChange(nextWidth)
+      }}
+    >
+      {editing ? (
+        <TextInput
+          value={inputValue}
+          onChangeText={(nextValue) =>
+            onChangeText(sanitizeTempoInput(nextValue))
+          }
+          onBlur={onCommit}
+          onSubmitEditing={onCommit}
+          autoFocus
+          selectTextOnFocus
+          keyboardType="number-pad"
+          returnKeyType="done"
+          maxLength={3}
+          style={{
+            ...bubbleStyle,
+            ...textStyle,
+            textAlign: "center",
+          }}
+        />
+      ) : (
+        <Pressable
+          onPress={onPress}
+          hitSlop={8}
+          style={({ pressed }) => ({
+            ...bubbleStyle,
+            opacity: pressed ? 0.85 : 1,
+          })}
+        >
+          <Text style={textStyle}>{value}</Text>
+        </Pressable>
+      )}
+    </View>
+  )
 }
 
 export default function ChooseTempo() {
@@ -50,12 +181,91 @@ export default function ChooseTempo() {
       ? [draft.tempo.minBpm, draft.tempo.maxBpm]
       : [88, 124],
   )
+  const [singleInput, setSingleInput] = useState(String(singleBpm))
+  const [rangeLowInput, setRangeLowInput] = useState(String(rangeBpm[0]))
+  const [rangeHighInput, setRangeHighInput] = useState(String(rangeBpm[1]))
+  const [editingField, setEditingField] = useState<EditingField>(null)
   const [singleNumberWidth, setSingleNumberWidth] = useState(64)
   const [rangeRightNumberWidth, setRangeRightNumberWidth] = useState(64)
+
+  useEffect(() => {
+    if (editingField !== "single") {
+      setSingleInput(String(singleBpm))
+    }
+  }, [editingField, singleBpm])
+
+  useEffect(() => {
+    if (editingField !== "range-low") {
+      setRangeLowInput(String(rangeBpm[0]))
+    }
+  }, [editingField, rangeBpm])
+
+  useEffect(() => {
+    if (editingField !== "range-high") {
+      setRangeHighInput(String(rangeBpm[1]))
+    }
+  }, [editingField, rangeBpm])
 
   const getThumbCenter = (value: number) => {
     const ratio = (clampBpm(value) - MIN_BPM) / (MAX_BPM - MIN_BPM)
     return THUMB_SIZE / 2 + ratio * (sliderWidth - THUMB_SIZE)
+  }
+
+  const commitSingleInput = () => {
+    const nextBpm = getCommittedSingleBpm(singleInput, singleBpm)
+    setSingleBpm(nextBpm)
+    setSingleInput(String(nextBpm))
+    setEditingField((current) => (current === "single" ? null : current))
+  }
+
+  const commitRangeLowInput = () => {
+    const nextLow = getCommittedRangeLowBpm(rangeLowInput, rangeBpm)
+    setRangeBpm([nextLow, rangeBpm[1]])
+    setRangeLowInput(String(nextLow))
+    setEditingField((current) => (current === "range-low" ? null : current))
+  }
+
+  const commitRangeHighInput = () => {
+    const nextHigh = getCommittedRangeHighBpm(rangeHighInput, rangeBpm)
+    setRangeBpm([rangeBpm[0], nextHigh])
+    setRangeHighInput(String(nextHigh))
+    setEditingField((current) => (current === "range-high" ? null : current))
+  }
+
+  const commitEditingField = (field: EditingField) => {
+    if (field === "single") {
+      commitSingleInput()
+      return
+    }
+
+    if (field === "range-low") {
+      commitRangeLowInput()
+      return
+    }
+
+    if (field === "range-high") {
+      commitRangeHighInput()
+    }
+  }
+
+  const startEditingField = (field: Exclude<EditingField, null>) => {
+    if (editingField && editingField !== field) {
+      commitEditingField(editingField)
+    }
+
+    if (field === "single") {
+      setSingleInput(String(singleBpm))
+    }
+
+    if (field === "range-low") {
+      setRangeLowInput(String(rangeBpm[0]))
+    }
+
+    if (field === "range-high") {
+      setRangeHighInput(String(rangeBpm[1]))
+    }
+
+    setEditingField(field)
   }
 
   const handleModeChange = (nextMode: TempoMode) => {
@@ -63,14 +273,38 @@ export default function ChooseTempo() {
       return
     }
 
+    const committedSingleBpm =
+      editingField === "single"
+        ? getCommittedSingleBpm(singleInput, singleBpm)
+        : singleBpm
+    const committedRangeBpm: [number, number] = [
+      editingField === "range-low"
+        ? getCommittedRangeLowBpm(rangeLowInput, rangeBpm)
+        : rangeBpm[0],
+      editingField === "range-high"
+        ? getCommittedRangeHighBpm(rangeHighInput, rangeBpm)
+        : rangeBpm[1],
+    ]
+
     if (nextMode === "range") {
-      const nextLow = clampBpm(singleBpm - 10)
-      const nextHigh = clampBpm(singleBpm + 10)
-      setRangeBpm([Math.min(nextLow, nextHigh), Math.max(nextLow, nextHigh)])
+      const nextLow = clampBpm(committedSingleBpm - 10)
+      const nextHigh = clampBpm(committedSingleBpm + 10)
+      const nextRange: [number, number] = [
+        Math.min(nextLow, nextHigh),
+        Math.max(nextLow, nextHigh),
+      ]
+      setRangeBpm(nextRange)
+      setRangeLowInput(String(nextRange[0]))
+      setRangeHighInput(String(nextRange[1]))
     } else {
-      setSingleBpm(clampBpm((rangeBpm[0] + rangeBpm[1]) / 2))
+      const nextSingle = clampBpm(
+        (committedRangeBpm[0] + committedRangeBpm[1]) / 2,
+      )
+      setSingleBpm(nextSingle)
+      setSingleInput(String(nextSingle))
     }
 
+    setEditingField(null)
     setMode(nextMode)
   }
 
@@ -78,7 +312,8 @@ export default function ChooseTempo() {
     const values = asArray(value)
 
     if (mode === "single") {
-      setSingleBpm(clampBpm(values[0] ?? singleBpm))
+      const nextBpm = clampBpm(values[0] ?? singleBpm)
+      setSingleBpm(nextBpm)
       return
     }
 
@@ -87,21 +322,36 @@ export default function ChooseTempo() {
     setRangeBpm([Math.min(start, end), Math.max(start, end)])
   }
 
+  const handleNext = () => {
+    const nextSingleBpm =
+      editingField === "single"
+        ? getCommittedSingleBpm(singleInput, singleBpm)
+        : singleBpm
+    const nextRangeBpm: [number, number] = [
+      editingField === "range-low"
+        ? getCommittedRangeLowBpm(rangeLowInput, rangeBpm)
+        : rangeBpm[0],
+      editingField === "range-high"
+        ? getCommittedRangeHighBpm(rangeHighInput, rangeBpm)
+        : rangeBpm[1],
+    ]
+
+    const tempo: TempoSetting =
+      mode === "single"
+        ? { kind: "single", bpm: nextSingleBpm }
+        : { kind: "range", minBpm: nextRangeBpm[0], maxBpm: nextRangeBpm[1] }
+
+    updateDraft({ tempo })
+    router.push("/choose-rhythm-and-articulation")
+  }
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <TopBar
         title="Choose your tempo"
         subtitle="Use the slider or input your desired tempo"
         onBack={() => router.back()}
-        onNext={() => {
-          const tempo: TempoSetting =
-            mode === "single"
-              ? { kind: "single", bpm: singleBpm }
-              : { kind: "range", minBpm: rangeBpm[0], maxBpm: rangeBpm[1] }
-
-          updateDraft({ tempo })
-          router.push("/choose-rhythm-and-articulation")
-        }}
+        onNext={handleNext}
       />
 
       <View
@@ -174,25 +424,21 @@ export default function ChooseTempo() {
                 }}
               >
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Text
-                    onLayout={({ nativeEvent }) => {
-                      const nextWidth = Math.round(nativeEvent.layout.width)
+                  <EditableTempoValue
+                    value={singleBpm}
+                    inputValue={singleInput}
+                    editing={editingField === "single"}
+                    onPress={() => startEditingField("single")}
+                    onChangeText={setSingleInput}
+                    onCommit={commitSingleInput}
+                    onWidthChange={(nextWidth) => {
                       if (nextWidth !== singleNumberWidth) {
                         setSingleNumberWidth(nextWidth)
                       }
                     }}
-                    style={{
-                      fontSize: 32,
-                      fontWeight: "600",
-                      fontFamily: "Inter",
-                      backgroundColor: "#CBCBCB",
-                      paddingHorizontal: 8,
-                      paddingVertical: 5,
-                      borderRadius: 12,
-                    }}
-                  >
-                    {singleBpm}
-                  </Text>
+                    backgroundColor="#3B82F6"
+                    textColor="#FFFFFF"
+                  />
                   <Text
                     style={{
                       color: "#555555",
@@ -218,20 +464,18 @@ export default function ChooseTempo() {
                     alignItems: "center",
                   }}
                 >
-                  <Text
-                    style={{
-                      fontSize: 32,
-                      fontWeight: "600",
-                      fontFamily: "Inter",
-                      color: "#FFFFFF",
-                      backgroundColor: "#3B82F6",
-                      paddingHorizontal: 8,
-                      paddingVertical: 5,
-                      borderRadius: 12,
-                    }}
-                  >
-                    {rangeBpm[0]}
-                  </Text>
+                  <EditableTempoValue
+                    value={rangeBpm[0]}
+                    inputValue={rangeLowInput}
+                    editing={editingField === "range-low"}
+                    onPress={() => startEditingField("range-low")}
+                    onChangeText={setRangeLowInput}
+                    onCommit={commitRangeLowInput}
+                    backgroundColor="#3B82F6"
+                    textColor="#FFFFFF"
+                    width={RANGE_VALUE_INDICATOR_WIDTH}
+                    minWidth={RANGE_VALUE_INDICATOR_WIDTH}
+                  />
                 </View>
                 <View
                   style={{
@@ -242,26 +486,21 @@ export default function ChooseTempo() {
                   }}
                 >
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Text
-                      onLayout={({ nativeEvent }) => {
-                        const nextWidth = Math.round(nativeEvent.layout.width)
+                    <EditableTempoValue
+                      value={rangeBpm[1]}
+                      inputValue={rangeHighInput}
+                      editing={editingField === "range-high"}
+                      onPress={() => startEditingField("range-high")}
+                      onChangeText={setRangeHighInput}
+                      onCommit={commitRangeHighInput}
+                      onWidthChange={(nextWidth) => {
                         if (nextWidth !== rangeRightNumberWidth) {
                           setRangeRightNumberWidth(nextWidth)
                         }
                       }}
-                      style={{
-                        fontSize: 32,
-                        fontWeight: "600",
-                        fontFamily: "Inter",
-                        color: "#FFFFFF",
-                        backgroundColor: "#3B82F6",
-                        paddingHorizontal: 8,
-                        paddingVertical: 5,
-                        borderRadius: 12,
-                      }}
-                    >
-                      {rangeBpm[1]}
-                    </Text>
+                      backgroundColor="#3B82F6"
+                      textColor="#FFFFFF"
+                    />
                     <Text
                       style={{
                         color: "#555555",
