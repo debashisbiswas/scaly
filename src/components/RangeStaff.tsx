@@ -7,7 +7,10 @@ import {
   NotationWebViewErrorMessage,
 } from "@/notation/webviewShell"
 
+type Clef = "treble" | "bass"
+
 interface RangeStaffProps {
+  clef: Clef
   leftNoteKey: string
   rightNoteKey: string
   width: number
@@ -15,11 +18,13 @@ interface RangeStaffProps {
 }
 
 function buildHtml({
+  clef,
   leftNoteKey,
   rightNoteKey,
   width,
   height,
 }: {
+  clef: Clef
   leftNoteKey: string
   rightNoteKey: string
   width: number
@@ -33,6 +38,8 @@ function buildHtml({
       const HEIGHT = ${Math.round(height)};
       const INITIAL_LEFT = ${JSON.stringify(leftNoteKey)};
       const INITIAL_RIGHT = ${JSON.stringify(rightNoteKey)};
+      const CLEF = "${clef}"
+
       let fontsReady = false;
       let queuedLeft = INITIAL_LEFT;
       let queuedRight = INITIAL_RIGHT;
@@ -62,7 +69,7 @@ function buildHtml({
           const parts = text.split("/");
 
           if (parts.length !== 2) {
-            return factory.StaveNote({ keys: ["c/4"], duration: "h" });
+            return factory.StaveNote({ keys: ["c/4"], duration: "h", clef: CLEF });
           }
 
           const pitch = parts[0];
@@ -70,12 +77,12 @@ function buildHtml({
           const match = pitch.match(/^([a-g])(#{1,2}|b{1,2})?$/i);
 
           if (!match) {
-            return factory.StaveNote({ keys: ["c/4"], duration: "h" });
+            return factory.StaveNote({ keys: ["c/4"], duration: "h", clef: CLEF });
           }
 
           const baseKey = match[1].toLowerCase() + "/" + octave;
           const accidental = match[2] || null;
-          const note = factory.StaveNote({ keys: [baseKey], duration: "h", autoStem: true });
+          const note = factory.StaveNote({ keys: [baseKey], duration: "h", autoStem: true, clef: CLEF });
 
           if (accidental) {
             try {
@@ -90,7 +97,7 @@ function buildHtml({
           .Voice({ numBeats: 2, beatValue: 2 })
           .addTickables([buildNote(leftKey), buildNote(rightKey)]);
 
-        system.addStave({ voices: [voice] }).addClef("treble");
+        system.addStave({ voices: [voice] }).addClef(CLEF);
         factory.draw();
       }
 
@@ -113,6 +120,7 @@ function buildHtml({
 }
 
 export default function RangeStaff({
+  clef,
   leftNoteKey,
   rightNoteKey,
   width,
@@ -126,12 +134,13 @@ export default function RangeStaff({
   const html = useMemo(
     () =>
       buildHtml({
+        clef,
         leftNoteKey: initialLeftNoteKeyRef.current,
         rightNoteKey: initialRightNoteKeyRef.current,
         width,
         height,
       }),
-    [width, height],
+    [clef, width, height],
   )
 
   useEffect(() => {
@@ -160,7 +169,7 @@ export default function RangeStaff({
       }}
     >
       <WebView
-        key={`${Math.round(width)}-${Math.round(height)}`}
+        key={`${Math.round(width)}-${Math.round(height)}-${clef}`}
         ref={webViewRef}
         source={{ html }}
         originWhitelist={["*"]}

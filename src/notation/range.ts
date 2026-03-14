@@ -6,6 +6,7 @@ export interface RenderRangeOptions {
   height: number
   leftNoteKey: string
   rightNoteKey: string
+  clef?: "treble" | "bass"
 }
 
 let fontLoadPromise: Promise<void> | null = null
@@ -24,12 +25,12 @@ function ensureFontsLoaded() {
   return fontLoadPromise
 }
 
-function buildNote(factory: Factory, noteKey: string) {
+function buildNote(factory: Factory, noteKey: string, clef: "treble" | "bass") {
   const text = String(noteKey || "c/4")
   const parts = text.split("/")
 
   if (parts.length !== 2) {
-    return factory.StaveNote({ keys: ["c/4"], duration: "h" })
+    return factory.StaveNote({ keys: ["c/4"], duration: "h", clef })
   }
 
   const pitch = parts[0]
@@ -37,7 +38,7 @@ function buildNote(factory: Factory, noteKey: string) {
   const match = pitch.match(/^([a-g])(#{1,2}|b{1,2})?$/i)
 
   if (!match) {
-    return factory.StaveNote({ keys: ["c/4"], duration: "h" })
+    return factory.StaveNote({ keys: ["c/4"], duration: "h", clef })
   }
 
   const baseKey = `${match[1].toLowerCase()}/${octave}`
@@ -46,6 +47,7 @@ function buildNote(factory: Factory, noteKey: string) {
     keys: [baseKey],
     duration: "h",
     autoStem: true,
+    clef,
   })
 
   if (accidental) {
@@ -60,7 +62,14 @@ function buildNote(factory: Factory, noteKey: string) {
 }
 
 export async function renderRangeNotation(options: RenderRangeOptions) {
-  const { container, width, height, leftNoteKey, rightNoteKey } = options
+  const {
+    container,
+    width,
+    height,
+    leftNoteKey,
+    rightNoteKey,
+    clef = "treble",
+  } = options
 
   await ensureFontsLoaded()
 
@@ -86,10 +95,10 @@ export async function renderRangeNotation(options: RenderRangeOptions) {
   const voice = factory
     .Voice({ time: "2/2" })
     .addTickables([
-      buildNote(factory, leftNoteKey),
-      buildNote(factory, rightNoteKey),
+      buildNote(factory, leftNoteKey, clef),
+      buildNote(factory, rightNoteKey, clef),
     ])
 
-  system.addStave({ voices: [voice] }).addClef("treble")
+  system.addStave({ voices: [voice] }).addClef(clef)
   factory.draw()
 }

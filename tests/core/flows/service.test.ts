@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { NOTE_STEP_OPTIONS } from "@/core/flows/constants"
+import { getClefRangeConfig } from "@/core/flows/constants"
 import {
   createEmptyFlowDraft,
   createFlowFromDraft,
@@ -18,9 +18,11 @@ describe("flow service", () => {
     expect(draft.modes).toEqual([])
     expect(draft.slurPatternIds).toEqual([])
     expect(draft.tempo).toEqual({ kind: "single", bpm: 96 })
+    const trebleRange = getClefRangeConfig(null)
+
     expect(draft.range).toEqual({
-      low: NOTE_STEP_OPTIONS[4].label,
-      high: NOTE_STEP_OPTIONS[16].label,
+      low: trebleRange.defaultLow,
+      high: trebleRange.defaultHigh,
     })
   })
 
@@ -125,6 +127,38 @@ describe("flow service", () => {
       range: {
         low: "C#5",
         high: "Bb3",
+      },
+    }
+
+    expect(validateFlowDraft(draft)).toEqual(["invalid_range"])
+  })
+
+  it("accepts bass clef ranges inside Bb1 to G4", () => {
+    const draft: FlowDraft = {
+      ...createEmptyFlowDraft(),
+      keys: ["C"],
+      clef: "Bass Clef",
+      modes: ["Major"],
+      slurPatternIds: ["full-phrase"],
+      range: {
+        low: "Bb1",
+        high: "G4",
+      },
+    }
+
+    expect(validateFlowDraft(draft)).toEqual([])
+  })
+
+  it("rejects bass clef ranges outside Bb1 to G4", () => {
+    const draft: FlowDraft = {
+      ...createEmptyFlowDraft(),
+      keys: ["C"],
+      clef: "Bass Clef",
+      modes: ["Major"],
+      slurPatternIds: ["full-phrase"],
+      range: {
+        low: "A1",
+        high: "G#4",
       },
     }
 

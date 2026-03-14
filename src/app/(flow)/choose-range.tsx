@@ -1,9 +1,9 @@
 import { useRouter } from "expo-router"
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Text, TouchableOpacity, View, useWindowDimensions } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
-import { NOTE_STEP_OPTIONS } from "@/core/flows"
+import { NOTE_STEP_OPTIONS, getClefRangeConfig } from "@/core/flows"
 
 import RangeStaff from "@/components/RangeStaff"
 import TopBar from "@/components/TopBar"
@@ -19,6 +19,13 @@ const NATURAL_NOTE_OFFSET: Record<string, number> = {
   G: 7,
   A: 9,
   B: 11,
+}
+
+type NoteStep = (typeof NOTE_STEPS)[number]
+type RangeConfig = ReturnType<typeof getClefRangeConfig>
+type SliderState = {
+  index: number
+  accidental: -1 | 0 | 1
 }
 
 function parsePitchLabel(label: string) {
@@ -71,31 +78,103 @@ function pitchLabelToMidi(label: string) {
   return (octave + 1) * 12 + NATURAL_NOTE_OFFSET[noteName] + accidental
 }
 
-function getInitialSliderState(label: string, fallbackIndex: number) {
+function findNoteStepIndex(noteSteps: NoteStep[], label: string) {
+  return noteSteps.findIndex((step) => step.label === label)
+}
+
+function getNoteStepsForClef(rangeConfig: RangeConfig) {
+  const startIndex = findNoteStepIndex(NOTE_STEPS, rangeConfig.minStepLabel)
+  const endIndex = findNoteStepIndex(NOTE_STEPS, rangeConfig.maxStepLabel)
+
+  if (startIndex < 0 || endIndex < startIndex) {
+    return NOTE_STEPS
+  }
+
+  return NOTE_STEPS.slice(startIndex, endIndex + 1)
+}
+
+function getInitialSliderState(
+  label: string,
+  noteSteps: NoteStep[],
+  fallbackLabel: string,
+) {
   const { noteName, accidental, octave } = parsePitchLabel(label)
   const naturalLabel = `${noteName}${octave}`
-  const index = NOTE_STEPS.findIndex((step) => step.label === naturalLabel)
+  const index = noteSteps.findIndex((step) => step.label === naturalLabel)
+
+  if (index >= 0) {
+    return {
+      index,
+      accidental,
+    }
+  }
+
+  const fallback = parsePitchLabel(fallbackLabel)
+  const fallbackIndex = noteSteps.findIndex(
+    (step) => step.label === `${fallback.noteName}${fallback.octave}`,
+  )
 
   return {
-    index: index >= 0 ? index : fallbackIndex,
-    accidental,
+    index: fallbackIndex >= 0 ? fallbackIndex : 0,
+    accidental: fallback.accidental,
   }
 }
 
-type SliderState = {
-  index: number
-  accidental: -1 | 0 | 1
-}
-
-function getPitchLabelFromState(state: SliderState) {
+function getPitchLabelFromState(state: SliderState, noteSteps: NoteStep[]) {
   return formatManualAccidentalLabel(
-    NOTE_STEPS[state.index].label,
+    noteSteps[state.index].label,
     state.accidental,
   )
 }
 
-function getMidiFromState(state: SliderState) {
-  return pitchLabelToMidi(getPitchLabelFromState(state))
+function getMidiFromState(state: SliderState, noteSteps: NoteStep[]) {
+  return pitchLabelToMidi(getPitchLabelFromState(state, noteSteps))
+}
+
+function isPitchWithinClefRange(label: string, rangeConfig: RangeConfig) {
+  const midi = pitchLabelToMidi(label)
+  const minMidi = pitchLabelToMidi(rangeConfig.minPitch)
+  const maxMidi = pitchLabelToMidi(rangeConfig.maxPitch)
+
+  return midi >= minMidi && midi <= maxMidi
+}
+
+function isStateWithinClefRange(
+  state: SliderState,
+  noteSteps: NoteStep[],
+  rangeConfig: RangeConfig,
+) {
+  return isPitchWithinClefRange(
+    getPitchLabelFromState(state, noteSteps),
+    rangeConfig,
+  )
+}
+
+function getInitialSelection(
+  low: string,
+  high: string,
+  noteSteps: NoteStep[],
+  rangeConfig: RangeConfig,
+) {
+  const lowMidi = pitchLabelToMidi(low)
+  const highMidi = pitchLabelToMidi(high)
+  const shouldUseClefDefaults =
+    !isPitchWithinClefRange(low, rangeConfig) ||
+    !isPitchWithinClefRange(high, rangeConfig) ||
+    lowMidi > highMidi
+
+  return {
+    left: getInitialSliderState(
+      shouldUseClefDefaults ? rangeConfig.defaultLow : low,
+      noteSteps,
+      rangeConfig.defaultLow,
+    ),
+    right: getInitialSliderState(
+      shouldUseClefDefaults ? rangeConfig.defaultHigh : high,
+      noteSteps,
+      rangeConfig.defaultHigh,
+    ),
+  }
 }
 
 function AccidentalControls({
@@ -139,13 +218,33 @@ export default function ChooseKey() {
   const router = useRouter()
   const { draft, updateDraft } = useFlowStore()
   const { width: screenWidth } = useWindowDimensions()
+  const rangeConfig = getClefRangeConfig(draft.clef)
+  const noteSteps = useMemo(
+    () => getNoteStepsForClef(rangeConfig),
+    [rangeConfig],
+  )
   const [selection, setSelection] = useState<{
     left: SliderState
     right: SliderState
-  }>(() => ({
-    left: getInitialSliderState(draft.range.low, 4),
-    right: getInitialSliderState(draft.range.high, 16),
-  }))
+  }>(() =>
+    getInitialSelection(
+      draft.range.low,
+      draft.range.high,
+      noteSteps,
+      rangeConfig,
+    ),
+  )
+
+  useEffect(() => {
+    setSelection(
+      getInitialSelection(
+        draft.range.low,
+        draft.range.high,
+        noteSteps,
+        rangeConfig,
+      ),
+    )
+  }, [draft.range.low, draft.range.high, noteSteps, rangeConfig])
 
   const leftState = selection.left
   const rightState = selection.right
@@ -159,11 +258,18 @@ export default function ChooseKey() {
     setSelection((previous) => {
       const nextLeft = { ...previous.left, index }
 
+      if (!isStateWithinClefRange(nextLeft, noteSteps, rangeConfig)) {
+        return previous
+      }
+
       if (nextLeft.index > previous.right.index) {
         return previous
       }
 
-      if (getMidiFromState(nextLeft) >= getMidiFromState(previous.right)) {
+      if (
+        getMidiFromState(nextLeft, noteSteps) >=
+        getMidiFromState(previous.right, noteSteps)
+      ) {
         return previous
       }
 
@@ -178,11 +284,18 @@ export default function ChooseKey() {
     setSelection((previous) => {
       const nextRight = { ...previous.right, index }
 
+      if (!isStateWithinClefRange(nextRight, noteSteps, rangeConfig)) {
+        return previous
+      }
+
       if (nextRight.index < previous.left.index) {
         return previous
       }
 
-      if (getMidiFromState(nextRight) <= getMidiFromState(previous.left)) {
+      if (
+        getMidiFromState(nextRight, noteSteps) <=
+        getMidiFromState(previous.left, noteSteps)
+      ) {
         return previous
       }
 
@@ -197,7 +310,14 @@ export default function ChooseKey() {
     setSelection((previous) => {
       const nextLeft = { ...previous.left, accidental }
 
-      if (getMidiFromState(nextLeft) >= getMidiFromState(previous.right)) {
+      if (!isStateWithinClefRange(nextLeft, noteSteps, rangeConfig)) {
+        return previous
+      }
+
+      if (
+        getMidiFromState(nextLeft, noteSteps) >=
+        getMidiFromState(previous.right, noteSteps)
+      ) {
         return previous
       }
 
@@ -212,7 +332,14 @@ export default function ChooseKey() {
     setSelection((previous) => {
       const nextRight = { ...previous.right, accidental }
 
-      if (getMidiFromState(nextRight) <= getMidiFromState(previous.left)) {
+      if (!isStateWithinClefRange(nextRight, noteSteps, rangeConfig)) {
+        return previous
+      }
+
+      if (
+        getMidiFromState(nextRight, noteSteps) <=
+        getMidiFromState(previous.left, noteSteps)
+      ) {
         return previous
       }
 
@@ -223,10 +350,10 @@ export default function ChooseKey() {
     })
   }
 
-  const leftNote = NOTE_STEPS[leftIndex]
-  const rightNote = NOTE_STEPS[rightIndex]
-  const leftPitchLabel = getPitchLabelFromState(leftState)
-  const rightPitchLabel = getPitchLabelFromState(rightState)
+  const leftNote = noteSteps[leftIndex]
+  const rightNote = noteSteps[rightIndex]
+  const leftPitchLabel = getPitchLabelFromState(leftState, noteSteps)
+  const rightPitchLabel = getPitchLabelFromState(rightState, noteSteps)
 
   const staffWidth = Math.max(180, Math.min(screenWidth - 152, 420))
 
@@ -275,11 +402,11 @@ export default function ChooseKey() {
             <VerticalNoteSlider
               value={leftIndex}
               min={0}
-              max={NOTE_STEPS.length - 1}
+              max={noteSteps.length - 1}
               upperLimit={rightIndex}
               onValueChange={setLeftIndex}
-              topLabel={NOTE_STEPS[NOTE_STEPS.length - 1].label}
-              bottomLabel={NOTE_STEPS[0].label}
+              topLabel={rangeConfig.maxPitch}
+              bottomLabel={rangeConfig.minPitch}
             />
             <AccidentalControls
               value={leftAccidental}
@@ -289,6 +416,7 @@ export default function ChooseKey() {
 
           <View style={{ flex: 1, alignItems: "center", gap: 12 }}>
             <RangeStaff
+              clef={rangeConfig.staffClef}
               width={staffWidth}
               leftNoteKey={formatManualAccidentalVexflowKey(
                 leftNote.label,
@@ -323,11 +451,11 @@ export default function ChooseKey() {
             <VerticalNoteSlider
               value={rightIndex}
               min={0}
-              max={NOTE_STEPS.length - 1}
+              max={noteSteps.length - 1}
               lowerLimit={leftIndex}
               onValueChange={setRightIndex}
-              topLabel={NOTE_STEPS[NOTE_STEPS.length - 1].label}
-              bottomLabel={NOTE_STEPS[0].label}
+              topLabel={rangeConfig.maxPitch}
+              bottomLabel={rangeConfig.minPitch}
             />
           </View>
         </View>

@@ -2,7 +2,7 @@ import {
   DEFAULT_SINGLE_BPM,
   MAX_BPM,
   MIN_BPM,
-  NOTE_STEP_OPTIONS,
+  getClefRangeConfig,
 } from "./constants"
 import {
   CreateFlowResult,
@@ -11,8 +11,9 @@ import {
   FlowDraftValidationError,
 } from "./types"
 
-const DEFAULT_LOW_PITCH = NOTE_STEP_OPTIONS[4].label
-const DEFAULT_HIGH_PITCH = NOTE_STEP_OPTIONS[16].label
+const DEFAULT_RANGE_CONFIG = getClefRangeConfig(null)
+const DEFAULT_LOW_PITCH = DEFAULT_RANGE_CONFIG.defaultLow
+const DEFAULT_HIGH_PITCH = DEFAULT_RANGE_CONFIG.defaultHigh
 const NATURAL_NOTE_OFFSET: Record<string, number> = {
   C: 0,
   D: 2,
@@ -60,6 +61,26 @@ function pitchLabelToMidi(label: string) {
   }
 
   return (parsed.octave + 1) * 12 + naturalOffset + parsed.accidental
+}
+
+function isRangeWithinSelectedClef(
+  clef: FlowDraft["clef"],
+  lowMidi: number,
+  highMidi: number,
+) {
+  if (clef === null) {
+    return true
+  }
+
+  const rangeConfig = getClefRangeConfig(clef)
+  const minMidi = pitchLabelToMidi(rangeConfig.minPitch)
+  const maxMidi = pitchLabelToMidi(rangeConfig.maxPitch)
+
+  if (minMidi === null || maxMidi === null) {
+    return true
+  }
+
+  return lowMidi >= minMidi && highMidi <= maxMidi
 }
 
 export function createEmptyFlowDraft(): FlowDraft {
@@ -110,7 +131,12 @@ export function validateFlowDraft(
   const lowMidi = pitchLabelToMidi(draft.range.low)
   const highMidi = pitchLabelToMidi(draft.range.high)
 
-  if (lowMidi === null || highMidi === null || lowMidi > highMidi) {
+  if (
+    lowMidi === null ||
+    highMidi === null ||
+    lowMidi > highMidi ||
+    !isRangeWithinSelectedClef(draft.clef, lowMidi, highMidi)
+  ) {
     errors.push("invalid_range")
   }
 
