@@ -3,6 +3,8 @@ import { useRouter } from "expo-router"
 import MainScreenButton from "@/components/MainScreenButton"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 
+const DEBUG = true
+
 export default function Index() {
   const router = useRouter()
   const { resetDraft } = useFlowStore()
@@ -34,6 +36,12 @@ export default function Index() {
           title="Flow Library"
           onPress={() => router.push("/flow-library")}
         />
+        {DEBUG && (
+          <MainScreenButton
+            title="dev"
+            onPress={() => router.push("/scratchpad")}
+          />
+        )}
       </View>
     </ImageBackground>
   )
