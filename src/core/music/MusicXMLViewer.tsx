@@ -17,7 +17,7 @@ export function MusicXMLViewer({
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://unpkg.com/opensheetmusicdisplay@0.8.3/build/opensheetmusicdisplay.min.js"></script>
+    <script src="https://unpkg.com/opensheetmusicdisplay@1.9.5/build/opensheetmusicdisplay.min.js"></script>
     <style>
       body {
         margin: 0;
@@ -31,12 +31,17 @@ export function MusicXMLViewer({
       const osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay(
         "osmd-container",
         {
-          autoResize: true,
           backend: "svg",
-          drawingParameters: "compacttight",
+
+          autoResize: true,
           autoBeam: true,
+
+          drawingParameters: "compacttight",
         },
       );
+
+      // https://github.com/opensheetmusicdisplay/opensheetmusicdisplay/issues/1372
+      osmd.EngravingRules.PageBottomMargin = 0.3
 
       osmd
         .load(\`${musicXML}\`)
