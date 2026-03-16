@@ -10,4 +10,4 @@
 
 ## practice screen
 
-- lots of work needed here
+- hook up actual flow to practice screen
