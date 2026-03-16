@@ -22,14 +22,11 @@ export default function PracticeStaff({
     startOctave: 4,
   })
 
+  const viewerHeight =
+    mode === "full" ? Math.max(180, Math.min(height, 320)) : height
+
   return (
-    <View
-      style={{
-        width,
-        height,
-        overflow: "hidden",
-      }}
-    >
+    <View style={{ width: "100%", height: viewerHeight }}>
       <MusicXMLViewer musicXML={xml} />
     </View>
   )

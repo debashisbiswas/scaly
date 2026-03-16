@@ -1,13 +1,17 @@
 import React from "react"
-import { StyleSheet } from "react-native"
 import { WebView } from "react-native-webview"
 
 interface MusicXMLViewerProps {
   musicXML: string
   style?: object
+  scrollEnabled?: boolean
 }
 
-export function MusicXMLViewer({ musicXML, style }: MusicXMLViewerProps) {
+export function MusicXMLViewer({
+  musicXML,
+  style,
+  scrollEnabled = false,
+}: MusicXMLViewerProps) {
   const htmlContent = `
 <!doctype html>
 <html>
@@ -44,15 +48,10 @@ export function MusicXMLViewer({ musicXML, style }: MusicXMLViewerProps) {
 
   return (
     <WebView
-      style={[styles.webview, style]}
+      style={[style]}
       originWhitelist={["*"]}
       source={{ html: htmlContent }}
+      scrollEnabled={scrollEnabled}
     />
   )
 }
-
-const styles = StyleSheet.create({
-  webview: {
-    flex: 1,
-  },
-})

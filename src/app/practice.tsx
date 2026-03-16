@@ -6,13 +6,6 @@ import { SafeAreaView } from "react-native-safe-area-context"
 
 import PracticeStaff from "@/components/PracticeStaff"
 
-const FEEDBACK_BUTTONS = [
-  { label: "Again", color: "#9199a6" },
-  { label: "Hard", color: "#ef4f57" },
-  { label: "Good", color: "#f2ba19" },
-  { label: "Easy", color: "#18b57b" },
-]
-
 function SideToggleButton({
   label,
   active,
@@ -58,80 +51,115 @@ function SideToggleButton({
   )
 }
 
-export default function Practice() {
+function BackButton() {
   const router = useRouter()
+
+  return (
+    <Pressable
+      onPress={() => router.back()}
+      style={{ width: 36, height: 28, justifyContent: "center" }}
+    >
+      <Ionicons name="arrow-back" size={32} color="#252e3c" />
+    </Pressable>
+  )
+}
+
+function DifficultyButtons() {
+  const buttons = [
+    { label: "Again", color: "#9199a6" },
+    { label: "Hard", color: "#ef4f57" },
+    { label: "Good", color: "#f2ba19" },
+    { label: "Easy", color: "#18b57b" },
+  ]
+
+  const buttonSize = 70
+
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        justifyContent: "space-around",
+        alignItems: "center",
+      }}
+    >
+      {buttons.map((button) => (
+        <Pressable
+          key={button.label}
+          style={{
+            width: buttonSize,
+            height: buttonSize,
+            borderRadius: buttonSize / 2,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: button.color,
+          }}
+          onPress={() => {
+            console.log(`Selected difficulty: ${button.label}`)
+          }}
+        >
+          <Text style={{ color: "#fff", fontWeight: "700" }}>
+            {button.label}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  )
+}
+
+export default function Practice() {
   const [showNotes, setShowNotes] = useState(true)
   const [mainPanelWidth, setMainPanelWidth] = useState(0)
+  const [mainPanelHeight, setMainPanelHeight] = useState(0)
   const [rhythmPreviewWidth, setRhythmPreviewWidth] = useState(0)
 
-  const pageHorizontalPadding = 14
   const sideRailWidth = 74
   const contentGap = 10
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#eff1f4" }}>
-      <View
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF" }}>
+      <Text
         style={{
-          flex: 1,
-          paddingHorizontal: pageHorizontalPadding,
-          paddingTop: 4,
+          textAlign: "center",
+          fontSize: 14,
+          color: "#8a919d",
+          marginVertical: 10,
         }}
       >
-        <Text
-          style={{
-            textAlign: "center",
-            fontSize: 14,
-            color: "#8a919d",
-            marginBottom: 10,
-          }}
-        >
-          After playing the scale, mark how challenging it was below
-        </Text>
+        After playing the scale, mark how challenging it was below
+      </Text>
 
+      <View style={{ flex: 1 }}>
         <View
           style={{
+            flex: 1,
             flexDirection: "row",
-            alignItems: "flex-start",
-            marginBottom: 18,
             gap: contentGap,
+            paddingVertical: 8,
           }}
         >
+          <BackButton />
+
           <View
-            style={{ flex: 1, minWidth: 0 }}
+            style={{ flex: 1 }}
             onLayout={(event) => {
               setMainPanelWidth(event.nativeEvent.layout.width)
+              setMainPanelHeight(event.nativeEvent.layout.height)
             }}
           >
+            {/* Card background */}
             <View
               style={{
-                backgroundColor: "#d9dde4",
-                borderRadius: 6,
-                borderWidth: 1,
-                borderColor: "#cbd1da",
+                flex: 1,
+                boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.2)",
+                borderRadius: 12,
                 overflow: "hidden",
               }}
             >
-              <View
-                style={{
-                  paddingHorizontal: 8,
-                  paddingTop: 6,
-                  paddingBottom: 8,
-                  alignItems: "flex-start",
-                }}
-              >
-                <Pressable
-                  onPress={() => router.back()}
-                  style={{ width: 36, height: 28, justifyContent: "center" }}
-                >
-                  <Ionicons name="arrow-back" size={32} color="#252e3c" />
-                </Pressable>
-              </View>
-
               {showNotes ? (
                 <PracticeStaff
                   mode="full"
                   width={Math.max(0, mainPanelWidth - 2)}
-                  height={214}
+                  height={Math.max(0, mainPanelHeight - 2)}
                 />
               ) : (
                 <View style={{ paddingHorizontal: 10, paddingBottom: 12 }}>
@@ -178,7 +206,11 @@ export default function Practice() {
                       </View>
 
                       <Text
-                        style={{ fontSize: 12, color: "#777f8c", marginTop: 4 }}
+                        style={{
+                          fontSize: 12,
+                          color: "#777f8c",
+                          marginTop: 4,
+                        }}
                       >
                         Rhythm and Articulation
                       </Text>
@@ -229,8 +261,8 @@ export default function Practice() {
             style={{
               width: sideRailWidth,
               gap: 14,
-              paddingTop: 10,
               alignItems: "center",
+              alignSelf: "center",
               flexShrink: 0,
             }}
           >
@@ -245,37 +277,7 @@ export default function Practice() {
           </View>
         </View>
 
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
-            alignItems: "center",
-            paddingHorizontal: 8,
-            marginTop: "auto",
-            marginBottom: 20,
-          }}
-        >
-          {FEEDBACK_BUTTONS.map((button) => (
-            <Pressable
-              key={button.label}
-              style={{
-                width: 66,
-                height: 66,
-                borderRadius: 33,
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: button.color,
-              }}
-              onPress={() => {
-                console.log(`Selected difficulty: ${button.label}`)
-              }}
-            >
-              <Text style={{ color: "#fff", fontWeight: "700" }}>
-                {button.label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
+        <DifficultyButtons />
       </View>
     </SafeAreaView>
   )
