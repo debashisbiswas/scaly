@@ -1,4 +1,5 @@
 export * from "./constants"
+export * from "./premade"
 export * from "./repository"
 export * from "./service"
 export * from "./types"

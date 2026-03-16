@@ -1,10 +1,11 @@
-import { useRouter } from "expo-router"
+import { useLocalSearchParams, useRouter } from "expo-router"
 import { useState } from "react"
 import { Ionicons } from "@expo/vector-icons"
 import { Pressable, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 import PracticeStaff from "@/components/PracticeStaff"
+import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 function SideToggleButton({
   label,
@@ -112,6 +113,28 @@ export default function Practice() {
   const [mainPanelHeight, setMainPanelHeight] = useState(0)
   const [rhythmPreviewWidth, setRhythmPreviewWidth] = useState(0)
   const [rhythmPreviewHeight, setRhythmPreviewHeight] = useState(0)
+
+  const { id } = useLocalSearchParams<{ id: string }>()
+  const { getFlowById } = useFlowStore()
+
+  const flow = typeof id === "string" ? getFlowById(id) : undefined
+
+  if (!flow) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <BackButton />
+        <Text style={{ fontSize: 48, color: "#202737" }}>Flow not found</Text>
+      </View>
+    )
+  }
 
   const sideRailWidth = 74
   const contentGap = 10

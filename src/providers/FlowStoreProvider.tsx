@@ -14,6 +14,7 @@ import {
   FlowDraft,
   InMemoryFlowDraftRepository,
   InMemoryFlowRepository,
+  PREMADE_FLOWS,
   createEmptyFlowDraft,
   createFlowFromDraft,
 } from "@/core/flows"
@@ -21,6 +22,8 @@ import {
 type FlowStoreContextValue = {
   draft: FlowDraft
   flows: Flow[]
+  premadeFlows: Flow[]
+  getFlowById: (id: string) => Flow | undefined
   updateDraft: (partial: Partial<FlowDraft>) => void
   resetDraft: () => void
   createFlow: (name: string) => CreateFlowResult
@@ -79,15 +82,24 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
     [setFlows, setDraft],
   )
 
+  const getFlowById = useCallback(
+    (id: string) =>
+      flows.find((flow) => flow.id === id) ??
+      PREMADE_FLOWS.find((flow) => flow.id === id),
+    [flows],
+  )
+
   const value = useMemo(
     () => ({
       draft,
       flows,
+      premadeFlows: PREMADE_FLOWS,
+      getFlowById,
       updateDraft,
       resetDraft,
       createFlow,
     }),
-    [draft, flows, updateDraft, resetDraft, createFlow],
+    [draft, flows, getFlowById, updateDraft, resetDraft, createFlow],
   )
 
   return (

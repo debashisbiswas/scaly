@@ -10,13 +10,6 @@ import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 type LibraryTab = "saved" | "premade"
 
-const PREMADE_FLOWS = [
-  { id: "flow-1", name: "First-year jury 2026", progress: 52 },
-  { id: "flow-2", name: "Triple-tonguing rhythms", progress: 41 },
-  { id: "flow-3", name: "All sharps", progress: 76 },
-  { id: "flow-4", name: "Third-octave scales", progress: 29 },
-]
-
 function flowToCard(flow: Flow) {
   return {
     id: flow.id,
@@ -56,14 +49,16 @@ function ActionButton({
 
 export default function FlowLibrary() {
   const router = useRouter()
-  const { flows } = useFlowStore()
+  const { flows, premadeFlows } = useFlowStore()
   const [activeTab, setActiveTab] = useState<LibraryTab>("saved")
 
   const panelPadding = 16
   const gap = 10
   const cardWidth = "48.6%"
   const displayedFlows =
-    activeTab === "saved" ? flows.map(flowToCard) : PREMADE_FLOWS
+    activeTab === "saved"
+      ? flows.map(flowToCard)
+      : premadeFlows.map(flowToCard)
 
   return (
     <LinearGradient
@@ -224,7 +219,7 @@ export default function FlowLibrary() {
                     <ActionButton
                       label="Play"
                       primary
-                      onPress={() => router.push("/practice")}
+                      onPress={() => router.push(`/practice/${flow.id}`)}
                     />
                     <ActionButton
                       label="Edit"
