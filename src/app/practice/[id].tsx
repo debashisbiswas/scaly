@@ -107,6 +107,29 @@ function DifficultyButtons() {
   )
 }
 
+function parsePitchLabel(label: string) {
+  const match = label.match(/^([A-G])([#b]?)(\d+)$/)
+
+  if (!match) {
+    return null
+  }
+
+  return {
+    octave: Number(match[3]),
+  }
+}
+
+function getOctaveCount(low: string, high: string) {
+  const lowPitch = parsePitchLabel(low)
+  const highPitch = parsePitchLabel(high)
+
+  if (!lowPitch || !highPitch) {
+    return 1
+  }
+
+  return Math.max(1, highPitch.octave - lowPitch.octave + 1)
+}
+
 export default function Practice() {
   const [showNotes, setShowNotes] = useState(true)
   const [mainPanelWidth, setMainPanelWidth] = useState(0)
@@ -138,6 +161,12 @@ export default function Practice() {
 
   const sideRailWidth = 74
   const contentGap = 10
+  const keyLabel = flow.config.keys[0] ?? "C"
+  const modeLabel = flow.config.modes[0] ?? "Major"
+  const octaveCount = getOctaveCount(
+    flow.config.range.low,
+    flow.config.range.high,
+  )
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF" }}>
@@ -186,6 +215,7 @@ export default function Practice() {
             >
               {showNotes ? (
                 <PracticeStaff
+                  flow={flow}
                   mode="full"
                   width={Math.max(0, mainPanelWidth - 2)}
                   height={Math.max(0, mainPanelHeight - 2)}
@@ -235,7 +265,7 @@ export default function Practice() {
                           }}
                         >
                           <Text style={{ fontWeight: "700", color: "#1f2835" }}>
-                            C Major
+                            {`${keyLabel} ${modeLabel}`}
                           </Text>
                         </View>
                       </View>
@@ -254,7 +284,7 @@ export default function Practice() {
                           }}
                         >
                           <Text style={{ fontWeight: "700", color: "#1f2835" }}>
-                            1 Octave
+                            {`${octaveCount} Octave${octaveCount === 1 ? "" : "s"}`}
                           </Text>
                         </View>
                       </View>
@@ -280,6 +310,7 @@ export default function Practice() {
                         }}
                       >
                         <PracticeStaff
+                          flow={flow}
                           mode="rhythm"
                           width={Math.max(0, rhythmPreviewWidth)}
                           height={Math.max(0, rhythmPreviewHeight)}
