@@ -111,6 +111,7 @@ export default function Practice() {
   const [mainPanelWidth, setMainPanelWidth] = useState(0)
   const [mainPanelHeight, setMainPanelHeight] = useState(0)
   const [rhythmPreviewWidth, setRhythmPreviewWidth] = useState(0)
+  const [rhythmPreviewHeight, setRhythmPreviewHeight] = useState(0)
 
   const sideRailWidth = 74
   const contentGap = 10
@@ -146,13 +147,17 @@ export default function Practice() {
               setMainPanelHeight(event.nativeEvent.layout.height)
             }}
           >
-            {/* Card background */}
+            {/* Center card */}
             <View
               style={{
                 flex: 1,
                 boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.2)",
                 borderRadius: 12,
                 overflow: "hidden",
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                width: Math.max(0, mainPanelWidth - 2),
+                height: Math.max(0, mainPanelHeight - 2),
               }}
             >
               {showNotes ? (
@@ -162,93 +167,95 @@ export default function Practice() {
                   height={Math.max(0, mainPanelHeight - 2)}
                 />
               ) : (
-                <View style={{ paddingHorizontal: 10, paddingBottom: 12 }}>
-                  <View
-                    style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}
-                  >
-                    <View style={{ flex: 1, gap: 4 }}>
-                      <Text style={{ fontSize: 12, color: "#777f8c" }}>
-                        Start
-                      </Text>
-                      <View
-                        style={{
-                          borderRadius: 8,
-                          backgroundColor: "#aeb4bd",
-                          minHeight: 82,
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Ionicons
-                          name="musical-note-outline"
-                          size={28}
-                          color="#2a3341"
-                        />
+                <View
+                  style={{
+                    flex: 1,
+                    flexDirection: "row",
+                    gap: 12,
+                  }}
+                >
+                  <View style={{ width: 88, gap: 4 }}>
+                    <Text style={{ fontSize: 12, color: "#777f8c" }}>
+                      Start
+                    </Text>
+                    <View
+                      style={{
+                        flex: 1,
+                        borderRadius: 8,
+                        backgroundColor: "#aeb4bd",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Ionicons
+                        name="musical-note-outline"
+                        size={28}
+                        color="#2a3341"
+                      />
+                    </View>
+                  </View>
+
+                  <View style={{ flex: 1, gap: 12 }}>
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                      <View style={{ flex: 1, gap: 4 }}>
+                        <Text style={{ fontSize: 12, color: "#777f8c" }}>Key</Text>
+                        <View
+                          style={{
+                            borderRadius: 8,
+                            backgroundColor: "#aeb4bd",
+                            minHeight: 34,
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Text style={{ fontWeight: "700", color: "#1f2835" }}>
+                            C Major
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={{ flex: 1, gap: 4 }}>
+                        <Text style={{ fontSize: 12, color: "#777f8c" }}>
+                          Octaves
+                        </Text>
+                        <View
+                          style={{
+                            borderRadius: 8,
+                            backgroundColor: "#aeb4bd",
+                            minHeight: 34,
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Text style={{ fontWeight: "700", color: "#1f2835" }}>
+                            1 Octave
+                          </Text>
+                        </View>
                       </View>
                     </View>
 
-                    <View style={{ flex: 1.4, gap: 4 }}>
+                    <View style={{ flex: 1, gap: 4 }}>
                       <Text style={{ fontSize: 12, color: "#777f8c" }}>
-                        Note
-                      </Text>
-                      <View
-                        style={{
-                          borderRadius: 8,
-                          backgroundColor: "#aeb4bd",
-                          minHeight: 34,
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Text style={{ fontWeight: "700", color: "#1f2835" }}>
-                          C Major
-                        </Text>
-                      </View>
-
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: "#777f8c",
-                          marginTop: 4,
-                        }}
-                      >
                         Rhythm and Articulation
                       </Text>
 
                       <View
                         style={{
+                          flex: 1,
                           borderRadius: 8,
                           backgroundColor: "#cfd4dc",
                           overflow: "hidden",
                         }}
                         onLayout={(event) => {
                           setRhythmPreviewWidth(event.nativeEvent.layout.width)
+                          setRhythmPreviewHeight(event.nativeEvent.layout.height)
                         }}
                       >
                         <PracticeStaff
                           mode="rhythm"
                           width={Math.max(0, rhythmPreviewWidth)}
-                          height={94}
+                          height={Math.max(0, rhythmPreviewHeight)}
                         />
-                      </View>
-                    </View>
-
-                    <View style={{ flex: 1.2, gap: 4 }}>
-                      <Text style={{ fontSize: 12, color: "#777f8c" }}>
-                        Octave
-                      </Text>
-                      <View
-                        style={{
-                          borderRadius: 8,
-                          backgroundColor: "#aeb4bd",
-                          minHeight: 34,
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Text style={{ fontWeight: "700", color: "#1f2835" }}>
-                          1 Octave
-                        </Text>
                       </View>
                     </View>
                   </View>
