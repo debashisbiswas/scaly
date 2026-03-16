@@ -136,6 +136,7 @@ export default function Practice() {
             flexDirection: "row",
             gap: contentGap,
             paddingVertical: 8,
+            marginBottom: 12,
           }}
         >
           <BackButton />
@@ -198,7 +199,9 @@ export default function Practice() {
                   <View style={{ flex: 1, gap: 12 }}>
                     <View style={{ flexDirection: "row", gap: 8 }}>
                       <View style={{ flex: 1, gap: 4 }}>
-                        <Text style={{ fontSize: 12, color: "#777f8c" }}>Key</Text>
+                        <Text style={{ fontSize: 12, color: "#777f8c" }}>
+                          Key
+                        </Text>
                         <View
                           style={{
                             borderRadius: 8,
@@ -248,7 +251,9 @@ export default function Practice() {
                         }}
                         onLayout={(event) => {
                           setRhythmPreviewWidth(event.nativeEvent.layout.width)
-                          setRhythmPreviewHeight(event.nativeEvent.layout.height)
+                          setRhythmPreviewHeight(
+                            event.nativeEvent.layout.height,
+                          )
                         }}
                       >
                         <PracticeStaff
