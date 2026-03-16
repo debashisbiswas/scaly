@@ -183,7 +183,7 @@ export default function Practice() {
                       style={{
                         flex: 1,
                         borderRadius: 8,
-                        backgroundColor: "#aeb4bd",
+                        backgroundColor: "#E5E7EB",
                         justifyContent: "center",
                         alignItems: "center",
                       }}
@@ -205,7 +205,7 @@ export default function Practice() {
                         <View
                           style={{
                             borderRadius: 8,
-                            backgroundColor: "#aeb4bd",
+                            backgroundColor: "#E5E7EB",
                             minHeight: 34,
                             justifyContent: "center",
                             alignItems: "center",
@@ -224,7 +224,7 @@ export default function Practice() {
                         <View
                           style={{
                             borderRadius: 8,
-                            backgroundColor: "#aeb4bd",
+                            backgroundColor: "#E5E7EB",
                             minHeight: 34,
                             justifyContent: "center",
                             alignItems: "center",
