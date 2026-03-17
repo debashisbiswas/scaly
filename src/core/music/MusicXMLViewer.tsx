@@ -5,12 +5,14 @@ interface MusicXMLViewerProps {
   musicXML: string
   style?: object
   scrollEnabled?: boolean
+  zoomEnabled?: boolean
 }
 
 export function MusicXMLViewer({
   musicXML,
   style,
   scrollEnabled = false,
+  zoomEnabled = false,
 }: MusicXMLViewerProps) {
   const htmlContent = `
 <!doctype html>
@@ -44,8 +46,8 @@ export function MusicXMLViewer({
       osmd.EngravingRules.PageBottomMargin = 0.3
 
       osmd
-        .load(\`${musicXML}\`)
-        .then(() => osmd.render());
+        .load(${JSON.stringify(musicXML)})
+        .then(osmd.render);
     </script>
   </body>
 </html>
@@ -57,6 +59,7 @@ export function MusicXMLViewer({
       originWhitelist={["*"]}
       source={{ html: htmlContent }}
       scrollEnabled={scrollEnabled}
+      zoomEnabled={zoomEnabled}
     />
   )
 }
