@@ -3,7 +3,7 @@ import { useRouter } from "expo-router"
 import MainScreenButton from "@/components/MainScreenButton"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 
-const DEBUG = true
+const DEBUG = false
 
 export default function Index() {
   const router = useRouter()
