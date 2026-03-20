@@ -8,6 +8,13 @@
       "when": 1773960835141,
       "tag": "0000_red_firebird",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1773981836906,
+      "tag": "0001_charming_thunderball",
+      "breakpoints": true
     }
   ]
 }

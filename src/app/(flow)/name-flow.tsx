@@ -20,8 +20,8 @@ export default function ChooseTempo() {
         title="Name this Flow"
         subtitle="This can be changed later"
         onBack={() => router.back()}
-        onNext={() => {
-          const result = createFlow(flowName)
+        onNext={async () => {
+          const result = await createFlow(flowName)
 
           if (!result.ok) {
             Alert.alert(

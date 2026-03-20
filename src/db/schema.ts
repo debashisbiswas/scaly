@@ -1,4 +1,11 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
+import {
+  index,
+  integer,
+  real,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core"
 
 export const flows = sqliteTable("flows", {
   id: text("id").primaryKey(),
@@ -14,3 +21,70 @@ export const flowDraft = sqliteTable("flow_draft", {
   draftJson: text("draft_json").notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
 })
+
+export const exercises = sqliteTable(
+  "exercises",
+  {
+    id: text("id").primaryKey(),
+    flowId: text("flow_id")
+      .notNull()
+      .references(() => flows.id, { onDelete: "cascade" }),
+    position: integer("position").notNull(),
+    exerciseKey: text("exercise_key").notNull(),
+    key: text("key").notNull(),
+    mode: text("mode").notNull(),
+    rhythmPattern: text("rhythm_pattern").notNull(),
+    slurPattern: text("slur_pattern").notNull(),
+    startOctave: integer("start_octave").notNull(),
+    octaves: integer("octaves").notNull(),
+    clef: text("clef").notNull(),
+    tempoKind: text("tempo_kind").notNull(),
+    tempoBpm: integer("tempo_bpm"),
+    tempoMinBpm: integer("tempo_min_bpm"),
+    tempoMaxBpm: integer("tempo_max_bpm"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    archivedAt: integer("archived_at", { mode: "timestamp_ms" }),
+  },
+  (table) => [
+    uniqueIndex("exercises_flow_position_uq").on(table.flowId, table.position),
+    uniqueIndex("exercises_flow_key_uq").on(table.flowId, table.exerciseKey),
+    index("exercises_flow_idx").on(table.flowId),
+    index("exercises_due_archived_idx").on(table.archivedAt),
+  ],
+)
+
+export const exerciseAttempts = sqliteTable(
+  "exercise_attempts",
+  {
+    id: text("id").primaryKey(),
+    exerciseId: text("exercise_id")
+      .notNull()
+      .references(() => exercises.id, { onDelete: "cascade" }),
+    rating: text("rating").notNull(),
+    performedAt: integer("performed_at", { mode: "timestamp_ms" }).notNull(),
+    bpmUsed: integer("bpm_used"),
+    notesHidden: integer("notes_hidden", { mode: "boolean" }),
+  },
+  (table) => [
+    index("exercise_attempts_exercise_time_idx").on(
+      table.exerciseId,
+      table.performedAt,
+    ),
+  ],
+)
+
+export const exerciseSrsState = sqliteTable(
+  "exercise_srs_state",
+  {
+    exerciseId: text("exercise_id")
+      .primaryKey()
+      .references(() => exercises.id, { onDelete: "cascade" }),
+    dueAt: integer("due_at", { mode: "timestamp_ms" }).notNull(),
+    lastReviewedAt: integer("last_reviewed_at", { mode: "timestamp_ms" }),
+    intervalDays: real("interval_days").notNull(),
+    easeFactor: real("ease_factor").notNull(),
+    reps: integer("reps").notNull(),
+    lapses: integer("lapses").notNull(),
+  },
+  (table) => [index("exercise_srs_due_idx").on(table.dueAt)],
+)

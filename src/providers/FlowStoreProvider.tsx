@@ -3,6 +3,7 @@ import {
   PropsWithChildren,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -13,11 +14,14 @@ import {
   Flow,
   FlowDraft,
   InMemoryFlowDraftRepository,
-  InMemoryFlowRepository,
   PREMADE_FLOWS,
   createEmptyFlowDraft,
-  createFlowFromDraft,
 } from "@/core/flows"
+import {
+  getStoredFlowById,
+  listStoredFlows,
+} from "@/core/flows/sqliteFlowRepository"
+import { sqliteFlowGenerationService } from "@/core/flows/sqliteGenerationService"
 
 type FlowStoreContextValue = {
   draft: FlowDraft
@@ -26,19 +30,40 @@ type FlowStoreContextValue = {
   getFlowById: (id: string) => Flow | undefined
   updateDraft: (partial: Partial<FlowDraft>) => void
   resetDraft: () => void
-  createFlow: (name: string) => CreateFlowResult
+  createFlow: (name: string) => Promise<CreateFlowResult>
 }
 
 const FlowStoreContext = createContext<FlowStoreContextValue | null>(null)
 
 export function FlowStoreProvider({ children }: PropsWithChildren) {
-  const flowRepositoryRef = useRef(new InMemoryFlowRepository())
   const draftRepositoryRef = useRef(
     new InMemoryFlowDraftRepository(createEmptyFlowDraft),
   )
 
-  const [flows, setFlows] = useState(() => flowRepositoryRef.current.list())
+  const [flows, setFlows] = useState<Flow[]>([])
   const [draft, setDraft] = useState(() => draftRepositoryRef.current.get())
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadFlows() {
+      try {
+        const storedFlows = await listStoredFlows()
+
+        if (!cancelled) {
+          setFlows(storedFlows)
+        }
+      } catch (error) {
+        console.error("[db] failed to load flows:", error)
+      }
+    }
+
+    void loadFlows()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const updateDraft = useCallback((partial: Partial<FlowDraft>) => {
     const current = draftRepositoryRef.current.get()
@@ -61,23 +86,44 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
   }, [])
 
   const createFlow = useCallback(
-    (name: string) => {
-      const result = createFlowFromDraft({
+    async (name: string) => {
+      const result = await sqliteFlowGenerationService.createFlowFromDraft({
         draft: draftRepositoryRef.current.get(),
         name,
       })
 
       if (!result.ok) {
-        return result
+        const legacyResult: CreateFlowResult = {
+          ok: false,
+          errors: result.errors,
+        }
+
+        return legacyResult
       }
 
-      flowRepositoryRef.current.add(result.value)
-      setFlows(flowRepositoryRef.current.list())
+      const createdFlow = await getStoredFlowById(result.flowId)
+
+      if (!createdFlow) {
+        const legacyResult: CreateFlowResult = {
+          ok: false,
+          errors: [],
+        }
+
+        return legacyResult
+      }
+
+      const storedFlows = await listStoredFlows()
+      setFlows(storedFlows)
 
       draftRepositoryRef.current.reset()
       setDraft(draftRepositoryRef.current.get())
 
-      return result
+      const legacyResult: CreateFlowResult = {
+        ok: true,
+        value: createdFlow,
+      }
+
+      return legacyResult
     },
     [setFlows, setDraft],
   )

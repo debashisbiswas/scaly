@@ -1,7 +1,10 @@
 import {
+  KEY_SIGNATURE_OPTIONS,
   DEFAULT_SINGLE_BPM,
   MAX_BPM,
   MIN_BPM,
+  MODE_OPTIONS,
+  SLUR_PATTERN_OPTIONS,
   getClefRangeConfig,
 } from "./constants"
 import {
@@ -22,6 +25,39 @@ const NATURAL_NOTE_OFFSET: Record<string, number> = {
   G: 7,
   A: 9,
   B: 11,
+}
+
+const SCALE_MODE_MAP = {
+  Major: "major",
+  "Natural Minor": "minor",
+  "Harmonic Minor": "harmonic minor",
+  "Melodic Minor": "melodic minor",
+} as const
+
+const SLUR_PATTERN_MAP = {
+  "full-phrase": {
+    rhythm: "sixteenths",
+    slurPattern: "slur four",
+  },
+  "every-beat": {
+    rhythm: "sixteenths",
+    slurPattern: "slur two tongue two",
+  },
+  "tongue-1-slur-3": {
+    rhythm: "sixteenths",
+    slurPattern: "tongue one slur three",
+  },
+} as const
+
+export type GeneratedExerciseSpec = {
+  key: string
+  mode: (typeof SCALE_MODE_MAP)[keyof typeof SCALE_MODE_MAP]
+  rhythm: (typeof SLUR_PATTERN_MAP)[keyof typeof SLUR_PATTERN_MAP]["rhythm"]
+  slurPattern: (typeof SLUR_PATTERN_MAP)[keyof typeof SLUR_PATTERN_MAP]["slurPattern"]
+  startOctave: number
+  octaves: number
+  clef: "treble" | "bass"
+  tempo: FlowDraft["tempo"]
 }
 
 function unique<T extends string>(values: T[]) {
@@ -45,6 +81,29 @@ function parsePitchLabel(label: string) {
     accidental: match[2] === "#" ? 1 : match[2] === "b" ? -1 : 0,
     octave: Number(match[3]),
   }
+}
+
+function sortByOrder<T extends string>(values: T[], order: readonly T[]) {
+  const indexMap = new Map(order.map((value, index) => [value, index]))
+
+  return [...values].sort((a, b) => {
+    const aIndex = indexMap.get(a)
+    const bIndex = indexMap.get(b)
+
+    if (aIndex === undefined && bIndex === undefined) {
+      return a.localeCompare(b)
+    }
+
+    if (aIndex === undefined) {
+      return 1
+    }
+
+    if (bIndex === undefined) {
+      return -1
+    }
+
+    return aIndex - bIndex
+  })
 }
 
 function pitchLabelToMidi(label: string) {
@@ -104,6 +163,71 @@ export function normalizeFlowDraft(draft: FlowDraft): FlowDraft {
     modes: unique(draft.modes),
     slurPatternIds: unique(draft.slurPatternIds),
   }
+}
+
+export function expandFlowDraftToExerciseSpecs(
+  inputDraft: FlowDraft,
+): GeneratedExerciseSpec[] {
+  const errors = validateFlowDraft(inputDraft)
+
+  if (errors.length > 0) {
+    throw new Error("Cannot expand invalid flow draft.")
+  }
+
+  const draft = normalizeFlowDraft(inputDraft)
+  const lowPitch = parsePitchLabel(draft.range.low)
+  const highPitch = parsePitchLabel(draft.range.high)
+
+  if (!lowPitch || !highPitch) {
+    throw new Error("Cannot expand flow draft with invalid range labels.")
+  }
+
+  if (draft.clef === null) {
+    throw new Error("Cannot expand flow draft without a clef.")
+  }
+
+  const canonicalKeys = sortByOrder(draft.keys, KEY_SIGNATURE_OPTIONS)
+  const canonicalModes = sortByOrder(draft.modes, MODE_OPTIONS)
+  const slurPatternOrder = SLUR_PATTERN_OPTIONS.map((pattern) => pattern.id)
+  const canonicalPatternIds = sortByOrder(
+    draft.slurPatternIds,
+    slurPatternOrder,
+  )
+
+  const startOctave = lowPitch.octave
+  const octaves = Math.max(
+    1,
+    Math.min(3, highPitch.octave - lowPitch.octave + 1),
+  )
+  const clef: GeneratedExerciseSpec["clef"] =
+    draft.clef === "Bass Clef" ? "bass" : "treble"
+
+  const exerciseSpecs: GeneratedExerciseSpec[] = []
+
+  for (const key of canonicalKeys) {
+    const exerciseKey = key === "F#/Gb" ? "F#" : key
+
+    for (const mode of canonicalModes) {
+      const mappedMode = SCALE_MODE_MAP[mode]
+
+      for (const patternId of canonicalPatternIds) {
+        const mappedPattern = SLUR_PATTERN_MAP[patternId]
+
+        exerciseSpecs.push({
+          key: exerciseKey,
+          mode: mappedMode,
+          rhythm: mappedPattern.rhythm,
+          slurPattern: mappedPattern.slurPattern,
+          startOctave,
+          octaves,
+          clef,
+          tempo: draft.tempo,
+        })
+      }
+    }
+  }
+
+  return exerciseSpecs
 }
 
 export function validateFlowDraft(
