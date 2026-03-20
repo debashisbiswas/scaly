@@ -9,8 +9,14 @@ import {
   GeneratedExerciseSpec,
   expandFlowDraftToExerciseSpecs,
 } from "@/core/flows"
-import { getFirstExerciseSpecByFlowId } from "@/core/flows/sqliteExerciseRepository"
+import { recordExerciseReview } from "@/core/flows/reviewService"
+import { listExercisesByFlowId } from "@/core/flows/sqliteExerciseRepository"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
+
+type PracticeExercise = {
+  id: string | null
+  spec: GeneratedExerciseSpec
+}
 
 function SideToggleButton({
   label,
@@ -70,12 +76,18 @@ function BackButton() {
   )
 }
 
-function DifficultyButtons() {
+function DifficultyButtons({
+  onRate,
+  disabled,
+}: {
+  onRate: (rating: "again" | "hard" | "good" | "easy") => void
+  disabled?: boolean
+}) {
   const buttons = [
-    { label: "Again", color: "#9199a6" },
-    { label: "Hard", color: "#ef4f57" },
-    { label: "Good", color: "#f2ba19" },
-    { label: "Easy", color: "#18b57b" },
+    { label: "Again", color: "#9199a6", rating: "again" as const },
+    { label: "Hard", color: "#ef4f57", rating: "hard" as const },
+    { label: "Good", color: "#f2ba19", rating: "good" as const },
+    { label: "Easy", color: "#18b57b", rating: "easy" as const },
   ]
 
   const buttonSize = 70
@@ -91,6 +103,7 @@ function DifficultyButtons() {
       {buttons.map((button) => (
         <Pressable
           key={button.label}
+          disabled={disabled}
           style={{
             width: buttonSize,
             height: buttonSize,
@@ -98,10 +111,9 @@ function DifficultyButtons() {
             justifyContent: "center",
             alignItems: "center",
             backgroundColor: button.color,
+            opacity: disabled ? 0.5 : 1,
           }}
-          onPress={() => {
-            console.log(`Selected difficulty: ${button.label}`)
-          }}
+          onPress={() => onRate(button.rating)}
         >
           <Text style={{ color: "#fff", fontWeight: "700" }}>
             {button.label}
@@ -137,9 +149,10 @@ export default function Practice() {
 
   const { id } = useLocalSearchParams<{ id: string }>()
   const { getFlowById } = useFlowStore()
-  const [exerciseSpec, setExerciseSpec] =
-    useState<GeneratedExerciseSpec | null>(null)
+  const [exerciseQueue, setExerciseQueue] = useState<PracticeExercise[]>([])
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
   const [isLoadingExercise, setIsLoadingExercise] = useState(true)
+  const [isSavingRating, setIsSavingRating] = useState(false)
 
   const flow = typeof id === "string" ? getFlowById(id) : undefined
 
@@ -148,24 +161,32 @@ export default function Practice() {
 
     async function loadExerciseSpec() {
       if (typeof id !== "string") {
-        setExerciseSpec(null)
+        setExerciseQueue([])
+        setCurrentExerciseIndex(0)
         setIsLoadingExercise(false)
         return
       }
 
       setIsLoadingExercise(true)
 
-      const storedExercise = await getFirstExerciseSpecByFlowId(id)
+      const storedExercises = await listExercisesByFlowId(id)
 
-      if (storedExercise) {
+      if (storedExercises.length > 0) {
         console.log("[practice] loaded exercise from sqlite", {
           flowId: id,
           source: "sqlite",
-          exerciseSpec: storedExercise,
+          exerciseCount: storedExercises.length,
+          firstExercise: storedExercises[0],
         })
 
         if (!cancelled) {
-          setExerciseSpec(storedExercise)
+          setExerciseQueue(
+            storedExercises.map((exercise) => ({
+              id: exercise.id,
+              spec: exercise.spec,
+            })),
+          )
+          setCurrentExerciseIndex(0)
           setIsLoadingExercise(false)
         }
         return
@@ -173,7 +194,8 @@ export default function Practice() {
 
       if (!flow) {
         if (!cancelled) {
-          setExerciseSpec(null)
+          setExerciseQueue([])
+          setCurrentExerciseIndex(0)
           setIsLoadingExercise(false)
         }
         return
@@ -191,7 +213,13 @@ export default function Practice() {
         })
 
         if (!cancelled) {
-          setExerciseSpec(fallbackExercise)
+          setExerciseQueue(
+            generated.map((spec) => ({
+              id: null,
+              spec,
+            })),
+          )
+          setCurrentExerciseIndex(0)
         }
       } catch {
         console.log("[practice] failed to derive exercise from flow config", {
@@ -200,7 +228,8 @@ export default function Practice() {
         })
 
         if (!cancelled) {
-          setExerciseSpec(null)
+          setExerciseQueue([])
+          setCurrentExerciseIndex(0)
         }
       } finally {
         if (!cancelled) {
@@ -215,6 +244,8 @@ export default function Practice() {
       cancelled = true
     }
   }, [id, flow])
+
+  const exercise = exerciseQueue[currentExerciseIndex] ?? null
 
   if (isLoadingExercise) {
     return (
@@ -232,7 +263,7 @@ export default function Practice() {
     )
   }
 
-  if (!exerciseSpec) {
+  if (!exercise) {
     return (
       <View
         style={{
@@ -253,9 +284,52 @@ export default function Practice() {
 
   const sideRailWidth = 74
   const contentGap = 10
-  const keyLabel = exerciseSpec.key
-  const modeLabel = getModeLabel(exerciseSpec.mode)
-  const octaveCount = exerciseSpec.octaves
+  const keyLabel = exercise.spec.key
+  const modeLabel = getModeLabel(exercise.spec.mode)
+  const octaveCount = exercise.spec.octaves
+
+  const advanceToNextExercise = () => {
+    if (exerciseQueue.length === 0) {
+      return
+    }
+
+    setCurrentExerciseIndex((current) => (current + 1) % exerciseQueue.length)
+  }
+
+  const handleRate = async (rating: "again" | "hard" | "good" | "easy") => {
+    if (!exercise.id) {
+      console.log("[practice] rating skipped (no persisted exercise id)", {
+        flowId: id,
+        rating,
+      })
+      advanceToNextExercise()
+      return
+    }
+
+    setIsSavingRating(true)
+
+    try {
+      await recordExerciseReview({
+        exerciseId: exercise.id,
+        rating,
+        notesHidden: !showNotes,
+      })
+
+      console.log("[practice] review saved", {
+        exerciseId: exercise.id,
+        rating,
+      })
+      advanceToNextExercise()
+    } catch (error) {
+      console.error("[practice] failed to save review", {
+        exerciseId: exercise.id,
+        rating,
+        error,
+      })
+    } finally {
+      setIsSavingRating(false)
+    }
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF" }}>
@@ -268,6 +342,16 @@ export default function Practice() {
         }}
       >
         After playing the scale, mark how challenging it was below
+      </Text>
+      <Text
+        style={{
+          textAlign: "center",
+          fontSize: 13,
+          color: "#7c8491",
+          marginBottom: 4,
+        }}
+      >
+        {`Exercise ${currentExerciseIndex + 1} of ${exerciseQueue.length}`}
       </Text>
 
       <View style={{ flex: 1 }}>
@@ -304,7 +388,7 @@ export default function Practice() {
             >
               {showNotes ? (
                 <PracticeStaff
-                  exerciseSpec={exerciseSpec}
+                  exerciseSpec={exercise.spec}
                   mode="full"
                   width={Math.max(0, mainPanelWidth - 2)}
                   height={Math.max(0, mainPanelHeight - 2)}
@@ -399,7 +483,7 @@ export default function Practice() {
                         }}
                       >
                         <PracticeStaff
-                          exerciseSpec={exerciseSpec}
+                          exerciseSpec={exercise.spec}
                           mode="rhythm"
                           width={Math.max(0, rhythmPreviewWidth)}
                           height={Math.max(0, rhythmPreviewHeight)}
@@ -432,7 +516,7 @@ export default function Practice() {
           </View>
         </View>
 
-        <DifficultyButtons />
+        <DifficultyButtons onRate={handleRate} disabled={isSavingRating} />
       </View>
     </SafeAreaView>
   )
