@@ -1,10 +1,15 @@
 import { useLocalSearchParams, useRouter } from "expo-router"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Ionicons } from "@expo/vector-icons"
 import { Pressable, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 import PracticeStaff from "@/components/PracticeStaff"
+import {
+  GeneratedExerciseSpec,
+  expandFlowDraftToExerciseSpecs,
+} from "@/core/flows"
+import { getFirstExerciseSpecByFlowId } from "@/core/flows/sqliteExerciseRepository"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 function SideToggleButton({
@@ -107,27 +112,20 @@ function DifficultyButtons() {
   )
 }
 
-function parsePitchLabel(label: string) {
-  const match = label.match(/^([A-G])([#b]?)(\d+)$/)
-
-  if (!match) {
-    return null
+function getModeLabel(mode: GeneratedExerciseSpec["mode"]) {
+  if (mode === "major") {
+    return "Major"
   }
 
-  return {
-    octave: Number(match[3]),
-  }
-}
-
-function getOctaveCount(low: string, high: string) {
-  const lowPitch = parsePitchLabel(low)
-  const highPitch = parsePitchLabel(high)
-
-  if (!lowPitch || !highPitch) {
-    return 1
+  if (mode === "minor") {
+    return "Natural Minor"
   }
 
-  return Math.max(1, highPitch.octave - lowPitch.octave + 1)
+  if (mode === "harmonic minor") {
+    return "Harmonic Minor"
+  }
+
+  return "Melodic Minor"
 }
 
 export default function Practice() {
@@ -139,10 +137,102 @@ export default function Practice() {
 
   const { id } = useLocalSearchParams<{ id: string }>()
   const { getFlowById } = useFlowStore()
+  const [exerciseSpec, setExerciseSpec] =
+    useState<GeneratedExerciseSpec | null>(null)
+  const [isLoadingExercise, setIsLoadingExercise] = useState(true)
 
   const flow = typeof id === "string" ? getFlowById(id) : undefined
 
-  if (!flow) {
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadExerciseSpec() {
+      if (typeof id !== "string") {
+        setExerciseSpec(null)
+        setIsLoadingExercise(false)
+        return
+      }
+
+      setIsLoadingExercise(true)
+
+      const storedExercise = await getFirstExerciseSpecByFlowId(id)
+
+      if (storedExercise) {
+        console.log("[practice] loaded exercise from sqlite", {
+          flowId: id,
+          source: "sqlite",
+          exerciseSpec: storedExercise,
+        })
+
+        if (!cancelled) {
+          setExerciseSpec(storedExercise)
+          setIsLoadingExercise(false)
+        }
+        return
+      }
+
+      if (!flow) {
+        if (!cancelled) {
+          setExerciseSpec(null)
+          setIsLoadingExercise(false)
+        }
+        return
+      }
+
+      try {
+        const generated = expandFlowDraftToExerciseSpecs(flow.config)
+        const fallbackExercise = generated[0] ?? null
+
+        console.log("[practice] loaded exercise from fallback flow config", {
+          flowId: id,
+          source: "flow-config-fallback",
+          exerciseCount: generated.length,
+          exerciseSpec: fallbackExercise,
+        })
+
+        if (!cancelled) {
+          setExerciseSpec(fallbackExercise)
+        }
+      } catch {
+        console.log("[practice] failed to derive exercise from flow config", {
+          flowId: id,
+          source: "flow-config-fallback",
+        })
+
+        if (!cancelled) {
+          setExerciseSpec(null)
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingExercise(false)
+        }
+      }
+    }
+
+    void loadExerciseSpec()
+
+    return () => {
+      cancelled = true
+    }
+  }, [id, flow])
+
+  if (isLoadingExercise) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ fontSize: 32, color: "#202737" }}>
+          Loading practice...
+        </Text>
+      </View>
+    )
+  }
+
+  if (!exerciseSpec) {
     return (
       <View
         style={{
@@ -154,19 +244,18 @@ export default function Practice() {
         }}
       >
         <BackButton />
-        <Text style={{ fontSize: 48, color: "#202737" }}>Flow not found</Text>
+        <Text style={{ fontSize: 48, color: "#202737" }}>
+          Exercise not found
+        </Text>
       </View>
     )
   }
 
   const sideRailWidth = 74
   const contentGap = 10
-  const keyLabel = flow.config.keys[0] ?? "C"
-  const modeLabel = flow.config.modes[0] ?? "Major"
-  const octaveCount = getOctaveCount(
-    flow.config.range.low,
-    flow.config.range.high,
-  )
+  const keyLabel = exerciseSpec.key
+  const modeLabel = getModeLabel(exerciseSpec.mode)
+  const octaveCount = exerciseSpec.octaves
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF" }}>
@@ -215,7 +304,7 @@ export default function Practice() {
             >
               {showNotes ? (
                 <PracticeStaff
-                  flow={flow}
+                  exerciseSpec={exerciseSpec}
                   mode="full"
                   width={Math.max(0, mainPanelWidth - 2)}
                   height={Math.max(0, mainPanelHeight - 2)}
@@ -310,7 +399,7 @@ export default function Practice() {
                         }}
                       >
                         <PracticeStaff
-                          flow={flow}
+                          exerciseSpec={exerciseSpec}
                           mode="rhythm"
                           width={Math.max(0, rhythmPreviewWidth)}
                           height={Math.max(0, rhythmPreviewHeight)}
