@@ -3,11 +3,16 @@ import { useRouter } from "expo-router"
 import MainScreenButton from "@/components/MainScreenButton"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin"
+import * as SQLite from "expo-sqlite"
+
 const DEBUG = false
+const db = SQLite.openDatabaseSync("scaly.db")
 
 export default function Index() {
   const router = useRouter()
   const { resetDraft } = useFlowStore()
+  useDrizzleStudio(db)
 
   return (
     <ImageBackground
