@@ -401,27 +401,6 @@ export default function Practice() {
                     gap: 12,
                   }}
                 >
-                  <View style={{ width: 88, gap: 4 }}>
-                    <Text style={{ fontSize: 12, color: "#777f8c" }}>
-                      Start
-                    </Text>
-                    <View
-                      style={{
-                        flex: 1,
-                        borderRadius: 8,
-                        backgroundColor: "#E5E7EB",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Ionicons
-                        name="musical-note-outline"
-                        size={28}
-                        color="#2a3341"
-                      />
-                    </View>
-                  </View>
-
                   <View style={{ flex: 1, gap: 12 }}>
                     <View style={{ flexDirection: "row", gap: 8 }}>
                       <View style={{ flex: 1, gap: 4 }}>
