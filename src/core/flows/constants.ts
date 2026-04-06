@@ -17,7 +17,7 @@ export const SHARP_KEY_SIGNATURE_OPTIONS = ["G", "D", "A", "E", "B"] as const
 
 export const FLAT_KEY_SIGNATURE_OPTIONS = ["F", "Bb", "Eb", "Ab", "Db"] as const
 
-export const CLEF_OPTIONS = ["Bass Clef", "Treble Clef"] as const
+export const CLEF_OPTIONS = ["Treble Clef", "Bass Clef"] as const
 
 export const MODE_OPTIONS = [
   "Major",
