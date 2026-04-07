@@ -342,7 +342,7 @@ export default function ChooseTempo() {
         : { kind: "range", minBpm: nextRangeBpm[0], maxBpm: nextRangeBpm[1] }
 
     updateDraft({ tempo })
-    router.push("/choose-rhythm-and-articulation")
+    router.push("/name-flow")
   }
 
   return (
