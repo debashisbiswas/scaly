@@ -360,7 +360,6 @@ export default function Practice() {
               {showNotes ? (
                 <PracticeStaff
                   exerciseSpec={exercise.spec}
-                  mode="full"
                   width={Math.max(0, mainPanelWidth - 2)}
                   height={Math.max(0, mainPanelHeight - 2)}
                 />

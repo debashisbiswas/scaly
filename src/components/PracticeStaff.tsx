@@ -5,31 +5,26 @@ import { View } from "react-native"
 
 interface PracticeStaffProps {
   exerciseSpec: GeneratedExerciseSpec
-  mode: "full" | "rhythm" // TODO: Remove "rhythm" mode.
   width: number
   height: number
 }
 
 export default function PracticeStaff({
   exerciseSpec,
-  mode,
   width,
   height,
 }: PracticeStaffProps) {
   const xml = generateMusicXMLForScale({
-    key: mode === "rhythm" ? "C" : exerciseSpec.key,
-    mode: mode === "rhythm" ? "major" : exerciseSpec.mode,
+    key: exerciseSpec.key,
+    mode: exerciseSpec.mode,
     rhythm: "sixteenths",
     slurPattern: "tongued",
-    octaves: mode === "rhythm" ? 1 : exerciseSpec.octaves,
-    startOctave: mode === "rhythm" ? 4 : exerciseSpec.startOctave,
+    octaves: exerciseSpec.octaves,
+    startOctave: exerciseSpec.startOctave,
   })
 
-  const viewerHeight =
-    mode === "full" ? Math.max(180, Math.min(height, 320)) : height
-
   return (
-    <View style={{ width, height: viewerHeight }}>
+    <View style={{ width, height }}>
       <MusicXMLViewer musicXML={xml} />
     </View>
   )
