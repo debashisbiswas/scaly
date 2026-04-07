@@ -144,8 +144,6 @@ export default function Practice() {
   const [showNotes, setShowNotes] = useState(true)
   const [mainPanelWidth, setMainPanelWidth] = useState(0)
   const [mainPanelHeight, setMainPanelHeight] = useState(0)
-  const [rhythmPreviewWidth, setRhythmPreviewWidth] = useState(0)
-  const [rhythmPreviewHeight, setRhythmPreviewHeight] = useState(0)
 
   const { id } = useLocalSearchParams<{ id: string }>()
   const { getFlowById } = useFlowStore()
@@ -439,34 +437,6 @@ export default function Practice() {
                             {`${octaveCount} Octave${octaveCount === 1 ? "" : "s"}`}
                           </Text>
                         </View>
-                      </View>
-                    </View>
-
-                    <View style={{ flex: 1, gap: 4 }}>
-                      <Text style={{ fontSize: 12, color: "#777f8c" }}>
-                        Rhythm and Articulation
-                      </Text>
-
-                      <View
-                        style={{
-                          flex: 1,
-                          borderRadius: 8,
-                          backgroundColor: "#cfd4dc",
-                          overflow: "hidden",
-                        }}
-                        onLayout={(event) => {
-                          setRhythmPreviewWidth(event.nativeEvent.layout.width)
-                          setRhythmPreviewHeight(
-                            event.nativeEvent.layout.height,
-                          )
-                        }}
-                      >
-                        <PracticeStaff
-                          exerciseSpec={exercise.spec}
-                          mode="rhythm"
-                          width={Math.max(0, rhythmPreviewWidth)}
-                          height={Math.max(0, rhythmPreviewHeight)}
-                        />
                       </View>
                     </View>
                   </View>
