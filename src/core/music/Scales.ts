@@ -154,6 +154,7 @@ export function generateMusicXMLForScale(opts: {
   slurPattern: SlurPattern;
   octaves: number;
   startOctave: number;
+  clef: "treble" | "bass";
 }) {
   const notes = getNotesForScale(
     opts.key,
@@ -320,14 +321,18 @@ export function generateMusicXMLForScale(opts: {
     const key = getKeyWithMode(opts.key, opts.mode);
 
     // Add attributes to first measure
-    const trebleClef = { sign: "G", line: 2 };
+    let clef = { sign: "G", line: 2 };
+    if (opts.clef === "bass") {
+      clef = { sign: "F", line: 4 };
+    }
+
     measures[0].attributes = {
       key: { fifths: key.alteration },
       time: {
         beats: timeSignature.top,
         beatType: timeSignature.bottom,
       },
-      clef: trebleClef,
+      clef
     };
 
     // Double bar last measure

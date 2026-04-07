@@ -21,6 +21,7 @@ export default function PracticeStaff({
     slurPattern: "tongued",
     octaves: exerciseSpec.octaves,
     startOctave: exerciseSpec.startOctave,
+    clef: exerciseSpec.clef
   })
 
   return (
