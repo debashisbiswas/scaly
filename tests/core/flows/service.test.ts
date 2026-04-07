@@ -171,29 +171,43 @@ describe("flow service", () => {
 
     const specs = expandFlowDraftToExerciseSpecs(draft)
 
-    expect(specs).toHaveLength(8)
-    expect(specs[0]).toEqual({
-      key: "C",
-      mode: "major",
-      rhythm: "sixteenths",
-      slurPattern: "slur four",
-      startOctave: 3,
-      octaves: 3,
-      clef: "treble",
-      tempo: { kind: "single", bpm: 96 },
-    })
-    expect(specs[1]).toEqual({
-      key: "C",
-      mode: "major",
-      rhythm: "sixteenths",
-      slurPattern: "slur two tongue two",
-      startOctave: 3,
-      octaves: 3,
-      clef: "treble",
-      tempo: { kind: "single", bpm: 96 },
-    })
-    expect(specs[2].mode).toBe("minor")
-    expect(specs[4].key).toBe("G")
+    expect(specs).toHaveLength(4)
+    const expectedSpecs = [
+      {
+        key: "C",
+        mode: "major",
+        startOctave: 3,
+        octaves: 3,
+        clef: "treble",
+        tempo: { kind: "single", bpm: 96 },
+      },
+      {
+        key: "C",
+        mode: "minor",
+        startOctave: 3,
+        octaves: 3,
+        clef: "treble",
+        tempo: { kind: "single", bpm: 96 },
+      },
+      {
+        key: "G",
+        mode: "minor",
+        startOctave: 3,
+        octaves: 3,
+        clef: "treble",
+        tempo: { kind: "single", bpm: 96 },
+      },
+      {
+        key: "G",
+        mode: "major",
+        startOctave: 3,
+        octaves: 3,
+        clef: "treble",
+        tempo: { kind: "single", bpm: 96 },
+      },
+    ]
+
+    expect(specs).toEqual(expect.arrayContaining(expectedSpecs))
   })
 
   it("deduplicates selections and canonicalizes enharmonic key", () => {
@@ -215,8 +229,6 @@ describe("flow service", () => {
       {
         key: "F#",
         mode: "major",
-        rhythm: "sixteenths",
-        slurPattern: "tongue one slur three",
         startOctave: 1,
         octaves: 3,
         clef: "bass",

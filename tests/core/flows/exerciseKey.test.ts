@@ -30,8 +30,6 @@ describe("exercise key", () => {
     const variants = [
       { ...base, key: "D" },
       { ...base, mode: "minor" as const },
-      { ...base, rhythm: "long octave" as const },
-      { ...base, slurPattern: "tongued" as const },
       { ...base, startOctave: 4 },
       { ...base, octaves: 3 },
       { ...base, clef: "bass" as const },
