@@ -10,11 +10,18 @@ import {
   expandFlowDraftToExerciseSpecs,
 } from "@/core/flows"
 import { listExercisesByFlowId } from "@/core/flows/sqliteExerciseRepository"
+import {
+  StoredExercisePracticeStats,
+  listExercisePracticeStatsByExerciseIds,
+} from "@/core/flows/sqliteExercisePracticeStatsRepository"
+import { toExerciseKey } from "@/core/flows/exerciseKey"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 type PracticeExercise = {
   id: string | null
+  exerciseKey: string
   spec: GeneratedExerciseSpec
+  stats: StoredExercisePracticeStats | null
 }
 
 function SideToggleButton({
@@ -165,29 +172,6 @@ export default function Practice() {
 
       setIsLoadingExercise(true)
 
-      const storedExercises = await listExercisesByFlowId(id)
-
-      if (storedExercises.length > 0) {
-        console.log("[practice] loaded exercise from sqlite", {
-          flowId: id,
-          source: "sqlite",
-          exerciseCount: storedExercises.length,
-          firstExercise: storedExercises[0],
-        })
-
-        if (!cancelled) {
-          setExerciseQueue(
-            storedExercises.map((exercise) => ({
-              id: exercise.id,
-              spec: exercise.spec,
-            })),
-          )
-          setCurrentExerciseIndex(0)
-          setIsLoadingExercise(false)
-        }
-        return
-      }
-
       if (!flow) {
         if (!cancelled) {
           setExerciseQueue([])
@@ -199,28 +183,53 @@ export default function Practice() {
 
       try {
         const generated = expandFlowDraftToExerciseSpecs(flow.config)
-        const fallbackExercise = generated[0] ?? null
+        const storedExercises = await listExercisesByFlowId(id)
+        const storedExerciseIds = storedExercises.map((exercise) => exercise.id)
+        const storedStats =
+          await listExercisePracticeStatsByExerciseIds(storedExerciseIds)
+        const exerciseIdByKey = new Map(
+          storedExercises.map((exercise) => [
+            exercise.exerciseKey,
+            exercise.id,
+          ]),
+        )
+        const statsByExerciseId = new Map(
+          storedStats.map((stats) => [stats.exerciseId, stats]),
+        )
 
-        console.log("[practice] loaded exercise from fallback flow config", {
+        console.log("[practice] loaded candidate exercises", {
           flowId: id,
-          source: "flow-config-fallback",
-          exerciseCount: generated.length,
-          exerciseSpec: fallbackExercise,
+          source: "flow-config",
+          candidateCount: generated.length,
+          persistedExerciseCount: storedExercises.length,
+          persistedStatsCount: storedStats.length,
         })
+
+        console.log(JSON.stringify(generated, null, 2))
 
         if (!cancelled) {
           setExerciseQueue(
-            generated.map((spec) => ({
-              id: null,
-              spec,
-            })),
+            generated.map((spec) => {
+              const exerciseKey = toExerciseKey(spec)
+              const storedExerciseId = exerciseIdByKey.get(exerciseKey) ?? null
+
+              return {
+                id: storedExerciseId,
+                exerciseKey,
+                spec,
+                stats:
+                  storedExerciseId !== null
+                    ? (statsByExerciseId.get(storedExerciseId) ?? null)
+                    : null,
+              }
+            }),
           )
           setCurrentExerciseIndex(0)
         }
       } catch {
-        console.log("[practice] failed to derive exercise from flow config", {
+        console.log("[practice] failed to load candidate exercises", {
           flowId: id,
-          source: "flow-config-fallback",
+          source: "flow-config",
         })
 
         if (!cancelled) {
@@ -296,6 +305,7 @@ export default function Practice() {
     console.log("[practice] rating selected", {
       flowId: id,
       exerciseId: exercise.id,
+      exerciseKey: exercise.exerciseKey,
       rating,
       action: "advance_to_next_exercise",
     })
