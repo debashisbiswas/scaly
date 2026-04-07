@@ -16,6 +16,7 @@ export default function Scratchpad() {
     slurPattern: "slur two tongue two",
     octaves: 1,
     startOctave: 4,
+    clef: "treble"
   })
 
   return (
