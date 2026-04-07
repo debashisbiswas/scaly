@@ -8,8 +8,6 @@ describe("exercise key", () => {
     const spec: ExerciseSpecIdentity = {
       key: "C",
       mode: "major",
-      rhythm: "sixteenths",
-      slurPattern: "slur four",
       startOctave: 3,
       octaves: 2,
       clef: "treble",
@@ -23,8 +21,6 @@ describe("exercise key", () => {
     const base: ExerciseSpecIdentity = {
       key: "C",
       mode: "major",
-      rhythm: "sixteenths",
-      slurPattern: "slur four",
       startOctave: 3,
       octaves: 2,
       clef: "treble",
@@ -54,8 +50,6 @@ describe("exercise key", () => {
     const singleKey = toExerciseKey({
       key: "F#",
       mode: "harmonic minor",
-      rhythm: "eighth two sixteenths",
-      slurPattern: "tongue one slur three",
       startOctave: 4,
       octaves: 1,
       clef: "treble",
@@ -65,8 +59,6 @@ describe("exercise key", () => {
     const rangeKey = toExerciseKey({
       key: "F#",
       mode: "harmonic minor",
-      rhythm: "eighth two sixteenths",
-      slurPattern: "tongue one slur three",
       startOctave: 4,
       octaves: 1,
       clef: "treble",

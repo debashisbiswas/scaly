@@ -5,7 +5,7 @@ import { View } from "react-native"
 
 interface PracticeStaffProps {
   exerciseSpec: GeneratedExerciseSpec
-  mode: "full" | "rhythm"
+  mode: "full" | "rhythm" // TODO: Remove "rhythm" mode.
   width: number
   height: number
 }
@@ -19,8 +19,8 @@ export default function PracticeStaff({
   const xml = generateMusicXMLForScale({
     key: mode === "rhythm" ? "C" : exerciseSpec.key,
     mode: mode === "rhythm" ? "major" : exerciseSpec.mode,
-    rhythm: exerciseSpec.rhythm,
-    slurPattern: exerciseSpec.slurPattern,
+    rhythm: "sixteenths",
+    slurPattern: "tongued",
     octaves: mode === "rhythm" ? 1 : exerciseSpec.octaves,
     startOctave: mode === "rhythm" ? 4 : exerciseSpec.startOctave,
   })

@@ -26,8 +26,6 @@ export const exercises = sqliteTable(
     exerciseKey: text("exercise_key").notNull(),
     key: text("key").notNull(),
     mode: text("mode").notNull(),
-    rhythmPattern: text("rhythm_pattern").notNull(),
-    slurPattern: text("slur_pattern").notNull(),
     startOctave: integer("start_octave").notNull(),
     octaves: integer("octaves").notNull(),
     clef: text("clef").notNull(),

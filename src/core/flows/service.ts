@@ -4,7 +4,6 @@ import {
   MAX_BPM,
   MIN_BPM,
   MODE_OPTIONS,
-  SLUR_PATTERN_OPTIONS,
   getClefRangeConfig,
 } from "./constants"
 import {
@@ -34,26 +33,9 @@ const SCALE_MODE_MAP = {
   "Melodic Minor": "melodic minor",
 } as const
 
-const SLUR_PATTERN_MAP = {
-  "full-phrase": {
-    rhythm: "sixteenths",
-    slurPattern: "slur four",
-  },
-  "every-beat": {
-    rhythm: "sixteenths",
-    slurPattern: "slur two tongue two",
-  },
-  "tongue-1-slur-3": {
-    rhythm: "sixteenths",
-    slurPattern: "tongue one slur three",
-  },
-} as const
-
 export type GeneratedExerciseSpec = {
   key: string
   mode: (typeof SCALE_MODE_MAP)[keyof typeof SCALE_MODE_MAP]
-  rhythm: (typeof SLUR_PATTERN_MAP)[keyof typeof SLUR_PATTERN_MAP]["rhythm"]
-  slurPattern: (typeof SLUR_PATTERN_MAP)[keyof typeof SLUR_PATTERN_MAP]["slurPattern"]
   startOctave: number
   octaves: number
   clef: "treble" | "bass"
@@ -188,11 +170,6 @@ export function expandFlowDraftToExerciseSpecs(
 
   const canonicalKeys = sortByOrder(draft.keys, KEY_SIGNATURE_OPTIONS)
   const canonicalModes = sortByOrder(draft.modes, MODE_OPTIONS)
-  const slurPatternOrder = SLUR_PATTERN_OPTIONS.map((pattern) => pattern.id)
-  const canonicalPatternIds = sortByOrder(
-    draft.slurPatternIds,
-    slurPatternOrder,
-  )
 
   const startOctave = lowPitch.octave
   const octaves = Math.max(
@@ -210,20 +187,14 @@ export function expandFlowDraftToExerciseSpecs(
     for (const mode of canonicalModes) {
       const mappedMode = SCALE_MODE_MAP[mode]
 
-      for (const patternId of canonicalPatternIds) {
-        const mappedPattern = SLUR_PATTERN_MAP[patternId]
-
-        exerciseSpecs.push({
-          key: exerciseKey,
-          mode: mappedMode,
-          rhythm: mappedPattern.rhythm,
-          slurPattern: mappedPattern.slurPattern,
-          startOctave,
-          octaves,
-          clef,
-          tempo: draft.tempo,
-        })
-      }
+      exerciseSpecs.push({
+        key: exerciseKey,
+        mode: mappedMode,
+        startOctave,
+        octaves,
+        clef,
+        tempo: draft.tempo,
+      })
     }
   }
 
@@ -246,10 +217,6 @@ export function validateFlowDraft(
 
   if (draft.modes.length === 0) {
     errors.push("missing_modes")
-  }
-
-  if (draft.slurPatternIds.length === 0) {
-    errors.push("missing_slur_patterns")
   }
 
   const lowMidi = pitchLabelToMidi(draft.range.low)
@@ -346,10 +313,6 @@ export function getFlowCreationErrorMessage(
 
   if (errors.includes("missing_modes")) {
     return "Pick at least one mode."
-  }
-
-  if (errors.includes("missing_slur_patterns")) {
-    return "Pick at least one rhythm/articulation pattern."
   }
 
   if (errors.includes("invalid_range")) {

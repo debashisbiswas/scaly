@@ -56,8 +56,6 @@ export async function getFirstExerciseSpecByFlowId(flowId: string) {
   return {
     key: row.key,
     mode: row.mode as GeneratedExerciseSpec["mode"],
-    rhythm: row.rhythmPattern as GeneratedExerciseSpec["rhythm"],
-    slurPattern: row.slurPattern as GeneratedExerciseSpec["slurPattern"],
     startOctave: row.startOctave,
     octaves: row.octaves,
     clef: row.clef as GeneratedExerciseSpec["clef"],
@@ -102,8 +100,6 @@ export async function listExercisesByFlowId(
         spec: {
           key: row.key,
           mode: row.mode as GeneratedExerciseSpec["mode"],
-          rhythm: row.rhythmPattern as GeneratedExerciseSpec["rhythm"],
-          slurPattern: row.slurPattern as GeneratedExerciseSpec["slurPattern"],
           startOctave: row.startOctave,
           octaves: row.octaves,
           clef: row.clef as GeneratedExerciseSpec["clef"],

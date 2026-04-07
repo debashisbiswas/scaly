@@ -24,7 +24,7 @@ export type FlowDraft = {
   }
   modes: ScaleMode[]
   tempo: TempoSetting
-  slurPatternIds: SlurPatternId[]
+  slurPatternIds: SlurPatternId[] // TODO: Slated for deletion.
 }
 
 export type Flow = {
@@ -40,7 +40,7 @@ export type FlowDraftValidationError =
   | "missing_keys"
   | "missing_clef"
   | "missing_modes"
-  | "missing_slur_patterns"
+  | "missing_slur_patterns" // TODO: Slated for deletion.
   | "invalid_range"
   | "invalid_tempo"
 
