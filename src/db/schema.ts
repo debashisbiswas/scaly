@@ -51,23 +51,3 @@ export const exercises = sqliteTable(
     index("exercises_due_archived_idx").on(table.archivedAt),
   ],
 )
-
-export const exerciseAttempts = sqliteTable(
-  "exercise_attempts",
-  {
-    id: text("id").primaryKey(),
-    exerciseId: text("exercise_id")
-      .notNull()
-      .references(() => exercises.id, { onDelete: "cascade" }),
-    rating: text("rating").notNull(),
-    performedAt: integer("performed_at", { mode: "timestamp_ms" }).notNull(),
-    bpmUsed: integer("bpm_used"),
-    notesHidden: integer("notes_hidden", { mode: "boolean" }),
-  },
-  (table) => [
-    index("exercise_attempts_exercise_time_idx").on(
-      table.exerciseId,
-      table.performedAt,
-    ),
-  ],
-)
