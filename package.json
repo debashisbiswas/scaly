@@ -4,15 +4,12 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
     "test": "vitest run",
     "format": "prettier --write .",
-    "notation:harness": "vite --config tools/notation-harness/vite.config.ts",
-    "notation:harness:build": "vite build --config tools/notation-harness/vite.config.ts",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio"
   },
