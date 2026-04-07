@@ -41,3 +41,24 @@ export const exercises = sqliteTable(
     index("exercises_due_archived_idx").on(table.archivedAt),
   ],
 )
+
+export const exercisePracticeStats = sqliteTable(
+  "exercise_practice_stats",
+  {
+    exerciseId: text("exercise_id")
+      .primaryKey()
+      .references(() => exercises.id, { onDelete: "cascade" }),
+    totalAttempts: integer("total_attempts").notNull(),
+    againCount: integer("again_count").notNull(),
+    hardCount: integer("hard_count").notNull(),
+    goodCount: integer("good_count").notNull(),
+    easyCount: integer("easy_count").notNull(),
+    lastRating: text("last_rating"),
+    lastRatedAt: integer("last_rated_at", { mode: "timestamp_ms" }),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [
+    index("exercise_practice_stats_last_rated_idx").on(table.lastRatedAt),
+  ],
+)
