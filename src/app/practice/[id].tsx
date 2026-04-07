@@ -141,7 +141,7 @@ function getModeLabel(mode: GeneratedExerciseSpec["mode"]) {
 }
 
 export default function Practice() {
-  const [showNotes, setShowNotes] = useState(true)
+  const [showNotes, setShowNotes] = useState(false)
   const [mainPanelWidth, setMainPanelWidth] = useState(0)
   const [mainPanelHeight, setMainPanelHeight] = useState(0)
 
