@@ -22,7 +22,6 @@ export const exercises = sqliteTable(
     flowId: text("flow_id")
       .notNull()
       .references(() => flows.id, { onDelete: "cascade" }),
-    position: integer("position").notNull(),
     exerciseKey: text("exercise_key").notNull(),
     key: text("key").notNull(),
     mode: text("mode").notNull(),
@@ -37,7 +36,6 @@ export const exercises = sqliteTable(
     archivedAt: integer("archived_at", { mode: "timestamp_ms" }),
   },
   (table) => [
-    uniqueIndex("exercises_flow_position_uq").on(table.flowId, table.position),
     uniqueIndex("exercises_flow_key_uq").on(table.flowId, table.exerciseKey),
     index("exercises_flow_idx").on(table.flowId),
     index("exercises_due_archived_idx").on(table.archivedAt),

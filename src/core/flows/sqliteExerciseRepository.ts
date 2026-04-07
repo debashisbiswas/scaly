@@ -1,4 +1,4 @@
-import { and, asc, eq, isNull } from "drizzle-orm"
+import { and, eq, isNull } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { exercises } from "@/db/schema"
@@ -8,7 +8,6 @@ import { GeneratedExerciseSpec } from "./service"
 export type StoredExercise = {
   id: string
   spec: GeneratedExerciseSpec
-  position: number
 }
 
 function toTempo(
@@ -38,7 +37,6 @@ export async function getFirstExerciseSpecByFlowId(flowId: string) {
     .select()
     .from(exercises)
     .where(and(eq(exercises.flowId, flowId), isNull(exercises.archivedAt)))
-    .orderBy(asc(exercises.position))
     .limit(1)
 
   const row = rows[0]
@@ -84,7 +82,6 @@ export async function listExercisesByFlowId(
     .select()
     .from(exercises)
     .where(and(eq(exercises.flowId, flowId), isNull(exercises.archivedAt)))
-    .orderBy(asc(exercises.position))
 
   return rows
     .map((row) => {
@@ -96,7 +93,6 @@ export async function listExercisesByFlowId(
 
       return {
         id: row.id,
-        position: row.position,
         spec: {
           key: row.key,
           mode: row.mode as GeneratedExerciseSpec["mode"],
