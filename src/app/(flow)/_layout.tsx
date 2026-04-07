@@ -2,11 +2,19 @@ import { Stack, usePathname } from "expo-router"
 import { StyleSheet, View } from "react-native"
 
 import ProgressDots from "@/components/ProgressDots"
-import { FLOW_PROGRESS_TOTAL, getFlowProgressIndex } from "@/flowProgress"
+
+const FLOW_ROUTES = [
+  "/choose-keys",
+  "/choose-clef",
+  "/choose-range",
+  "/choose-mode",
+  "/choose-tempo",
+  "/name-flow",
+] as const
 
 export default function FlowLayout() {
   const pathname = usePathname()
-  const activeIndex = getFlowProgressIndex(pathname)
+  const activeIndex = FLOW_ROUTES.findIndex((route) => route === pathname)
 
   return (
     <View style={styles.root}>
@@ -19,7 +27,7 @@ export default function FlowLayout() {
       />
       {typeof activeIndex === "number" ? (
         <View style={styles.progressDotsAnchor} pointerEvents="none">
-          <ProgressDots total={FLOW_PROGRESS_TOTAL} activeIndex={activeIndex} />
+          <ProgressDots total={FLOW_ROUTES.length} activeIndex={activeIndex} />
         </View>
       ) : null}
     </View>
