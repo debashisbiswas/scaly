@@ -40,7 +40,6 @@ export type FlowDraftValidationError =
   | "missing_keys"
   | "missing_clef"
   | "missing_modes"
-  | "missing_slur_patterns" // TODO: Slated for deletion.
   | "invalid_range"
   | "invalid_tempo"
 

@@ -34,7 +34,6 @@ describe("flow service", () => {
       "missing_keys",
       "missing_clef",
       "missing_modes",
-      "missing_slur_patterns",
     ])
   })
 
