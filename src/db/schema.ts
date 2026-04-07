@@ -1,7 +1,6 @@
 import {
   index,
   integer,
-  real,
   sqliteTable,
   text,
   uniqueIndex,
@@ -71,20 +70,4 @@ export const exerciseAttempts = sqliteTable(
       table.performedAt,
     ),
   ],
-)
-
-export const exerciseSrsState = sqliteTable(
-  "exercise_srs_state",
-  {
-    exerciseId: text("exercise_id")
-      .primaryKey()
-      .references(() => exercises.id, { onDelete: "cascade" }),
-    dueAt: integer("due_at", { mode: "timestamp_ms" }).notNull(),
-    lastReviewedAt: integer("last_reviewed_at", { mode: "timestamp_ms" }),
-    intervalDays: real("interval_days").notNull(),
-    easeFactor: real("ease_factor").notNull(),
-    reps: integer("reps").notNull(),
-    lapses: integer("lapses").notNull(),
-  },
-  (table) => [index("exercise_srs_due_idx").on(table.dueAt)],
 )

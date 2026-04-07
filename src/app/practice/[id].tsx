@@ -9,7 +9,6 @@ import {
   GeneratedExerciseSpec,
   expandFlowDraftToExerciseSpecs,
 } from "@/core/flows"
-import { recordExerciseReview } from "@/core/flows/reviewService"
 import { listExercisesByFlowId } from "@/core/flows/sqliteExerciseRepository"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 
@@ -150,7 +149,6 @@ export default function Practice() {
   const [exerciseQueue, setExerciseQueue] = useState<PracticeExercise[]>([])
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
   const [isLoadingExercise, setIsLoadingExercise] = useState(true)
-  const [isSavingRating, setIsSavingRating] = useState(false)
 
   const flow = typeof id === "string" ? getFlowById(id) : undefined
 
@@ -294,39 +292,14 @@ export default function Practice() {
     setCurrentExerciseIndex((current) => (current + 1) % exerciseQueue.length)
   }
 
-  const handleRate = async (rating: "again" | "hard" | "good" | "easy") => {
-    if (!exercise.id) {
-      console.log("[practice] rating skipped (no persisted exercise id)", {
-        flowId: id,
-        rating,
-      })
-      advanceToNextExercise()
-      return
-    }
-
-    setIsSavingRating(true)
-
-    try {
-      await recordExerciseReview({
-        exerciseId: exercise.id,
-        rating,
-        notesHidden: !showNotes,
-      })
-
-      console.log("[practice] review saved", {
-        exerciseId: exercise.id,
-        rating,
-      })
-      advanceToNextExercise()
-    } catch (error) {
-      console.error("[practice] failed to save review", {
-        exerciseId: exercise.id,
-        rating,
-        error,
-      })
-    } finally {
-      setIsSavingRating(false)
-    }
+  const handleRate = (rating: "again" | "hard" | "good" | "easy") => {
+    console.log("[practice] rating selected", {
+      flowId: id,
+      exerciseId: exercise.id,
+      rating,
+      action: "advance_to_next_exercise",
+    })
+    advanceToNextExercise()
   }
 
   return (
@@ -465,7 +438,7 @@ export default function Practice() {
           </View>
         </View>
 
-        <DifficultyButtons onRate={handleRate} disabled={isSavingRating} />
+        <DifficultyButtons onRate={handleRate} />
       </View>
     </SafeAreaView>
   )
