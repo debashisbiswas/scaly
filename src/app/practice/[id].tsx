@@ -146,6 +146,64 @@ function getModeLabel(mode: GeneratedExerciseSpec["mode"]) {
   return "Melodic Minor"
 }
 
+function getExercisePracticeWeight(exercise: PracticeExercise) {
+  const stats = exercise.stats
+
+  if (!stats || stats.totalAttempts <= 0) {
+    return 2.25
+  }
+
+  const total = stats.totalAttempts
+  const difficultyRatio =
+    (stats.againCount * 1 + stats.hardCount * 0.7 + stats.goodCount * 0.2) /
+    total
+  const familiarityBoost = Math.min(1, 4 / Math.sqrt(total + 1))
+
+  return 0.5 + difficultyRatio * 2.2 + familiarityBoost
+}
+
+function pickWeightedExerciseIndex(
+  exercises: PracticeExercise[],
+  currentIndex: number,
+) {
+  if (exercises.length === 0) {
+    return -1
+  }
+
+  if (exercises.length === 1) {
+    return 0
+  }
+
+  const weightedCandidates = exercises
+    .map((exercise, index) => ({
+      index,
+      weight: getExercisePracticeWeight(exercise),
+    }))
+    .filter((candidate) => candidate.index !== currentIndex)
+
+  const totalWeight = weightedCandidates.reduce(
+    (sum, candidate) => sum + candidate.weight,
+    0,
+  )
+
+  if (totalWeight <= 0) {
+    return (currentIndex + 1) % exercises.length
+  }
+
+  const target = Math.random() * totalWeight
+  let runningWeight = 0
+
+  for (const candidate of weightedCandidates) {
+    runningWeight += candidate.weight
+
+    if (target <= runningWeight) {
+      return candidate.index
+    }
+  }
+
+  return weightedCandidates[weightedCandidates.length - 1]?.index ?? 0
+}
+
 export default function Practice() {
   const [showNotes, setShowNotes] = useState(false)
   const [mainPanelWidth, setMainPanelWidth] = useState(0)
@@ -204,8 +262,6 @@ export default function Practice() {
           persistedExerciseCount: storedExercises.length,
           persistedStatsCount: storedStats.length,
         })
-
-        console.log(JSON.stringify(generated, null, 2))
 
         if (!cancelled) {
           setExerciseQueue(
@@ -298,7 +354,9 @@ export default function Practice() {
       return
     }
 
-    setCurrentExerciseIndex((current) => (current + 1) % exerciseQueue.length)
+    setCurrentExerciseIndex((current) =>
+      pickWeightedExerciseIndex(exerciseQueue, current),
+    )
   }
 
   const handleRate = (rating: "again" | "hard" | "good" | "easy") => {
