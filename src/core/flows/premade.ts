@@ -18,7 +18,6 @@ export const PREMADE_FLOWS: Flow[] = [
       },
       modes: ["Major"],
       tempo: { kind: "single", bpm: 96 },
-      slurPatternIds: ["full-phrase"],
     },
   },
   {
@@ -36,7 +35,6 @@ export const PREMADE_FLOWS: Flow[] = [
       },
       modes: ["Major"],
       tempo: { kind: "range", minBpm: 88, maxBpm: 132 },
-      slurPatternIds: ["tongue-1-slur-3"],
     },
   },
   {
@@ -54,7 +52,6 @@ export const PREMADE_FLOWS: Flow[] = [
       },
       modes: ["Major", "Melodic Minor"],
       tempo: { kind: "single", bpm: 112 },
-      slurPatternIds: ["every-beat"],
     },
   },
   {
@@ -72,7 +69,6 @@ export const PREMADE_FLOWS: Flow[] = [
       },
       modes: ["Major", "Harmonic Minor"],
       tempo: { kind: "range", minBpm: 72, maxBpm: 108 },
-      slurPatternIds: ["full-phrase", "every-beat"],
     },
   },
 ]

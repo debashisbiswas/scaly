@@ -134,7 +134,6 @@ export function createEmptyFlowDraft(): FlowDraft {
     },
     modes: [],
     tempo: { kind: "single", bpm: DEFAULT_SINGLE_BPM },
-    slurPatternIds: [],
   }
 }
 
@@ -143,7 +142,6 @@ export function normalizeFlowDraft(draft: FlowDraft): FlowDraft {
     ...draft,
     keys: unique(draft.keys),
     modes: unique(draft.modes),
-    slurPatternIds: unique(draft.slurPatternIds),
   }
 }
 

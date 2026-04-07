@@ -17,7 +17,6 @@ describe("flow service", () => {
     expect(draft.keys).toEqual([])
     expect(draft.clef).toBeNull()
     expect(draft.modes).toEqual([])
-    expect(draft.slurPatternIds).toEqual([])
     expect(draft.tempo).toEqual({ kind: "single", bpm: 96 })
     const trebleRange = getClefRangeConfig(null)
 
@@ -44,7 +43,6 @@ describe("flow service", () => {
       keys: ["C"],
       clef: "Treble Clef",
       modes: ["Major"],
-      slurPatternIds: ["full-phrase"],
     }
 
     const result = createFlowFromDraft({
@@ -71,7 +69,6 @@ describe("flow service", () => {
       keys: ["C"],
       clef: "Treble Clef",
       modes: ["Major"],
-      slurPatternIds: ["full-phrase"],
       tempo: { kind: "range", minBpm: 120, maxBpm: 80 } as const,
     }
 
@@ -90,7 +87,6 @@ describe("flow service", () => {
       keys: ["C", "C"],
       clef: "Treble Clef",
       modes: ["Major", "Major"],
-      slurPatternIds: ["full-phrase", "full-phrase"],
     }
 
     const normalized = normalizeFlowDraft(draft)
@@ -98,7 +94,6 @@ describe("flow service", () => {
     expect(normalized.keys).toEqual(["C"])
     expect(normalized.clef).toBe("Treble Clef")
     expect(normalized.modes).toEqual(["Major"])
-    expect(normalized.slurPatternIds).toEqual(["full-phrase"])
   })
 
   it("accepts accidental pitch labels in range", () => {
@@ -107,7 +102,6 @@ describe("flow service", () => {
       keys: ["C"],
       clef: "Treble Clef",
       modes: ["Major"],
-      slurPatternIds: ["full-phrase"],
       range: {
         low: "Bb3",
         high: "C#5",
@@ -123,7 +117,6 @@ describe("flow service", () => {
       keys: ["C"],
       clef: "Treble Clef",
       modes: ["Major"],
-      slurPatternIds: ["full-phrase"],
       range: {
         low: "C#5",
         high: "Bb3",
@@ -139,7 +132,6 @@ describe("flow service", () => {
       keys: ["C"],
       clef: "Bass Clef",
       modes: ["Major"],
-      slurPatternIds: ["full-phrase"],
       range: {
         low: "Bb1",
         high: "G4",
@@ -155,7 +147,6 @@ describe("flow service", () => {
       keys: ["C"],
       clef: "Bass Clef",
       modes: ["Major"],
-      slurPatternIds: ["full-phrase"],
       range: {
         low: "A1",
         high: "G#4",
@@ -171,7 +162,6 @@ describe("flow service", () => {
       keys: ["G", "C"],
       clef: "Treble Clef",
       modes: ["Natural Minor", "Major"],
-      slurPatternIds: ["every-beat", "full-phrase"],
       range: {
         low: "G3",
         high: "E5",
@@ -212,7 +202,6 @@ describe("flow service", () => {
       keys: ["F#/Gb", "F#/Gb"],
       clef: "Bass Clef",
       modes: ["Major", "Major"],
-      slurPatternIds: ["tongue-1-slur-3", "tongue-1-slur-3"],
       range: {
         low: "Bb1",
         high: "G4",

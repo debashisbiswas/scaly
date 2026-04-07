@@ -24,7 +24,6 @@ export type FlowDraft = {
   }
   modes: ScaleMode[]
   tempo: TempoSetting
-  slurPatternIds: SlurPatternId[] // TODO: Slated for deletion.
 }
 
 export type Flow = {
