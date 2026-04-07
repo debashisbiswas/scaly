@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "testflight": "npx testflight"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
