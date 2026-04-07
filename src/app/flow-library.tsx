@@ -84,7 +84,10 @@ export default function FlowLibrary() {
           }}
         >
           <Pressable
-            onPress={() => router.back()}
+            onPress={
+              () =>
+                router.back() /* TODO: if we go back after creating a flow, it should go back to the homepage */
+            }
             style={{
               width: 44,
               height: 32,
