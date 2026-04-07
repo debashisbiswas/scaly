@@ -9,10 +9,15 @@ import {
   GeneratedExerciseSpec,
   expandFlowDraftToExerciseSpecs,
 } from "@/core/flows"
-import { listExercisesByFlowId } from "@/core/flows/sqliteExerciseRepository"
 import {
+  listExercisesByFlowId,
+  upsertExerciseByFlowIdAndSpec,
+} from "@/core/flows/sqliteExerciseRepository"
+import {
+  ExerciseRating,
   StoredExercisePracticeStats,
   listExercisePracticeStatsByExerciseIds,
+  recordExerciseRating,
 } from "@/core/flows/sqliteExercisePracticeStatsRepository"
 import { toExerciseKey } from "@/core/flows/exerciseKey"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
@@ -214,6 +219,7 @@ export default function Practice() {
   const [exerciseQueue, setExerciseQueue] = useState<PracticeExercise[]>([])
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
   const [isLoadingExercise, setIsLoadingExercise] = useState(true)
+  const [isSavingRating, setIsSavingRating] = useState(false)
 
   const flow = typeof id === "string" ? getFlowById(id) : undefined
 
@@ -359,15 +365,59 @@ export default function Practice() {
     )
   }
 
-  const handleRate = (rating: "again" | "hard" | "good" | "easy") => {
-    console.log("[practice] rating selected", {
-      flowId: id,
-      exerciseId: exercise.id,
-      exerciseKey: exercise.exerciseKey,
-      rating,
-      action: "advance_to_next_exercise",
-    })
-    advanceToNextExercise()
+  const handleRate = async (rating: ExerciseRating) => {
+    if (typeof id !== "string" || isSavingRating) {
+      return
+    }
+
+    setIsSavingRating(true)
+
+    try {
+      const storedExercise = await upsertExerciseByFlowIdAndSpec({
+        flowId: id,
+        spec: exercise.spec,
+      })
+      const nextStats = await recordExerciseRating({
+        exerciseId: storedExercise.id,
+        rating,
+      })
+
+      setExerciseQueue((currentQueue) => {
+        const nextQueue = [...currentQueue]
+        const currentExercise = nextQueue[currentExerciseIndex]
+
+        if (currentExercise) {
+          nextQueue[currentExerciseIndex] = {
+            ...currentExercise,
+            id: storedExercise.id,
+            exerciseKey: storedExercise.exerciseKey,
+            stats: nextStats,
+          }
+        }
+
+        return nextQueue
+      })
+
+      console.log("[practice] rating persisted", {
+        flowId: id,
+        exerciseId: storedExercise.id,
+        exerciseKey: storedExercise.exerciseKey,
+        rating,
+        totalAttempts: nextStats.totalAttempts,
+        action: "advance_to_next_exercise",
+      })
+
+      advanceToNextExercise()
+    } catch (error) {
+      console.error("[practice] failed to persist rating", {
+        flowId: id,
+        exerciseKey: exercise.exerciseKey,
+        rating,
+        error,
+      })
+    } finally {
+      setIsSavingRating(false)
+    }
   }
 
   return (
@@ -505,7 +555,12 @@ export default function Practice() {
           </View>
         </View>
 
-        <DifficultyButtons onRate={handleRate} />
+        <DifficultyButtons
+          onRate={(rating) => {
+            void handleRate(rating)
+          }}
+          disabled={isSavingRating}
+        />
       </View>
     </SafeAreaView>
   )
