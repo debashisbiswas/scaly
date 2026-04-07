@@ -10,7 +10,6 @@ import {
   UpdateFlowFromDraftInput,
   UpdateFlowFromDraftResult,
 } from "./domain"
-import { toExerciseKey } from "./exerciseKey"
 import {
   expandFlowDraftToExerciseSpecs,
   getFlowCreationErrorMessage,
@@ -20,11 +19,6 @@ import {
 function createFlowId(now: Date) {
   const randomSuffix = Math.random().toString(36).slice(2, 8)
   return `flow_${now.getTime()}_${randomSuffix}`
-}
-
-function createExerciseId(flowId: string, position: number, now: Date) {
-  const randomSuffix = Math.random().toString(36).slice(2, 8)
-  return `ex_${flowId}_${position}_${now.getTime()}_${randomSuffix}`
 }
 
 function toFlowErrorResult(
@@ -62,30 +56,6 @@ export class SqliteFlowGenerationService implements FlowGenerationService {
         createdAt: now,
         updatedAt: now,
       })
-
-      if (generated.length === 0) {
-        return
-      }
-
-      await tx.insert(exercises).values(
-        generated.map((spec, position) => ({
-          id: createExerciseId(flowId, position, now),
-          flowId,
-          position,
-          exerciseKey: toExerciseKey(spec),
-          key: spec.key,
-          mode: spec.mode,
-          startOctave: spec.startOctave,
-          octaves: spec.octaves,
-          clef: spec.clef,
-          tempoKind: spec.tempo.kind,
-          tempoBpm: spec.tempo.kind === "single" ? spec.tempo.bpm : null,
-          tempoMinBpm: spec.tempo.kind === "range" ? spec.tempo.minBpm : null,
-          tempoMaxBpm: spec.tempo.kind === "range" ? spec.tempo.maxBpm : null,
-          createdAt: now,
-          archivedAt: null,
-        })),
-      )
     })
 
     return {
@@ -130,30 +100,6 @@ export class SqliteFlowGenerationService implements FlowGenerationService {
         .where(eq(flows.id, flowId))
 
       await tx.delete(exercises).where(eq(exercises.flowId, flowId))
-
-      if (generated.length === 0) {
-        return
-      }
-
-      await tx.insert(exercises).values(
-        generated.map((spec, position) => ({
-          id: createExerciseId(flowId, position, now),
-          flowId,
-          position,
-          exerciseKey: toExerciseKey(spec),
-          key: spec.key,
-          mode: spec.mode,
-          startOctave: spec.startOctave,
-          octaves: spec.octaves,
-          clef: spec.clef,
-          tempoKind: spec.tempo.kind,
-          tempoBpm: spec.tempo.kind === "single" ? spec.tempo.bpm : null,
-          tempoMinBpm: spec.tempo.kind === "range" ? spec.tempo.minBpm : null,
-          tempoMaxBpm: spec.tempo.kind === "range" ? spec.tempo.maxBpm : null,
-          createdAt: now,
-          archivedAt: null,
-        })),
-      )
     })
 
     return {
