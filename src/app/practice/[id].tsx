@@ -440,7 +440,7 @@ export default function Practice() {
           marginBottom: 4,
         }}
       >
-        {`Exercise ${currentExerciseIndex + 1} of ${exerciseQueue.length}`}
+        {`Randomizing ${exerciseQueue.length} exercise${exerciseQueue.length === 1 ? "" : "s"}`}
       </Text>
 
       <View style={{ flex: 1 }}>
