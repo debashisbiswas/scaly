@@ -349,10 +349,6 @@ export default function Practice() {
     )
   }
 
-  const sideRailWidth = 74
-  const contentGap = 10
-  const keyLabel = exercise.spec.key
-  const modeLabel = getModeLabel(exercise.spec.mode)
   const octaveCount = exercise.spec.octaves
 
   const advanceToNextExercise = () => {
@@ -448,7 +444,7 @@ export default function Practice() {
           style={{
             flex: 1,
             flexDirection: "row",
-            gap: contentGap,
+            gap: 10,
             paddingVertical: 8,
             marginBottom: 12,
           }}
@@ -505,7 +501,7 @@ export default function Practice() {
                           }}
                         >
                           <Text style={{ fontWeight: "700", color: "#1f2835" }}>
-                            {`${keyLabel} ${modeLabel}`}
+                            {`${exercise.spec.key} ${getModeLabel(exercise.spec.mode)}`}
                           </Text>
                         </View>
                       </View>
@@ -537,7 +533,7 @@ export default function Practice() {
 
           <View
             style={{
-              width: sideRailWidth,
+              width: 74,
               gap: 14,
               alignItems: "center",
               alignSelf: "center",
