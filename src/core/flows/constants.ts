@@ -26,31 +26,6 @@ export const MODE_OPTIONS = [
   "Melodic Minor",
 ] as const
 
-export const SLUR_PATTERN_OPTIONS = [
-  {
-    id: "full-phrase",
-    slurSpans: [[0, 13]],
-  },
-  {
-    id: "every-beat",
-    slurSpans: [
-      [0, 2],
-      [3, 6],
-      [7, 9],
-      [10, 13],
-    ],
-  },
-  {
-    id: "tongue-1-slur-3",
-    slurSpans: [
-      [1, 2],
-      [4, 6],
-      [8, 9],
-      [11, 13],
-    ],
-  },
-] as const
-
 const NOTE_NAMES = ["C", "D", "E", "F", "G", "A", "B"] as const
 
 export const NOTE_STEP_OPTIONS = (() => {
