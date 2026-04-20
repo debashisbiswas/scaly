@@ -6,12 +6,7 @@ import {
   MODE_OPTIONS,
   getClefRangeConfig,
 } from "./constants"
-import {
-  CreateFlowResult,
-  Flow,
-  FlowDraft,
-  FlowDraftValidationError,
-} from "./types"
+import { FlowDraft, FlowDraftValidationError } from "./types"
 
 const DEFAULT_RANGE_CONFIG = getClefRangeConfig(null)
 const DEFAULT_LOW_PITCH = DEFAULT_RANGE_CONFIG.defaultLow
@@ -44,11 +39,6 @@ export type GeneratedExerciseSpec = {
 
 function unique<T extends string>(values: T[]) {
   return [...new Set(values)]
-}
-
-function createFlowId(now: Date) {
-  const randomSuffix = Math.random().toString(36).slice(2, 8)
-  return `flow_${now.getTime()}_${randomSuffix}`
 }
 
 function parsePitchLabel(label: string) {
@@ -247,50 +237,6 @@ export function validateFlowDraft(
   }
 
   return errors
-}
-
-export function createFlowFromDraft({
-  draft: inputDraft,
-  name,
-  now = new Date(),
-}: {
-  draft: FlowDraft
-  name: string
-  now?: Date
-}): CreateFlowResult {
-  const normalizedName = name.trim()
-  const errors = validateFlowDraft(inputDraft)
-
-  if (normalizedName.length === 0) {
-    return {
-      ok: false,
-      errors,
-    }
-  }
-
-  if (errors.length > 0) {
-    return {
-      ok: false,
-      errors,
-    }
-  }
-
-  const draft = normalizeFlowDraft(inputDraft)
-  const nowIso = now.toISOString()
-
-  const flow: Flow = {
-    id: createFlowId(now),
-    name: normalizedName,
-    config: draft,
-    progressPercent: 0,
-    createdAt: nowIso,
-    updatedAt: nowIso,
-  }
-
-  return {
-    ok: true,
-    value: flow,
-  }
 }
 
 export function getFlowCreationErrorMessage(

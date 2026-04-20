@@ -1,5 +1,4 @@
 export * from "./constants"
-export * from "./domain"
 export * from "./exerciseKey"
 export * from "./premade"
 export * from "./repository"

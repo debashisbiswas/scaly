@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest"
 import { getClefRangeConfig } from "@/core/flows/constants"
 import {
   createEmptyFlowDraft,
-  createFlowFromDraft,
   expandFlowDraftToExerciseSpecs,
   normalizeFlowDraft,
   validateFlowDraft,
@@ -34,51 +33,6 @@ describe("flow service", () => {
       "missing_clef",
       "missing_modes",
     ])
-  })
-
-  it("builds a flow from a valid draft", () => {
-    const now = new Date("2026-02-17T10:00:00.000Z")
-    const draft: FlowDraft = {
-      ...createEmptyFlowDraft(),
-      keys: ["C"],
-      clef: "Treble Clef",
-      modes: ["Major"],
-    }
-
-    const result = createFlowFromDraft({
-      draft,
-      name: "  Jury Routine  ",
-      now,
-    })
-
-    expect(result.ok).toBe(true)
-    if (!result.ok) {
-      return
-    }
-
-    expect(result.value.name).toBe("Jury Routine")
-    expect(result.value.config).toEqual(draft)
-    expect(result.value.progressPercent).toBe(0)
-    expect(result.value.createdAt).toBe(now.toISOString())
-    expect(result.value.updatedAt).toBe(now.toISOString())
-  })
-
-  it("rejects invalid tempo and empty name", () => {
-    const draft: FlowDraft = {
-      ...createEmptyFlowDraft(),
-      keys: ["C"],
-      clef: "Treble Clef",
-      modes: ["Major"],
-      tempo: { kind: "range", minBpm: 120, maxBpm: 80 } as const,
-    }
-
-    const result = createFlowFromDraft({ draft, name: "   " })
-
-    expect(result.ok).toBe(false)
-    if (result.ok) {
-      return
-    }
-    expect(result.errors).toEqual(["invalid_tempo"])
   })
 
   it("normalizes duplicate selections for multi-select fields", () => {
