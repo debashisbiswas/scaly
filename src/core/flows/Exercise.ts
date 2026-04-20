@@ -1,4 +1,4 @@
-import { and, asc, eq, isNull } from "drizzle-orm"
+import { and, asc, eq, isNull, sql } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { exercises } from "@/db/schema"
@@ -7,7 +7,7 @@ import { toExerciseKey } from "./exerciseKey"
 import { GeneratedExerciseSpec } from "./service"
 
 export namespace Exercise {
-  export async function listForFlow(flowId: string) {
+  export async function list(flowId: string) {
     const rows = await db
       .select()
       .from(exercises)
@@ -17,54 +17,18 @@ export namespace Exercise {
     return rows.map(serialize).filter((value) => value !== null)
   }
 
-  export async function upsertByFlowIdAndSpec(
-    flowId: string,
-    spec: GeneratedExerciseSpec,
-  ) {
+  export async function upsert(flowId: string, spec: GeneratedExerciseSpec) {
     function createExerciseId(flowId: string, now: Date) {
       const randomSuffix = Math.random().toString(36).slice(2, 8)
       return `ex_${flowId}_${now.getTime()}_${randomSuffix}`
     }
 
     const now = new Date()
-
     const exerciseKey = toExerciseKey(spec)
 
-    await db.transaction(async (tx) => {
-      const existingRows = await tx
-        .select()
-        .from(exercises)
-        .where(
-          and(
-            eq(exercises.flowId, flowId),
-            eq(exercises.exerciseKey, exerciseKey),
-          ),
-        )
-        .limit(1)
-
-      const existing = existingRows[0]
-
-      if (existing) {
-        await tx
-          .update(exercises)
-          .set({
-            key: spec.key,
-            mode: spec.mode,
-            startOctave: spec.startOctave,
-            octaves: spec.octaves,
-            clef: spec.clef,
-            tempoKind: spec.tempo.kind,
-            tempoBpm: spec.tempo.kind === "single" ? spec.tempo.bpm : null,
-            tempoMinBpm: spec.tempo.kind === "range" ? spec.tempo.minBpm : null,
-            tempoMaxBpm: spec.tempo.kind === "range" ? spec.tempo.maxBpm : null,
-            archivedAt: null,
-          })
-          .where(eq(exercises.id, existing.id))
-
-        return
-      }
-
-      await tx.insert(exercises).values({
+    const result = await db
+      .insert(exercises)
+      .values({
         id: createExerciseId(flowId, now),
         flowId,
         exerciseKey,
@@ -80,34 +44,18 @@ export namespace Exercise {
         createdAt: now,
         archivedAt: null,
       })
-    })
+      .onConflictDoUpdate({
+        target: [exercises.flowId, exercises.exerciseKey],
+        set: {
+          // I don't want to do anything on conflict, but still want the query
+          // to return the data.
+          // https://github.com/drizzle-team/drizzle-orm/issues/2474
+          exerciseKey: sql`${exercises.exerciseKey}`,
+        },
+      })
+      .returning()
 
-    const stored = await getForFlowByKey(flowId, exerciseKey)
-
-    if (!stored) {
-      throw new Error("Failed to upsert exercise by flow and exercise key.")
-    }
-
-    return stored
-  }
-
-  async function getForFlowByKey(flowId: string, exerciseKey: string) {
-    const rows = await db
-      .select()
-      .from(exercises)
-      .where(
-        and(
-          eq(exercises.flowId, flowId),
-          eq(exercises.exerciseKey, exerciseKey),
-          isNull(exercises.archivedAt),
-        ),
-      )
-      .limit(1)
-
-    return rows
-      .map(serialize)
-      .filter((value) => value !== null)
-      .at(0)
+    return result.map(serialize).at(0)
   }
 
   function toTempo(row: typeof exercises.$inferSelect) {

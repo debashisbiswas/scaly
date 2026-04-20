@@ -223,7 +223,7 @@ export default function Practice() {
 
       try {
         const generated = expandFlowDraftToExerciseSpecs(flow.config)
-        const storedExercises = await Exercise.listForFlow(id)
+        const storedExercises = await Exercise.list(id)
         const storedExerciseIds = storedExercises.map((exercise) => exercise.id)
         const storedStats =
           await ExercisePracticeStats.listByExerciseIDs(storedExerciseIds)
@@ -345,10 +345,7 @@ export default function Practice() {
     setIsSavingRating(true)
 
     try {
-      const storedExercise = await Exercise.upsertByFlowIdAndSpec(
-        id,
-        exercise.spec,
-      )
+      const storedExercise = await Exercise.upsert(id, exercise.spec)
       const nextStats = await ExercisePracticeStats.recordExerciseRating(
         storedExercise.id,
         rating,
