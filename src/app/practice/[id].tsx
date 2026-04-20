@@ -21,12 +21,7 @@ type PracticeExercise = {
   stats: ExercisePracticeStats.Shape | null
 }
 
-function SideToggleButton({
-  label,
-  active,
-  icon,
-  onPress,
-}: {
+function SideToggleButton(props: {
   label: string
   active?: boolean
   icon: keyof typeof Ionicons.glyphMap
@@ -34,11 +29,11 @@ function SideToggleButton({
 }) {
   return (
     <Pressable
-      onPress={onPress}
+      onPress={props.onPress}
       style={{
         alignItems: "center",
         gap: 4,
-        opacity: active || onPress ? 1 : 0.65,
+        opacity: props.active || props.onPress ? 1 : 0.65,
       }}
     >
       <View
@@ -48,19 +43,19 @@ function SideToggleButton({
           borderRadius: 19,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: active ? "#b7bfcb" : "#d6dbe3",
+          backgroundColor: props.active ? "#b7bfcb" : "#d6dbe3",
         }}
       >
-        <Ionicons name={icon} size={20} color="#8992a0" />
+        <Ionicons name={props.icon} size={20} color="#8992a0" />
       </View>
       <Text
         style={{
           fontSize: 15,
           color: "#7c8491",
-          fontWeight: active ? "600" : "500",
+          fontWeight: props.active ? "600" : "500",
         }}
       >
-        {label}
+        {props.label}
       </Text>
     </Pressable>
   )
@@ -79,10 +74,7 @@ function BackButton() {
   )
 }
 
-function DifficultyButtons({
-  onRate,
-  disabled,
-}: {
+function DifficultyButtons(props: {
   onRate: (rating: ExercisePracticeStats.Rating) => void
   disabled?: boolean
 }) {
@@ -106,7 +98,7 @@ function DifficultyButtons({
       {buttons.map((button) => (
         <Pressable
           key={button.label}
-          disabled={disabled}
+          disabled={props.disabled}
           style={{
             width: buttonSize,
             height: buttonSize,
@@ -114,9 +106,9 @@ function DifficultyButtons({
             justifyContent: "center",
             alignItems: "center",
             backgroundColor: button.color,
-            opacity: disabled ? 0.5 : 1,
+            opacity: props.disabled ? 0.5 : 1,
           }}
-          onPress={() => onRate(button.rating)}
+          onPress={() => props.onRate(button.rating)}
         >
           <Text style={{ color: "#fff", fontWeight: "700" }}>
             {button.label}
@@ -124,6 +116,27 @@ function DifficultyButtons({
         </Pressable>
       ))}
     </View>
+  )
+}
+
+function ExercisePropertyView(props: { title: string; text: string }) {
+  return (
+    <>
+      <Text style={{ fontSize: 12, color: "#777f8c" }}>{props.title}</Text>
+      <View
+        style={{
+          borderRadius: 8,
+          backgroundColor: "#E5E7EB",
+          minHeight: 34,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ fontWeight: "700", color: "#1f2835" }}>
+          {props.text}
+        </Text>
+      </View>
+    </>
   )
 }
 
@@ -470,62 +483,30 @@ export default function Practice() {
                   <View style={{ flex: 1, gap: 12 }}>
                     <View style={{ flexDirection: "row", gap: 8 }}>
                       <View style={{ flex: 1, gap: 4 }}>
-                        <Text style={{ fontSize: 12, color: "#777f8c" }}>
-                          Key
-                        </Text>
-                        <View
-                          style={{
-                            borderRadius: 8,
-                            backgroundColor: "#E5E7EB",
-                            minHeight: 34,
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Text style={{ fontWeight: "700", color: "#1f2835" }}>
-                            {`${exercise.spec.key} ${getModeLabel(exercise.spec.mode)}`}
-                          </Text>
-                        </View>
+                        <ExercisePropertyView
+                          title="Key"
+                          text={`${exercise.spec.key} ${getModeLabel(exercise.spec.mode)}`}
+                        />
                       </View>
 
                       <View style={{ flex: 1, gap: 4 }}>
-                        <Text style={{ fontSize: 12, color: "#777f8c" }}>
-                          Octaves
-                        </Text>
-                        <View
-                          style={{
-                            borderRadius: 8,
-                            backgroundColor: "#E5E7EB",
-                            minHeight: 34,
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Text style={{ fontWeight: "700", color: "#1f2835" }}>
-                            {`${octaveCount} Octave${octaveCount === 1 ? "" : "s"}`}
-                          </Text>
-                        </View>
+                        <ExercisePropertyView
+                          title="Octaves"
+                          text={`${octaveCount} Octave${octaveCount === 1 ? "" : "s"}`}
+                        />
                       </View>
                     </View>
 
                     <View style={{ flexDirection: "row", gap: 8 }}>
                       <View style={{ flex: 1, gap: 4 }}>
-                        <Text style={{ fontSize: 12, color: "#777f8c" }}>
-                          Tempo
-                        </Text>
-                        <View
-                          style={{
-                            borderRadius: 8,
-                            backgroundColor: "#E5E7EB",
-                            minHeight: 34,
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Text style={{ fontWeight: "700", color: "#1f2835" }}>
-                            {`${exercise.spec.tempo.kind === "single" ? exercise.spec.tempo.bpm : `${exercise.spec.tempo.minBpm}-${exercise.spec.tempo.maxBpm}`} BPM`}
-                          </Text>
-                        </View>
+                        <ExercisePropertyView
+                          title="Tempo"
+                          text={`${
+                            exercise.spec.tempo.kind === "single"
+                              ? exercise.spec.tempo.bpm
+                              : `${exercise.spec.tempo.minBpm}-${exercise.spec.tempo.maxBpm}`
+                          } BPM`}
+                        />
                       </View>
                     </View>
                   </View>
