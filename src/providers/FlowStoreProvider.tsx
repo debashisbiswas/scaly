@@ -84,18 +84,13 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
 
   const createFlow = useCallback(
     async (name: string) => {
-      const result = await sqliteFlowGenerationService.createFlowFromDraft({
+      const result = await Flow2.createFromDraft({
         draft: draftRepositoryRef.current.get(),
         name,
       })
 
       if (!result.ok) {
-        const legacyResult: CreateFlowResult = {
-          ok: false,
-          errors: result.errors,
-        }
-
-        return legacyResult
+        return result
       }
 
       const createdFlow = await Flow2.fromID(result.flowId)

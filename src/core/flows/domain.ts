@@ -1,11 +1,5 @@
 import { FlowDraft, FlowDraftValidationError } from "./types"
 
-export type CreateFlowFromDraftInput = {
-  name: string
-  draft: FlowDraft
-  now?: Date
-}
-
 export type CreateFlowFromDraftResult =
   | {
       ok: true
@@ -37,12 +31,3 @@ export type UpdateFlowFromDraftResult =
       errors: FlowDraftValidationError[]
       message: string
     }
-
-export interface FlowGenerationService {
-  createFlowFromDraft(
-    input: CreateFlowFromDraftInput,
-  ): Promise<CreateFlowFromDraftResult>
-  updateFlowFromDraft(
-    input: UpdateFlowFromDraftInput,
-  ): Promise<UpdateFlowFromDraftResult>
-}
