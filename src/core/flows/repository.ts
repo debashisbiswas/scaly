@@ -1,33 +1,6 @@
-import { Flow, FlowDraft } from "./types"
+import { FlowDraft } from "./types"
 
-export interface FlowRepository {
-  list(): Flow[]
-  add(flow: Flow): void
-}
-
-export interface FlowDraftRepository {
-  get(): FlowDraft
-  save(draft: FlowDraft): void
-  reset(): void
-}
-
-export class InMemoryFlowRepository implements FlowRepository {
-  private flows: Flow[]
-
-  constructor(seed: Flow[] = []) {
-    this.flows = [...seed]
-  }
-
-  list() {
-    return [...this.flows]
-  }
-
-  add(flow: Flow) {
-    this.flows = [flow, ...this.flows]
-  }
-}
-
-export class InMemoryFlowDraftRepository implements FlowDraftRepository {
+export class InMemoryFlowDraftRepository {
   private draft: FlowDraft
   private readonly createEmptyDraft: () => FlowDraft
 
