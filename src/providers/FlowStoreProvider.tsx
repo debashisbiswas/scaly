@@ -17,10 +17,7 @@ import {
   PREMADE_FLOWS,
   createEmptyFlowDraft,
 } from "@/core/flows"
-import {
-  getStoredFlowById,
-  listStoredFlows,
-} from "@/core/flows/sqliteFlowRepository"
+import { Flow2 } from "@/core/flows/Flow"
 import { sqliteFlowGenerationService } from "@/core/flows/sqliteGenerationService"
 
 type FlowStoreContextValue = {
@@ -48,7 +45,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
 
     async function loadFlows() {
       try {
-        const storedFlows = await listStoredFlows()
+        const storedFlows = await Flow2.list()
 
         if (!cancelled) {
           setFlows(storedFlows)
@@ -101,7 +98,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
         return legacyResult
       }
 
-      const createdFlow = await getStoredFlowById(result.flowId)
+      const createdFlow = await Flow2.fromID(result.flowId)
 
       if (!createdFlow) {
         const legacyResult: CreateFlowResult = {
@@ -112,7 +109,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
         return legacyResult
       }
 
-      const storedFlows = await listStoredFlows()
+      const storedFlows = await Flow2.list()
       setFlows(storedFlows)
 
       draftRepositoryRef.current.reset()
