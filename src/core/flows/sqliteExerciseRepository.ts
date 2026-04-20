@@ -32,59 +32,7 @@ function toTempo(row: typeof exercises.$inferSelect) {
   return null
 }
 
-export async function listExercisesByFlowId(flowId: string) {
-  const rows = await db
-    .select()
-    .from(exercises)
-    .where(and(eq(exercises.flowId, flowId), isNull(exercises.archivedAt)))
-    .orderBy(asc(exercises.createdAt))
-
-  return rows
-    .map((row) => {
-      const tempo = toTempo(row)
-
-      if (!tempo) {
-        return null
-      }
-
-      return {
-        id: row.id,
-        exerciseKey: row.exerciseKey,
-        spec: {
-          key: row.key,
-          mode: row.mode as GeneratedExerciseSpec["mode"],
-          startOctave: row.startOctave,
-          octaves: row.octaves,
-          clef: row.clef as GeneratedExerciseSpec["clef"],
-          tempo,
-        },
-      }
-    })
-    .filter((value) => value !== null)
-}
-
-async function getExerciseByFlowIdAndExerciseKey(
-  flowId: string,
-  exerciseKey: string,
-) {
-  const rows = await db
-    .select()
-    .from(exercises)
-    .where(
-      and(
-        eq(exercises.flowId, flowId),
-        eq(exercises.exerciseKey, exerciseKey),
-        isNull(exercises.archivedAt),
-      ),
-    )
-    .limit(1)
-
-  const row = rows[0]
-
-  if (!row) {
-    return null
-  }
-
+function serialize(row: typeof exercises.$inferSelect) {
   const tempo = toTempo(row)
 
   if (!tempo) {
@@ -105,6 +53,38 @@ async function getExerciseByFlowIdAndExerciseKey(
   }
 }
 
+export async function listExercisesByFlowId(flowId: string) {
+  const rows = await db
+    .select()
+    .from(exercises)
+    .where(and(eq(exercises.flowId, flowId), isNull(exercises.archivedAt)))
+    .orderBy(asc(exercises.createdAt))
+
+  return rows.map(serialize).filter((value) => value !== null)
+}
+
+async function getExerciseByFlowIdAndExerciseKey(
+  flowId: string,
+  exerciseKey: string,
+) {
+  const rows = await db
+    .select()
+    .from(exercises)
+    .where(
+      and(
+        eq(exercises.flowId, flowId),
+        eq(exercises.exerciseKey, exerciseKey),
+        isNull(exercises.archivedAt),
+      ),
+    )
+    .limit(1)
+
+  return rows
+    .map(serialize)
+    .filter((value) => value !== null)
+    .at(0)
+}
+
 export async function upsertExerciseByFlowIdAndSpec({
   flowId,
   spec,
@@ -113,7 +93,7 @@ export async function upsertExerciseByFlowIdAndSpec({
   flowId: string
   spec: GeneratedExerciseSpec
   now?: Date
-}): Promise<StoredExercise> {
+}) {
   function createExerciseId(flowId: string, now: Date) {
     const randomSuffix = Math.random().toString(36).slice(2, 8)
     return `ex_${flowId}_${now.getTime()}_${randomSuffix}`
