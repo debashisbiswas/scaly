@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm"
+import { eq, inArray, sql } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { exercisePracticeStats } from "@/db/schema"
@@ -43,53 +43,37 @@ export namespace ExercisePracticeStats {
     rating: Rating,
   ) {
     const now = new Date()
-    await db.transaction(async (tx) => {
-      const rows = await tx
-        .select()
-        .from(exercisePracticeStats)
-        .where(eq(exercisePracticeStats.exerciseId, exerciseId))
-        .limit(1)
 
-      const existing = rows[0]
+    const rows = await db
+      .insert(exercisePracticeStats)
+      .values({
+        exerciseId,
+        totalAttempts: 1,
+        againCount: rating === "again" ? 1 : 0,
+        hardCount: rating === "hard" ? 1 : 0,
+        goodCount: rating === "good" ? 1 : 0,
+        easyCount: rating === "easy" ? 1 : 0,
+        lastRating: rating,
+        lastRatedAt: now,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [exercisePracticeStats.exerciseId],
+        set: {
+          totalAttempts: sql`${exercisePracticeStats.totalAttempts} + 1`,
+          againCount: sql`${exercisePracticeStats.againCount} + ${rating === "again" ? 1 : 0}`,
+          hardCount: sql`${exercisePracticeStats.hardCount} + ${rating === "hard" ? 1 : 0}`,
+          goodCount: sql`${exercisePracticeStats.goodCount} + ${rating === "good" ? 1 : 0}`,
+          easyCount: sql`${exercisePracticeStats.easyCount} + ${rating === "easy" ? 1 : 0}`,
+          lastRating: sql`${exercisePracticeStats.lastRating}`,
+          lastRatedAt: sql`${exercisePracticeStats.lastRatedAt}`,
+          updatedAt: sql`${exercisePracticeStats.updatedAt}`,
+        },
+      })
+      .returning()
 
-      if (!existing) {
-        await tx.insert(exercisePracticeStats).values({
-          exerciseId,
-          totalAttempts: 1,
-          againCount: rating === "again" ? 1 : 0,
-          hardCount: rating === "hard" ? 1 : 0,
-          goodCount: rating === "good" ? 1 : 0,
-          easyCount: rating === "easy" ? 1 : 0,
-          lastRating: rating,
-          lastRatedAt: now,
-          createdAt: now,
-          updatedAt: now,
-        })
-        return
-      }
-
-      await tx
-        .update(exercisePracticeStats)
-        .set({
-          totalAttempts: existing.totalAttempts + 1,
-          againCount: existing.againCount + (rating === "again" ? 1 : 0),
-          hardCount: existing.hardCount + (rating === "hard" ? 1 : 0),
-          goodCount: existing.goodCount + (rating === "good" ? 1 : 0),
-          easyCount: existing.easyCount + (rating === "easy" ? 1 : 0),
-          lastRating: rating,
-          lastRatedAt: now,
-          updatedAt: now,
-        })
-        .where(eq(exercisePracticeStats.exerciseId, exerciseId))
-    })
-
-    const stats = await fromExerciseID(exerciseId)
-
-    if (!stats) {
-      throw new Error("Failed to persist exercise practice stats.")
-    }
-
-    return stats
+    return rows.map(serialize).at(0)
   }
 
   export function getExercisePracticeWeight(stats: Shape | null) {
