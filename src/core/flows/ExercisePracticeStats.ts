@@ -1,4 +1,4 @@
-import { eq, inArray, sql } from "drizzle-orm"
+import { inArray, sql } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { exercisePracticeStats } from "@/db/schema"
@@ -17,16 +17,6 @@ export namespace ExercisePracticeStats {
     lastRatedAt: Date | null
     createdAt: Date
     updatedAt: Date
-  }
-
-  export async function fromExerciseID(exerciseId: string) {
-    const rows = await db
-      .select()
-      .from(exercisePracticeStats)
-      .where(eq(exercisePracticeStats.exerciseId, exerciseId))
-      .limit(1)
-
-    return rows.map(serialize).at(0)
   }
 
   export async function listByExerciseIDs(exerciseIds: string[]) {
