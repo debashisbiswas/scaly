@@ -1,10 +1,5 @@
 import { FlowDraft, FlowDraftValidationError } from "./types"
 
-/**
- * Domain policy (v1): editing a flow regenerates exercises and resets progress.
- */
-export const FLOW_EDIT_POLICY = "regenerate_and_reset_progress" as const
-
 export type CreateFlowFromDraftInput = {
   name: string
   draft: FlowDraft
