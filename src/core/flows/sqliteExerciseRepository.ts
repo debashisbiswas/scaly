@@ -12,16 +12,9 @@ export type StoredExercise = {
   spec: GeneratedExerciseSpec
 }
 
-function createExerciseId(flowId: string, now: Date) {
-  const randomSuffix = Math.random().toString(36).slice(2, 8)
-  return `ex_${flowId}_${now.getTime()}_${randomSuffix}`
-}
-
-function toTempo(
-  row: typeof exercises.$inferSelect,
-): GeneratedExerciseSpec["tempo"] | null {
+function toTempo(row: typeof exercises.$inferSelect) {
   if (row.tempoKind === "single" && typeof row.tempoBpm === "number") {
-    return { kind: "single", bpm: row.tempoBpm }
+    return { kind: "single", bpm: row.tempoBpm } as const
   }
 
   if (
@@ -33,59 +26,13 @@ function toTempo(
       kind: "range",
       minBpm: row.tempoMinBpm,
       maxBpm: row.tempoMaxBpm,
-    }
+    } as const
   }
 
   return null
 }
 
-export async function getFirstExerciseSpecByFlowId(flowId: string) {
-  const rows = await db
-    .select()
-    .from(exercises)
-    .where(and(eq(exercises.flowId, flowId), isNull(exercises.archivedAt)))
-    .orderBy(asc(exercises.createdAt))
-    .limit(1)
-
-  const row = rows[0]
-
-  if (!row) {
-    return null
-  }
-
-  const tempo = toTempo(row)
-
-  if (!tempo) {
-    return null
-  }
-
-  return {
-    key: row.key,
-    mode: row.mode as GeneratedExerciseSpec["mode"],
-    startOctave: row.startOctave,
-    octaves: row.octaves,
-    clef: row.clef as GeneratedExerciseSpec["clef"],
-    tempo,
-  }
-}
-
-export async function getFirstExerciseByFlowId(flowId: string): Promise<{
-  id: string
-  spec: GeneratedExerciseSpec
-} | null> {
-  const items = await listExercisesByFlowId(flowId)
-
-  return items[0]
-    ? {
-        id: items[0].id,
-        spec: items[0].spec,
-      }
-    : null
-}
-
-export async function listExercisesByFlowId(
-  flowId: string,
-): Promise<StoredExercise[]> {
+export async function listExercisesByFlowId(flowId: string) {
   const rows = await db
     .select()
     .from(exercises)
@@ -113,13 +60,13 @@ export async function listExercisesByFlowId(
         },
       }
     })
-    .filter((value): value is StoredExercise => value !== null)
+    .filter((value) => value !== null)
 }
 
-export async function getExerciseByFlowIdAndExerciseKey(
+async function getExerciseByFlowIdAndExerciseKey(
   flowId: string,
   exerciseKey: string,
-): Promise<StoredExercise | null> {
+) {
   const rows = await db
     .select()
     .from(exercises)
@@ -167,6 +114,11 @@ export async function upsertExerciseByFlowIdAndSpec({
   spec: GeneratedExerciseSpec
   now?: Date
 }): Promise<StoredExercise> {
+  function createExerciseId(flowId: string, now: Date) {
+    const randomSuffix = Math.random().toString(36).slice(2, 8)
+    return `ex_${flowId}_${now.getTime()}_${randomSuffix}`
+  }
+
   const exerciseKey = toExerciseKey(spec)
 
   await db.transaction(async (tx) => {
