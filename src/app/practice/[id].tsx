@@ -9,10 +9,7 @@ import {
   GeneratedExerciseSpec,
   expandFlowDraftToExerciseSpecs,
 } from "@/core/flows"
-import {
-  listExercisesByFlowId,
-  upsertExerciseByFlowIdAndSpec,
-} from "@/core/flows/sqliteExerciseRepository"
+import { Exercise } from "@/core/flows/Exercise"
 import { ExercisePracticeStats } from "@/core/flows/ExercisePracticeStats"
 import { toExerciseKey } from "@/core/flows/exerciseKey"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
@@ -226,7 +223,7 @@ export default function Practice() {
 
       try {
         const generated = expandFlowDraftToExerciseSpecs(flow.config)
-        const storedExercises = await listExercisesByFlowId(id)
+        const storedExercises = await Exercise.listForFlow(id)
         const storedExerciseIds = storedExercises.map((exercise) => exercise.id)
         const storedStats =
           await ExercisePracticeStats.listByExerciseIDs(storedExerciseIds)
@@ -348,7 +345,7 @@ export default function Practice() {
     setIsSavingRating(true)
 
     try {
-      const storedExercise = await upsertExerciseByFlowIdAndSpec({
+      const storedExercise = await Exercise.upsertByFlowIdAndSpec({
         flowId: id,
         spec: exercise.spec,
       })
