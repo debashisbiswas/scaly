@@ -507,6 +507,27 @@ export default function Practice() {
                         </View>
                       </View>
                     </View>
+
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                      <View style={{ flex: 1, gap: 4 }}>
+                        <Text style={{ fontSize: 12, color: "#777f8c" }}>
+                          Tempo
+                        </Text>
+                        <View
+                          style={{
+                            borderRadius: 8,
+                            backgroundColor: "#E5E7EB",
+                            minHeight: 34,
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Text style={{ fontWeight: "700", color: "#1f2835" }}>
+                            {`${exercise.spec.tempo.kind === "single" ? exercise.spec.tempo.bpm : `${exercise.spec.tempo.minBpm}-${exercise.spec.tempo.maxBpm}`} BPM`}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
                   </View>
                 </View>
               )}
