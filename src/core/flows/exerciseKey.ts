@@ -1,13 +1,5 @@
+import { GeneratedExerciseSpec } from "./service"
 import { TempoSetting } from "./types"
-
-export type ExerciseSpecIdentity = {
-  key: string
-  mode: "major" | "minor" | "harmonic minor" | "melodic minor"
-  startOctave: number
-  octaves: number
-  clef: "treble" | "bass"
-  tempo: TempoSetting
-}
 
 function toTempoToken(tempo: TempoSetting) {
   if (tempo.kind === "single") {
@@ -17,7 +9,7 @@ function toTempoToken(tempo: TempoSetting) {
   return `range:${tempo.minBpm}-${tempo.maxBpm}`
 }
 
-export function toExerciseKey(spec: ExerciseSpecIdentity) {
+export function toExerciseKey(spec: GeneratedExerciseSpec) {
   return [
     `k=${spec.key}`,
     `m=${spec.mode}`,

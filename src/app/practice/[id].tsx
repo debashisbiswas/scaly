@@ -346,10 +346,19 @@ export default function Practice() {
 
     try {
       const storedExercise = await Exercise.upsert(id, exercise.spec)
+
+      if (!storedExercise) {
+        throw new Error("Failed to upsert exercise.")
+      }
+
       const nextStats = await ExercisePracticeStats.recordExerciseRating(
         storedExercise.id,
         rating,
       )
+
+      if (!nextStats) {
+        throw new Error("Failed to record exercise rating.")
+      }
 
       setExerciseQueue((currentQueue) => {
         const nextQueue = [...currentQueue]

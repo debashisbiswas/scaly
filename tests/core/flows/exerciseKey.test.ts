@@ -1,31 +1,30 @@
 import { describe, expect, it } from "vitest"
 
 import { toExerciseKey } from "@/core/flows/exerciseKey"
-import type { ExerciseSpecIdentity } from "@/core/flows/exerciseKey"
 
 describe("exercise key", () => {
   it("produces the same key for identical specs", () => {
-    const spec: ExerciseSpecIdentity = {
+    const spec = {
       key: "C",
       mode: "major",
       startOctave: 3,
       octaves: 2,
       clef: "treble",
       tempo: { kind: "single", bpm: 96 },
-    }
+    } as const
 
     expect(toExerciseKey(spec)).toBe(toExerciseKey(spec))
   })
 
   it("changes the key when any identity field changes", () => {
-    const base: ExerciseSpecIdentity = {
+    const base = {
       key: "C",
       mode: "major",
       startOctave: 3,
       octaves: 2,
       clef: "treble",
       tempo: { kind: "single", bpm: 96 },
-    }
+    } as const
 
     const variants = [
       { ...base, key: "D" },
