@@ -13,12 +13,7 @@ import {
   listExercisesByFlowId,
   upsertExerciseByFlowIdAndSpec,
 } from "@/core/flows/sqliteExerciseRepository"
-import {
-  ExerciseRating,
-  StoredExercisePracticeStats,
-  listExercisePracticeStatsByExerciseIds,
-  recordExerciseRating,
-} from "@/core/flows/sqliteExercisePracticeStatsRepository"
+import { ExercisePracticeStats } from "@/core/flows/sqliteExercisePracticeStatsRepository"
 import { toExerciseKey } from "@/core/flows/exerciseKey"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 
@@ -26,7 +21,7 @@ type PracticeExercise = {
   id: string | null
   exerciseKey: string
   spec: GeneratedExerciseSpec
-  stats: StoredExercisePracticeStats | null
+  stats: ExercisePracticeStats.Shape | null
 }
 
 function SideToggleButton({
@@ -91,7 +86,7 @@ function DifficultyButtons({
   onRate,
   disabled,
 }: {
-  onRate: (rating: "again" | "hard" | "good" | "easy") => void
+  onRate: (rating: ExercisePracticeStats.Rating) => void
   disabled?: boolean
 }) {
   const buttons = [
@@ -151,22 +146,6 @@ function getModeLabel(mode: GeneratedExerciseSpec["mode"]) {
   return "Melodic Minor"
 }
 
-function getExercisePracticeWeight(exercise: PracticeExercise) {
-  const stats = exercise.stats
-
-  if (!stats || stats.totalAttempts <= 0) {
-    return 2.25
-  }
-
-  const total = stats.totalAttempts
-  const difficultyRatio =
-    (stats.againCount * 1 + stats.hardCount * 0.7 + stats.goodCount * 0.2) /
-    total
-  const familiarityBoost = Math.min(1, 4 / Math.sqrt(total + 1))
-
-  return 0.5 + difficultyRatio * 2.2 + familiarityBoost
-}
-
 function pickWeightedExerciseIndex(
   exercises: PracticeExercise[],
   currentIndex: number,
@@ -182,7 +161,7 @@ function pickWeightedExerciseIndex(
   const weightedCandidates = exercises
     .map((exercise, index) => ({
       index,
-      weight: getExercisePracticeWeight(exercise),
+      weight: ExercisePracticeStats.getExercisePracticeWeight(exercise.stats),
     }))
     .filter((candidate) => candidate.index !== currentIndex)
 
@@ -250,7 +229,7 @@ export default function Practice() {
         const storedExercises = await listExercisesByFlowId(id)
         const storedExerciseIds = storedExercises.map((exercise) => exercise.id)
         const storedStats =
-          await listExercisePracticeStatsByExerciseIds(storedExerciseIds)
+          await ExercisePracticeStats.listByExerciseIDs(storedExerciseIds)
         const exerciseIdByKey = new Map(
           storedExercises.map((exercise) => [
             exercise.exerciseKey,
@@ -361,7 +340,7 @@ export default function Practice() {
     )
   }
 
-  const handleRate = async (rating: ExerciseRating) => {
+  const handleRate = async (rating: ExercisePracticeStats.Rating) => {
     if (typeof id !== "string" || isSavingRating) {
       return
     }
@@ -373,7 +352,7 @@ export default function Practice() {
         flowId: id,
         spec: exercise.spec,
       })
-      const nextStats = await recordExerciseRating({
+      const nextStats = await ExercisePracticeStats.recordExerciseRating({
         exerciseId: storedExercise.id,
         rating,
       })
@@ -551,12 +530,7 @@ export default function Practice() {
           </View>
         </View>
 
-        <DifficultyButtons
-          onRate={(rating) => {
-            void handleRate(rating)
-          }}
-          disabled={isSavingRating}
-        />
+        <DifficultyButtons onRate={handleRate} disabled={isSavingRating} />
       </View>
     </SafeAreaView>
   )
