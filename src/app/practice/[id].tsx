@@ -13,7 +13,7 @@ import {
   listExercisesByFlowId,
   upsertExerciseByFlowIdAndSpec,
 } from "@/core/flows/sqliteExerciseRepository"
-import { ExercisePracticeStats } from "@/core/flows/sqliteExercisePracticeStatsRepository"
+import { ExercisePracticeStats } from "@/core/flows/ExercisePracticeStats"
 import { toExerciseKey } from "@/core/flows/exerciseKey"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 
