@@ -17,19 +17,16 @@ export namespace Exercise {
     return rows.map(serialize).filter((value) => value !== null)
   }
 
-  export async function upsertByFlowIdAndSpec({
-    flowId,
-    spec,
-    now = new Date(),
-  }: {
-    flowId: string
-    spec: GeneratedExerciseSpec
-    now?: Date
-  }) {
+  export async function upsertByFlowIdAndSpec(
+    flowId: string,
+    spec: GeneratedExerciseSpec,
+  ) {
     function createExerciseId(flowId: string, now: Date) {
       const randomSuffix = Math.random().toString(36).slice(2, 8)
       return `ex_${flowId}_${now.getTime()}_${randomSuffix}`
     }
+
+    const now = new Date()
 
     const exerciseKey = toExerciseKey(spec)
 

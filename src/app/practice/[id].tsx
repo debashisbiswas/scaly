@@ -345,14 +345,14 @@ export default function Practice() {
     setIsSavingRating(true)
 
     try {
-      const storedExercise = await Exercise.upsertByFlowIdAndSpec({
-        flowId: id,
-        spec: exercise.spec,
-      })
-      const nextStats = await ExercisePracticeStats.recordExerciseRating({
-        exerciseId: storedExercise.id,
+      const storedExercise = await Exercise.upsertByFlowIdAndSpec(
+        id,
+        exercise.spec,
+      )
+      const nextStats = await ExercisePracticeStats.recordExerciseRating(
+        storedExercise.id,
         rating,
-      })
+      )
 
       setExerciseQueue((currentQueue) => {
         const nextQueue = [...currentQueue]

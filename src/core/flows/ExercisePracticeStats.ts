@@ -38,15 +38,11 @@ export namespace ExercisePracticeStats {
     return rows.map(serialize)
   }
 
-  export async function recordExerciseRating({
-    exerciseId,
-    rating,
-    now = new Date(),
-  }: {
-    exerciseId: string
-    rating: Rating
-    now?: Date
-  }) {
+  export async function recordExerciseRating(
+    exerciseId: string,
+    rating: Rating,
+  ) {
+    const now = new Date()
     await db.transaction(async (tx) => {
       const rows = await tx
         .select()
