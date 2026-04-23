@@ -19,6 +19,7 @@ type PracticeExercise = {
   exerciseKey: string
   spec: GeneratedExerciseSpec
   stats: ExercisePracticeStats.Shape | null
+  assignedTempo: number
 }
 
 function SideToggleButton(props: {
@@ -264,6 +265,14 @@ export default function Practice() {
               const exerciseKey = toExerciseKey(spec)
               const storedExerciseId = exerciseIdByKey.get(exerciseKey) ?? null
 
+              const assignedTempo =
+                spec.tempo.kind === "single"
+                  ? spec.tempo.bpm
+                  : Math.ceil(
+                      Math.random() * (spec.tempo.maxBpm - spec.tempo.minBpm) +
+                        spec.tempo.minBpm,
+                    )
+
               return {
                 id: storedExerciseId,
                 exerciseKey,
@@ -272,6 +281,7 @@ export default function Practice() {
                   storedExerciseId !== null
                     ? (statsByExerciseId.get(storedExerciseId) ?? null)
                     : null,
+                assignedTempo,
               }
             }),
           )
@@ -501,11 +511,7 @@ export default function Practice() {
                       <View style={{ flex: 1, gap: 4 }}>
                         <ExercisePropertyView
                           title="Tempo"
-                          text={`${
-                            exercise.spec.tempo.kind === "single"
-                              ? exercise.spec.tempo.bpm
-                              : `${exercise.spec.tempo.minBpm}-${exercise.spec.tempo.maxBpm}`
-                          } BPM`}
+                          text={`${exercise.assignedTempo} BPM`}
                         />
                       </View>
                     </View>
