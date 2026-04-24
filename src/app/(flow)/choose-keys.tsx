@@ -11,6 +11,7 @@ import {
 import SelectableButton from "@/components/SelectableButton"
 import TopBar from "@/components/TopBar"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
+import { formatDisplayPitchLabel } from "@/core/music/accidentals"
 
 const SHARP_KEYS = SHARP_KEY_SIGNATURE_OPTIONS
 const FLAT_KEYS = FLAT_KEY_SIGNATURE_OPTIONS
@@ -61,7 +62,7 @@ export default function ChooseKey() {
         {/* Parent row */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 24 }}>
           <SelectableButton
-            label="C"
+            label={formatDisplayPitchLabel("C")}
             selected={selectedNotes.has("C")}
             onPress={() => toggleNote("C")}
             style={styles.noteButton}
@@ -73,7 +74,7 @@ export default function ChooseKey() {
               {SHARP_KEYS.map((note) => (
                 <SelectableButton
                   key={note}
-                  label={note}
+                  label={formatDisplayPitchLabel(note)}
                   selected={selectedNotes.has(note)}
                   onPress={() => toggleNote(note)}
                   style={styles.noteButton}
@@ -86,7 +87,7 @@ export default function ChooseKey() {
               {FLAT_KEYS.map((note) => (
                 <SelectableButton
                   key={note}
-                  label={note}
+                  label={formatDisplayPitchLabel(note)}
                   selected={selectedNotes.has(note)}
                   onPress={() => toggleNote(note)}
                   style={styles.noteButton}
@@ -96,7 +97,7 @@ export default function ChooseKey() {
           </View>
 
           <SelectableButton
-            label="F#/Gb"
+            label={formatDisplayPitchLabel("F#/Gb")}
             selected={selectedNotes.has("F#/Gb")}
             onPress={() => toggleNote("F#/Gb")}
             style={styles.noteButton}
@@ -121,7 +122,7 @@ export default function ChooseKey() {
 
 const styles = StyleSheet.create({
   noteButton: {
-    width: 60,
+    width: 65,
     height: 50,
   },
   selectAllButton: {
