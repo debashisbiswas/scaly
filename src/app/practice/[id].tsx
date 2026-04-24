@@ -508,12 +508,14 @@ export default function Practice() {
                     </View>
 
                     <View style={{ flexDirection: "row", gap: 8 }}>
-                      <View style={{ flex: 1, gap: 4 }}>
+                      <View style={{ flex: 1, gap: 4 }} />
+                      <View style={{ flex: 2, gap: 4 }}>
                         <ExercisePropertyView
                           title="Tempo"
                           text={`${exercise.assignedTempo} BPM`}
                         />
                       </View>
+                      <View style={{ flex: 1, gap: 4 }} />
                     </View>
                   </View>
                 </View>
