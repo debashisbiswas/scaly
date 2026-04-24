@@ -1,5 +1,15 @@
 # TODO
 
+- practice page
+  - bug: always shows three octaves, rather than number possible within the range
+  - ui: decrease tempo box width
+  - ui: bass clef notation is in the wrong octave
+  - ui: notation shows the full range of the scale, rather than range selected
+  for the flow
+  - ui: how will we fit large scales?
+  - ui: show "edit" rather than back arrow
+  - ui: bottom right or somewhere else, show "done" button
+
 ## domain logic
 
 - tempo on exercise identity, tempo buckets for tempo range
