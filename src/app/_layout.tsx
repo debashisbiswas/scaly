@@ -1,7 +1,8 @@
 import { useEffect } from "react"
 import { Stack } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
-import { useFonts, Inter_600SemiBold } from "@expo-google-fonts/inter"
+import { useFonts } from "expo-font"
+import { Inter_600SemiBold } from "@expo-google-fonts/inter"
 
 import { useLogDbBootStatus } from "@/db/bootstrap"
 import { useDbMigrations } from "@/db/migrate"

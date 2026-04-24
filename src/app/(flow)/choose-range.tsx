@@ -4,6 +4,7 @@ import { Text, TouchableOpacity, View, useWindowDimensions } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 import { NOTE_STEP_OPTIONS, getClefRangeConfig } from "@/core/flows"
+import { formatDisplayPitchLabel } from "@/core/music/accidentals"
 
 import RangeStaff from "@/components/RangeStaff"
 import TopBar from "@/components/TopBar"
@@ -201,14 +202,14 @@ function AccidentalControls({
         style={buttonStyle(value === 1)}
         onPress={() => onChange(value === 1 ? 0 : 1)}
       >
-        <Text style={{ fontSize: 16, fontWeight: "700" }}>#</Text>
+        <Text style={{ fontSize: 20 }}>♯</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={buttonStyle(value === -1)}
         onPress={() => onChange(value === -1 ? 0 : -1)}
       >
-        <Text style={{ fontSize: 16, fontWeight: "700" }}>b</Text>
+        <Text style={{ fontSize: 20 }}>♭</Text>
       </TouchableOpacity>
     </View>
   )
@@ -436,9 +437,11 @@ export default function ChooseKey() {
                 paddingHorizontal: 4,
               }}
             >
-              <Text style={{ fontWeight: "600" }}>Left: {leftPitchLabel}</Text>
               <Text style={{ fontWeight: "600" }}>
-                Right: {rightPitchLabel}
+                Low: {formatDisplayPitchLabel(leftPitchLabel)}
+              </Text>
+              <Text style={{ fontWeight: "600" }}>
+                High: {formatDisplayPitchLabel(rightPitchLabel)}
               </Text>
             </View>
           </View>

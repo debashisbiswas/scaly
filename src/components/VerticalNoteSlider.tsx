@@ -1,6 +1,8 @@
 import Slider from "@react-native-community/slider"
 import { Text, View } from "react-native"
 
+import { formatDisplayPitchLabel } from "@/core/music/accidentals"
+
 interface VerticalNoteSliderProps {
   value: number
   min: number
@@ -24,7 +26,9 @@ export default function VerticalNoteSlider({
 }: VerticalNoteSliderProps) {
   return (
     <View style={{ width: 54, alignItems: "center", justifyContent: "center" }}>
-      <Text style={{ fontSize: 12, opacity: 0.6 }}>{topLabel}</Text>
+      <Text style={{ fontSize: 12, opacity: 0.6 }}>
+        {formatDisplayPitchLabel(topLabel)}
+      </Text>
 
       <View
         style={{
@@ -53,7 +57,9 @@ export default function VerticalNoteSlider({
         />
       </View>
 
-      <Text style={{ fontSize: 12, opacity: 0.6 }}>{bottomLabel}</Text>
+      <Text style={{ fontSize: 12, opacity: 0.6 }}>
+        {formatDisplayPitchLabel(bottomLabel)}
+      </Text>
     </View>
   )
 }
