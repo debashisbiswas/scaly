@@ -76,7 +76,10 @@ export namespace Note {
   }
 
   export function fullName(note: Note.Shape) {
-    return note.name + (note.alter ? note.alter : "")
+    const accidental =
+      note.alter === "sharp" ? "#" : note.alter === "flat" ? "b" : ""
+
+    return `${note.name}${accidental}`
   }
 }
 

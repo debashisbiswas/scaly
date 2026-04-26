@@ -47,6 +47,14 @@ describe("next available pitch", () => {
     expect(actual).toEqual(47)
   })
 
+  it("midi with accidentals", () => {
+    const flat = Pitch.midi({ note: { name: "B", alter: "flat" }, octave: 1 })
+    const sharp = Pitch.midi({ note: { name: "C", alter: "sharp" }, octave: 4 })
+
+    expect(flat).toEqual(34)
+    expect(sharp).toEqual(61)
+  })
+
   it("parses a pitch label", () => {
     expect(Pitch.fromLabel("Bb1")).toEqual({
       note: { name: "B", alter: "flat" },
