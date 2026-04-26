@@ -6,7 +6,8 @@ import {
   MODE_OPTIONS,
   getClefRangeConfig,
 } from "./constants"
-import { FlowDraft, FlowDraftValidationError } from "./types"
+import { Pitch } from "./Note"
+import { FlowDraft, FlowDraftValidationError, KeySignature } from "./types"
 
 const DEFAULT_RANGE_CONFIG = getClefRangeConfig(null)
 const DEFAULT_LOW_PITCH = DEFAULT_RANGE_CONFIG.defaultLow
@@ -37,11 +38,17 @@ export type GeneratedExerciseSpec = {
   tempo: FlowDraft["tempo"]
 }
 
+type PitchLabel = {
+  noteName: string
+  accidental: number
+  octave: number
+}
+
 function unique<T extends string>(values: T[]) {
   return [...new Set(values)]
 }
 
-function parsePitchLabel(label: string) {
+function parsePitchLabel(label: string): PitchLabel | null {
   const match = label.match(/^([A-G])([#b]?)(\d+)$/)
 
   if (!match) {
@@ -159,7 +166,6 @@ export function expandFlowDraftToExerciseSpecs(
   const canonicalKeys = sortByOrder(draft.keys, KEY_SIGNATURE_OPTIONS)
   const canonicalModes = sortByOrder(draft.modes, MODE_OPTIONS)
 
-  const startOctave = lowPitch.octave
   const octaves = Math.max(
     1,
     Math.min(3, highPitch.octave - lowPitch.octave + 1),
@@ -170,14 +176,16 @@ export function expandFlowDraftToExerciseSpecs(
   const exerciseSpecs: GeneratedExerciseSpec[] = []
 
   for (const key of canonicalKeys) {
-    const exerciseKey = key === "F#/Gb" ? "F#" : key
-
     for (const mode of canonicalModes) {
-      const mappedMode = SCALE_MODE_MAP[mode]
+      const startOctave = Pitch.nextAvailablePitch({
+        note: { name: lowPitch.noteName, alter: lowPitch.accidental === -1 ? "flat" : lowPitch.accidental === 1 ? "sharp" : undefined },
+        octave: lowPitch.octave,
+      }, { name: key, alter?: })
+      const octaves = availableOctaves(key, lowPitch, highPitch)
 
       exerciseSpecs.push({
-        key: exerciseKey,
-        mode: mappedMode,
+        key,
+        mode: SCALE_MODE_MAP[mode],
         startOctave,
         octaves,
         clef,
