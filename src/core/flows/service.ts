@@ -6,22 +6,12 @@ import {
   MODE_OPTIONS,
   getClefRangeConfig,
 } from "./constants"
-import { Pitch } from "./Note"
-import { FlowDraft, FlowDraftValidationError, KeySignature } from "./types"
+import { Note, Pitch } from "./Note"
+import { FlowDraft, FlowDraftValidationError } from "./types"
 
 const DEFAULT_RANGE_CONFIG = getClefRangeConfig(null)
 const DEFAULT_LOW_PITCH = DEFAULT_RANGE_CONFIG.defaultLow
 const DEFAULT_HIGH_PITCH = DEFAULT_RANGE_CONFIG.defaultHigh
-const NATURAL_NOTE_OFFSET: Record<string, number> = {
-  C: 0,
-  D: 2,
-  E: 4,
-  F: 5,
-  G: 7,
-  A: 9,
-  B: 11,
-}
-
 const SCALE_MODE_MAP = {
   Major: "major",
   "Natural Minor": "minor",
@@ -38,28 +28,8 @@ export type GeneratedExerciseSpec = {
   tempo: FlowDraft["tempo"]
 }
 
-type PitchLabel = {
-  noteName: string
-  accidental: number
-  octave: number
-}
-
 function unique<T extends string>(values: T[]) {
   return [...new Set(values)]
-}
-
-function parsePitchLabel(label: string): PitchLabel | null {
-  const match = label.match(/^([A-G])([#b]?)(\d+)$/)
-
-  if (!match) {
-    return null
-  }
-
-  return {
-    noteName: match[1],
-    accidental: match[2] === "#" ? 1 : match[2] === "b" ? -1 : 0,
-    octave: Number(match[3]),
-  }
 }
 
 function sortByOrder<T extends string>(values: T[], order: readonly T[]) {
@@ -86,19 +56,18 @@ function sortByOrder<T extends string>(values: T[], order: readonly T[]) {
 }
 
 function pitchLabelToMidi(label: string) {
-  const parsed = parsePitchLabel(label)
+  const parsed = Pitch.fromLabel(label)
 
   if (!parsed) {
     return null
   }
 
-  const naturalOffset = NATURAL_NOTE_OFFSET[parsed.noteName]
+  return Pitch.midi(parsed)
+}
 
-  if (naturalOffset === undefined) {
-    return null
-  }
-
-  return (parsed.octave + 1) * 12 + naturalOffset + parsed.accidental
+function availableOctaves(low: Pitch.Shape, high: Pitch.Shape) {
+  const semitoneSpan = Pitch.midi(high) - Pitch.midi(low)
+  return Math.max(1, Math.min(3, Math.floor(semitoneSpan / 12)))
 }
 
 function isRangeWithinSelectedClef(
@@ -152,8 +121,8 @@ export function expandFlowDraftToExerciseSpecs(
   }
 
   const draft = normalizeFlowDraft(inputDraft)
-  const lowPitch = parsePitchLabel(draft.range.low)
-  const highPitch = parsePitchLabel(draft.range.high)
+  const lowPitch = Pitch.fromLabel(draft.range.low)
+  const highPitch = Pitch.fromLabel(draft.range.high)
 
   if (!lowPitch || !highPitch) {
     throw new Error("Cannot expand flow draft with invalid range labels.")
@@ -166,10 +135,6 @@ export function expandFlowDraftToExerciseSpecs(
   const canonicalKeys = sortByOrder(draft.keys, KEY_SIGNATURE_OPTIONS)
   const canonicalModes = sortByOrder(draft.modes, MODE_OPTIONS)
 
-  const octaves = Math.max(
-    1,
-    Math.min(3, highPitch.octave - lowPitch.octave + 1),
-  )
   const clef: GeneratedExerciseSpec["clef"] =
     draft.clef === "Bass Clef" ? "bass" : "treble"
 
@@ -177,16 +142,22 @@ export function expandFlowDraftToExerciseSpecs(
 
   for (const key of canonicalKeys) {
     for (const mode of canonicalModes) {
-      const startOctave = Pitch.nextAvailablePitch({
-        note: { name: lowPitch.noteName, alter: lowPitch.accidental === -1 ? "flat" : lowPitch.accidental === 1 ? "sharp" : undefined },
-        octave: lowPitch.octave,
-      }, { name: key, alter?: })
-      const octaves = availableOctaves(key, lowPitch, highPitch)
+      const targetNote = Note.fromKeySignature(key)
+
+      if (!targetNote) {
+        throw new Error(
+          `Cannot expand flow draft with invalid key signature: ${key}`,
+        )
+      }
+
+      const nextAvailablePitch = Pitch.nextAvailablePitch(lowPitch, targetNote)
+      const octaves = availableOctaves(nextAvailablePitch, highPitch)
+      const exerciseKey = key.split("/")[0]
 
       exerciseSpecs.push({
-        key,
+        key: exerciseKey,
         mode: SCALE_MODE_MAP[mode],
-        startOctave,
+        startOctave: nextAvailablePitch.octave,
         octaves,
         clef,
         tempo: draft.tempo,

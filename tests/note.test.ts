@@ -36,4 +36,24 @@ describe("notes", () => {
 
     expect(actual).toBe(0)
   })
+
+  it("parses a natural note label", () => {
+    const actual = Note.fromLabel("F")
+    expect(actual).toEqual({ name: "F" })
+  })
+
+  it("parses a sharp note label", () => {
+    const actual = Note.fromLabel("C#")
+    expect(actual).toEqual({ name: "C", alter: "sharp" })
+  })
+
+  it("parses a slash key signature as first spelling", () => {
+    const actual = Note.fromKeySignature("F#/Gb")
+    expect(actual).toEqual({ name: "F", alter: "sharp" })
+  })
+
+  it("returns null for invalid key signature", () => {
+    const actual = Note.fromKeySignature("H")
+    expect(actual).toBeNull()
+  })
 })

@@ -46,4 +46,21 @@ describe("next available pitch", () => {
     const actual = Pitch.midi({ note: { name: "B" }, octave: 2 })
     expect(actual).toEqual(47)
   })
+
+  it("parses a pitch label", () => {
+    expect(Pitch.fromLabel("Bb1")).toEqual({
+      note: { name: "B", alter: "flat" },
+      octave: 1,
+    })
+
+    expect(Pitch.fromLabel("A3")).toEqual({
+      note: { name: "A" },
+      octave: 3,
+    })
+  })
+
+  it("returns null for invalid pitch label", () => {
+    const actual = Pitch.fromLabel("Bb")
+    expect(actual).toBeNull()
+  })
 })

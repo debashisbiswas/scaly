@@ -8,6 +8,35 @@ export namespace Note {
     alter?: "sharp" | "flat"
   }
 
+  function toAlter(accidental: string) {
+    if (accidental === "#") {
+      return "sharp" as const
+    }
+
+    if (accidental === "b") {
+      return "flat" as const
+    }
+
+    return undefined
+  }
+
+  export function fromLabel(label: string): Note.Shape | null {
+    const match = label.match(/^([A-G])([#b]?)$/)
+
+    if (!match) {
+      return null
+    }
+
+    return {
+      name: match[1] as NoteName,
+      alter: toAlter(match[2]),
+    }
+  }
+
+  export function fromKeySignature(key: string): Note.Shape | null {
+    return fromLabel(key.split("/")[0])
+  }
+
   export function pitchClass(note: Note.Shape) {
     let pitchClass
 
@@ -60,6 +89,25 @@ export namespace Pitch {
   export function midi(pitch: Pitch.Shape) {
     const parts = [Note.fullName(pitch.note), pitch.octave.toString()]
     return TonalNote.get(parts.join("")).midi ?? 0
+  }
+
+  export function fromLabel(label: string): Pitch.Shape | null {
+    const match = label.match(/^([A-G])([#b]?)(\d+)$/)
+
+    if (!match) {
+      return null
+    }
+
+    const note = Note.fromLabel(`${match[1]}${match[2]}`)
+
+    if (!note) {
+      return null
+    }
+
+    return {
+      note,
+      octave: Number(match[3]),
+    }
   }
 
   export function nextAvailablePitch(
