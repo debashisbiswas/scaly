@@ -152,10 +152,9 @@ export function expandFlowDraftToExerciseSpecs(
 
       const nextAvailablePitch = Pitch.nextAvailablePitch(lowPitch, targetNote)
       const octaves = availableOctaves(nextAvailablePitch, highPitch)
-      const exerciseKey = key.split("/")[0]
 
       exerciseSpecs.push({
-        key: exerciseKey,
+        key: targetNote.name,
         mode: SCALE_MODE_MAP[mode],
         startOctave: nextAvailablePitch.octave,
         octaves,

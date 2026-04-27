@@ -34,6 +34,10 @@ export namespace Note {
   }
 
   export function fromKeySignature(key: string): Note.Shape | null {
+    // TODO: There's a tension here: we're representing keys as strings,
+    // but the six-accidental keys (F#/Gb) are ambiguous, so we're implicitly
+    // parsing it into F# here.
+    // Fix: don't represent keys as strings.
     return fromLabel(key.split("/")[0])
   }
 
