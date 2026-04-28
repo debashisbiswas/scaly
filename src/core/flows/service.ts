@@ -138,21 +138,36 @@ export function expandFlowDraftToExerciseSpecs(
 
   for (const key of canonicalKeys) {
     for (const mode of canonicalModes) {
-      const targetNote = Note.fromKeySignature(key)
+      const tonicNote = Note.fromKeySignature(key)
 
-      if (!targetNote) {
+      if (!tonicNote) {
         throw new Error(
           `Cannot expand flow draft with invalid key signature: ${key}`,
         )
       }
 
-      const proposedTonic = Pitch.nextAvailablePitch(lowPitch, targetNote)
-      const octaves = Pitch.availableOctaves(proposedTonic, highPitch)
+      const tonicPitch = Pitch.nextAvailablePitch(lowPitch, tonicNote)
+      const octaves = Pitch.availableOctaves(tonicPitch, highPitch)
+
+      // TODO: Can we prevent this case earlier?
+      if (octaves <= 0) {
+        console.log(
+          "WARNING: no octaves available: ",
+          JSON.stringify({
+            range: {
+              lowPitch,
+              highPitch,
+            },
+            tonicPitch,
+          }),
+        )
+        continue
+      }
 
       exerciseSpecs.push({
-        key: targetNote.name,
+        key: tonicNote.name,
         mode: SCALE_MODE_MAP[mode],
-        startOctave: proposedTonic.octave,
+        startOctave: tonicPitch.octave,
         octaves,
         clef,
         tempo: draft.tempo,
