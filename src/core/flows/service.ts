@@ -165,7 +165,7 @@ export function expandFlowDraftToExerciseSpecs(
       }
 
       exerciseSpecs.push({
-        key: tonicNote.name,
+        key: Note.fullName(tonicNote),
         mode: SCALE_MODE_MAP[mode],
         startOctave: tonicPitch.octave,
         octaves,
