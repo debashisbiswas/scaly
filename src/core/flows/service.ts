@@ -6,7 +6,8 @@ import {
   MODE_OPTIONS,
   getClefRangeConfig,
 } from "./constants"
-import { Note, Pitch } from "./Note"
+import { Note } from "./Note"
+import { Pitch } from "./Pitch"
 import { FlowDraft, FlowDraftValidationError } from "./types"
 
 const DEFAULT_RANGE_CONFIG = getClefRangeConfig(null)
@@ -63,11 +64,6 @@ function pitchLabelToMidi(label: string) {
   }
 
   return Pitch.midi(parsed)
-}
-
-function availableOctaves(low: Pitch.Shape, high: Pitch.Shape) {
-  const semitoneSpan = Pitch.midi(high) - Pitch.midi(low)
-  return Math.max(1, Math.min(3, Math.floor(semitoneSpan / 12)))
 }
 
 function isRangeWithinSelectedClef(
@@ -150,13 +146,13 @@ export function expandFlowDraftToExerciseSpecs(
         )
       }
 
-      const nextAvailablePitch = Pitch.nextAvailablePitch(lowPitch, targetNote)
-      const octaves = availableOctaves(nextAvailablePitch, highPitch)
+      const proposedTonic = Pitch.nextAvailablePitch(lowPitch, targetNote)
+      const octaves = Pitch.availableOctaves(proposedTonic, highPitch)
 
       exerciseSpecs.push({
         key: targetNote.name,
         mode: SCALE_MODE_MAP[mode],
-        startOctave: nextAvailablePitch.octave,
+        startOctave: proposedTonic.octave,
         octaves,
         clef,
         tempo: draft.tempo,

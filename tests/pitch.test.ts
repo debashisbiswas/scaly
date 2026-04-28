@@ -1,4 +1,4 @@
-import { Pitch } from "@/core/flows/Note"
+import { Pitch } from "@/core/flows/Pitch"
 import { describe, expect, it } from "vitest"
 
 describe("next available pitch", () => {
@@ -70,5 +70,37 @@ describe("next available pitch", () => {
   it("returns null for invalid pitch label", () => {
     const actual = Pitch.fromLabel("Bb")
     expect(actual).toBeNull()
+  })
+
+  it("handles available octaves: zero", () => {
+    const actual = Pitch.availableOctaves(
+      { note: { name: "C" }, octave: 4 },
+      { note: { name: "D" }, octave: 4 },
+    )
+    expect(actual).toBe(0)
+  })
+
+  it("handles one octave", () => {
+    const actual = Pitch.availableOctaves(
+      { note: { name: "C" }, octave: 4 },
+      { note: { name: "C" }, octave: 5 },
+    )
+    expect(actual).toBe(1)
+  })
+
+  it("handles multiple octaves", () => {
+    const actual = Pitch.availableOctaves(
+      { note: { name: "A" }, octave: 3 },
+      { note: { name: "C" }, octave: 6 },
+    )
+    expect(actual).toBe(2)
+  })
+
+  it("handles enharmonic notes", () => {
+    const actual = Pitch.availableOctaves(
+      { note: { name: "F", alter: "sharp" }, octave: 2 },
+      { note: { name: "G", alter: "flat" }, octave: 4 },
+    )
+    expect(actual).toBe(2)
   })
 })

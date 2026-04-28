@@ -1,21 +1,12 @@
+export const SHARP_KEY_SIGNATURE_OPTIONS = ["G", "D", "A", "E", "B"] as const
+export const FLAT_KEY_SIGNATURE_OPTIONS = ["F", "Bb", "Eb", "Ab", "Db"] as const
+
 export const KEY_SIGNATURE_OPTIONS = [
   "C",
-  "G",
-  "D",
-  "A",
-  "E",
-  "B",
+  ...SHARP_KEY_SIGNATURE_OPTIONS,
   "F#/Gb",
-  "F",
-  "Bb",
-  "Eb",
-  "Ab",
-  "Db",
+  ...FLAT_KEY_SIGNATURE_OPTIONS,
 ] as const
-
-export const SHARP_KEY_SIGNATURE_OPTIONS = ["G", "D", "A", "E", "B"] as const
-
-export const FLAT_KEY_SIGNATURE_OPTIONS = ["F", "Bb", "Eb", "Ab", "Db"] as const
 
 export const CLEF_OPTIONS = ["Treble Clef", "Bass Clef"] as const
 
