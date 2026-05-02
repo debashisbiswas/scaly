@@ -48,7 +48,12 @@
           }
         }
       ],
-      "react-native-audio-api",
+      [
+        "react-native-audio-api",
+        {
+          "iosMicrophonePermission": "This app plays audio but does not record from the microphone."
+        }
+      ],
       "expo-sqlite",
       "expo-web-browser",
       "expo-font",
