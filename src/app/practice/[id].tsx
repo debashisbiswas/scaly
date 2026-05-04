@@ -820,36 +820,111 @@ export default function Practice() {
                   style={{
                     flex: 1,
                     flexDirection: "row",
-                    gap: 12,
+                    alignItems: "stretch",
+                    gap: 0,
                   }}
                 >
-                  <View style={{ flex: 1, gap: 12 }}>
-                    <View style={{ flexDirection: "row", gap: 8 }}>
-                      <View style={{ flex: 1, gap: 4 }}>
-                        <ExercisePropertyView
-                          title="Key"
-                          text={`${exercise.spec.key} ${getModeLabel(exercise.spec.mode)}`}
-                        />
-                      </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      paddingHorizontal: 20,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 72,
+                        lineHeight: 78,
+                        fontWeight: "700",
+                        color: "#1f2835",
+                        letterSpacing: -1.5,
+                        textAlign: "center",
+                      }}
+                    >
+                      {exercise.spec.key}
+                    </Text>
+                  </View>
 
-                      <View style={{ flex: 1, gap: 4 }}>
-                        <ExercisePropertyView
-                          title="Octaves"
-                          text={`${octaveCount} Octave${octaveCount === 1 ? "" : "s"}`}
-                        />
-                      </View>
-                    </View>
+                  <View
+                    style={{
+                      width: 1,
+                      marginVertical: 24,
+                      backgroundColor: "#E5E7EB",
+                    }}
+                  />
 
-                    <View style={{ flexDirection: "row", gap: 8 }}>
-                      <View style={{ flex: 1, gap: 4 }} />
-                      <View style={{ flex: 2, gap: 4 }}>
-                        <ExercisePropertyView
-                          title="Tempo"
-                          text={`${exercise.assignedTempo} BPM`}
-                        />
-                      </View>
-                      <View style={{ flex: 1, gap: 4 }} />
-                    </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      paddingHorizontal: 20,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 28,
+                        lineHeight: 34,
+                        fontWeight: "600",
+                        color: "#4b5563",
+                        textAlign: "center",
+                      }}
+                    >
+                      {getModeLabel(exercise.spec.mode)}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        lineHeight: 26,
+                        color: "#6b7280",
+                        textAlign: "center",
+                        marginTop: 8,
+                      }}
+                    >
+                      {`${octaveCount} octave${octaveCount === 1 ? "" : "s"}`}
+                    </Text>
+                  </View>
+
+                  <View
+                    style={{
+                      width: 1,
+                      marginVertical: 24,
+                      backgroundColor: "#E5E7EB",
+                    }}
+                  />
+
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      paddingHorizontal: 20,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 48,
+                        lineHeight: 54,
+                        fontWeight: "700",
+                        color: "#1f2835",
+                        textAlign: "center",
+                      }}
+                    >
+                      {exercise.assignedTempo}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        lineHeight: 24,
+                        fontWeight: "600",
+                        color: "#6b7280",
+                        textAlign: "center",
+                        marginTop: 8,
+                      }}
+                    >
+                      BPM
+                    </Text>
                   </View>
                 </View>
               )}

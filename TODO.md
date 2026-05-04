@@ -3,7 +3,6 @@
 - practice page
   - ui: show "edit" rather than back arrow
   - ui: bottom right or somewhere else, show "done" button
-  - ui: redesign practice details screen
   - ux: first time through should show all scales
   - ux: first scale should be random, not first scale in ordered pattern
 
