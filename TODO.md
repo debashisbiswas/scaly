@@ -1,15 +1,12 @@
 # TODO
 
 - practice page
-  - octave/notation bugs
-    - bug: always shows three octaves, rather than number possible within the
-    range
-    - ui: notation shows the full range of the scale, rather than range selected
-    for the flow
-    - ui: bass clef notation is in the wrong octave
-  - ui: how will we fit large scales?
   - ui: show "edit" rather than back arrow
   - ui: bottom right or somewhere else, show "done" button
+  - ui: redesign practice details screen
+  - ui: default scale pattern - maybe 8th on the tonic again?
+  - ux: first time through should show all scales
+  - ux: first scale should be random, not first scale in ordered pattern
 
 ## domain logic
 
@@ -27,4 +24,10 @@
 ## other features
 
 - metronome
+  - don't continue playing
+  - better sound, maybe https://youtu.be/t4x6I-XKPIY
 - drone
+
+## questions
+
+- ui: how will we fit large scales?
