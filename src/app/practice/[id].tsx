@@ -395,15 +395,25 @@ function SideToggleButton(props: {
   )
 }
 
-function BackButton() {
-  const router = useRouter()
-
+function TopBarButton(props: {
+  label: string
+  icon: keyof typeof Ionicons.glyphMap
+  onPress: () => void
+}) {
   return (
     <Pressable
-      onPress={() => router.back()}
-      style={{ width: 36, height: 28, justifyContent: "center" }}
+      onPress={props.onPress}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+        minHeight: 36,
+      }}
     >
-      <Ionicons name="arrow-back" size={32} color="#252e3c" />
+      <Ionicons name={props.icon} size={22} color="#252e3c" />
+      <Text style={{ fontSize: 17, color: "#252e3c", fontWeight: "600" }}>
+        {props.label}
+      </Text>
     </Pressable>
   )
 }
@@ -533,6 +543,7 @@ function pickWeightedExerciseIndex(
 }
 
 export default function Practice() {
+  const router = useRouter()
   const [showNotes, setShowNotes] = useState(false)
   const [mainPanelWidth, setMainPanelWidth] = useState(0)
   const [mainPanelHeight, setMainPanelHeight] = useState(0)
@@ -667,13 +678,16 @@ export default function Practice() {
       <View
         style={{
           flex: 1,
-          flexDirection: "row",
           justifyContent: "center",
           alignItems: "center",
-          gap: 8,
+          gap: 16,
         }}
       >
-        <BackButton />
+        <TopBarButton
+          label="Back"
+          icon="arrow-back"
+          onPress={() => router.back()}
+        />
         <Text style={{ fontSize: 48, color: "#202737" }}>
           Exercise not found
         </Text>
@@ -756,28 +770,51 @@ export default function Practice() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF" }}>
-      <Text
-        style={{
-          textAlign: "center",
-          fontSize: 14,
-          color: "#8a919d",
-          marginVertical: 10,
-        }}
-      >
-        After playing the scale, mark how challenging it was below
-      </Text>
-      <Text
-        style={{
-          textAlign: "center",
-          fontSize: 13,
-          color: "#7c8491",
-          marginBottom: 4,
-        }}
-      >
-        {`Randomizing ${exerciseQueue.length} exercise${exerciseQueue.length === 1 ? "" : "s"}`}
-      </Text>
-
       <View style={{ flex: 1 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 4,
+          }}
+        >
+          <TopBarButton
+            label="Edit"
+            icon="arrow-back"
+            onPress={() => router.back()}
+          />
+
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                textAlign: "center",
+                fontSize: 14,
+                color: "#8a919d",
+                marginVertical: 10,
+              }}
+            >
+              After playing the scale, mark how challenging it was below
+            </Text>
+            <Text
+              style={{
+                textAlign: "center",
+                fontSize: 13,
+                color: "#7c8491",
+                marginBottom: 4,
+              }}
+            >
+              {`Randomizing ${exerciseQueue.length} exercise${exerciseQueue.length === 1 ? "" : "s"}`}
+            </Text>
+          </View>
+
+          <TopBarButton
+            label="Done"
+            icon="arrow-back"
+            onPress={() => router.back()}
+          />
+        </View>
+
         <View
           style={{
             flex: 1,
@@ -787,8 +824,6 @@ export default function Practice() {
             marginBottom: 12,
           }}
         >
-          <BackButton />
-
           <View
             style={{ flex: 1 }}
             onLayout={(event) => {
