@@ -17,11 +17,11 @@ export default function PracticeStaff({
   const xml = generateMusicXMLForScale({
     key: exerciseSpec.key,
     mode: exerciseSpec.mode,
-    rhythm: "sixteenths",
+    rhythm: "long octave",
     slurPattern: "tongued",
     octaves: exerciseSpec.octaves,
     startOctave: exerciseSpec.startOctave,
-    clef: exerciseSpec.clef
+    clef: exerciseSpec.clef,
   })
 
   return (
