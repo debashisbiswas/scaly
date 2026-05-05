@@ -56,9 +56,9 @@ export namespace ExercisePracticeStats {
           hardCount: sql`${exercisePracticeStats.hardCount} + ${rating === "hard" ? 1 : 0}`,
           goodCount: sql`${exercisePracticeStats.goodCount} + ${rating === "good" ? 1 : 0}`,
           easyCount: sql`${exercisePracticeStats.easyCount} + ${rating === "easy" ? 1 : 0}`,
-          lastRating: sql`${exercisePracticeStats.lastRating}`,
-          lastRatedAt: sql`${exercisePracticeStats.lastRatedAt}`,
-          updatedAt: sql`${exercisePracticeStats.updatedAt}`,
+          lastRating: rating,
+          lastRatedAt: now,
+          updatedAt: now,
         },
       })
       .returning()
