@@ -2,7 +2,6 @@
 
 - practice page
   - ux: first time through should show all scales
-  - ux: first scale should be random, not first scale in ordered pattern
 
 ## domain logic
 

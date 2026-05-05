@@ -604,32 +604,32 @@ export default function Practice() {
         })
 
         if (!cancelled) {
-          setExerciseQueue(
-            generated.map((spec) => {
-              const exerciseKey = toExerciseKey(spec)
-              const storedExerciseId = exerciseIdByKey.get(exerciseKey) ?? null
+          const nextQueue = generated.map((spec) => {
+            const exerciseKey = toExerciseKey(spec)
+            const storedExerciseId = exerciseIdByKey.get(exerciseKey) ?? null
 
-              const assignedTempo =
-                spec.tempo.kind === "single"
-                  ? spec.tempo.bpm
-                  : Math.ceil(
-                      Math.random() * (spec.tempo.maxBpm - spec.tempo.minBpm) +
-                        spec.tempo.minBpm,
-                    )
+            const assignedTempo =
+              spec.tempo.kind === "single"
+                ? spec.tempo.bpm
+                : Math.ceil(
+                    Math.random() * (spec.tempo.maxBpm - spec.tempo.minBpm) +
+                      spec.tempo.minBpm,
+                  )
 
-              return {
-                id: storedExerciseId,
-                exerciseKey,
-                spec,
-                stats:
-                  storedExerciseId !== null
-                    ? (statsByExerciseId.get(storedExerciseId) ?? null)
-                    : null,
-                assignedTempo,
-              }
-            }),
-          )
-          setCurrentExerciseIndex(0)
+            return {
+              id: storedExerciseId,
+              exerciseKey,
+              spec,
+              stats:
+                storedExerciseId !== null
+                  ? (statsByExerciseId.get(storedExerciseId) ?? null)
+                  : null,
+              assignedTempo,
+            }
+          })
+
+          setExerciseQueue(nextQueue)
+          setCurrentExerciseIndex(pickWeightedExerciseIndex(nextQueue, -1))
         }
       } catch {
         console.log("[practice] failed to load candidate exercises", {
