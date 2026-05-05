@@ -463,27 +463,6 @@ function DifficultyButtons(props: {
   )
 }
 
-function ExercisePropertyView(props: { title: string; text: string }) {
-  return (
-    <>
-      <Text style={{ fontSize: 12, color: "#777f8c" }}>{props.title}</Text>
-      <View
-        style={{
-          borderRadius: 8,
-          backgroundColor: "#E5E7EB",
-          minHeight: 34,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ fontWeight: "700", color: "#1f2835" }}>
-          {props.text}
-        </Text>
-      </View>
-    </>
-  )
-}
-
 function getModeLabel(mode: GeneratedExerciseSpec["mode"]) {
   if (mode === "major") {
     return "Major"
