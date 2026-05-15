@@ -3,26 +3,30 @@
 - practice page
   - ux: first time through should show all scales
 
-## domain logic
-
 - tempo on exercise identity, tempo buckets for tempo range
 
-## UI/UX
-
-- would you like to set this as your default range? modal
 - anchor "select all" buttons to the bottom
 - every screen: disable next button until valid selection
   - remove validation and popup from final page
-- remove flow
-- edit flow
 
-## other features
+- flow library: delete flow
+- flow library: edit should take the user to beginning of the flow
+settings, with flow settings pre-populated
+- practice page: edit should do same as above ^
+
+- practice page: the done button should be a "blue oval like from system
+prompts", instead of left arrow like the edit button
+  - native button? he's talking about iOS
+- practice page: separate lines for the pattern
+- practice page, notation: remove bar lines
+- practice page, notation: center notation in parent box
+- practice page, notation: make slightly smaller, so that scales fit
+
+- flow library: what is the progress bar tracking?
+  - overall grade?
+  - time spent out of a user-defined total time?
 
 - metronome
   - don't continue playing
   - better sound, maybe https://youtu.be/t4x6I-XKPIY
 - drone
-
-## questions
-
-- ui: how will we fit large scales?
