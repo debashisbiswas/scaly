@@ -15,7 +15,6 @@ settings, with flow settings pre-populated
 - practice page: edit should do same as above ^
 
 - practice page: separate lines for the pattern
-- practice page, notation: remove bar lines
 - practice page, notation: center notation in parent box
 - practice page, notation: make slightly smaller, so that scales fit
 

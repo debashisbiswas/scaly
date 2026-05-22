@@ -39,6 +39,7 @@ export function MusicXMLViewer({
           autoBeam: true,
 
           drawingParameters: "compacttight",
+          drawMeasureNumbers: false,
         },
       );
 
