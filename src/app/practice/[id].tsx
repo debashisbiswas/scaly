@@ -1,6 +1,8 @@
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useEffect, useState } from "react"
 import { Ionicons } from "@expo/vector-icons"
+import { Host, Button } from "@expo/ui"
+
 import {
   Pressable,
   ScrollView,
@@ -728,11 +730,13 @@ export default function Practice() {
             </Text>
           </View>
 
-          <TopBarButton
-            label="Done"
-            icon="arrow-back"
-            onPress={() => router.back()}
-          />
+          <Host matchContents>
+            <Button
+              label="Done"
+              onPress={router.back}
+              style={{ borderRadius: 16 }}
+            />
+          </Host>
         </View>
 
         <View
