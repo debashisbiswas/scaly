@@ -19,17 +19,10 @@ import { Exercise } from "@/core/flows/Exercise"
 import { ExercisePracticeStats } from "@/core/flows/ExercisePracticeStats"
 import { toExerciseKey } from "@/core/flows/exerciseKey"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
-
-type PracticeExercise = {
-  id: string | null
-  exerciseKey: string
-  spec: GeneratedExerciseSpec
-  stats: ExercisePracticeStats.Shape | null
-  assignedTempo: number
-}
+import { ExerciseQueue } from "@/core/flows/ExerciseQueue"
 
 function DebugQueueSidebar(props: {
-  queue: PracticeExercise[]
+  queue: ExerciseQueue.PracticeExercise[]
   currentExerciseIndex: number
   flowConfig: unknown
 }) {
@@ -479,68 +472,26 @@ function getModeLabel(mode: GeneratedExerciseSpec["mode"]) {
   return "Melodic Minor"
 }
 
-function pickWeightedExerciseIndex(
-  exercises: PracticeExercise[],
-  currentIndex: number,
-) {
-  if (exercises.length === 0) {
-    return -1
-  }
-
-  if (exercises.length === 1) {
-    return 0
-  }
-
-  const weightedCandidates = exercises
-    .map((exercise, index) => ({
-      index,
-      weight: ExercisePracticeStats.getExercisePracticeWeight(exercise.stats),
-    }))
-    .filter((candidate) => candidate.index !== currentIndex)
-
-  const totalWeight = weightedCandidates.reduce(
-    (sum, candidate) => sum + candidate.weight,
-    0,
-  )
-
-  if (totalWeight <= 0) {
-    return (currentIndex + 1) % exercises.length
-  }
-
-  const target = Math.random() * totalWeight
-  let runningWeight = 0
-
-  for (const candidate of weightedCandidates) {
-    runningWeight += candidate.weight
-
-    if (target <= runningWeight) {
-      return candidate.index
-    }
-  }
-
-  return weightedCandidates[weightedCandidates.length - 1]?.index ?? 0
-}
-
 export default function Practice() {
   const router = useRouter()
   const [showNotes, setShowNotes] = useState(false)
   const [mainPanelWidth, setMainPanelWidth] = useState(0)
   const [mainPanelHeight, setMainPanelHeight] = useState(0)
 
-  const { id } = useLocalSearchParams<{ id: string }>()
+  const { id: flowId } = useLocalSearchParams<{ id: string }>()
   const { getFlowById } = useFlowStore()
-  const [exerciseQueue, setExerciseQueue] = useState<PracticeExercise[]>([])
+  const [exerciseQueue, setExerciseQueue] = useState<
+    ExerciseQueue.PracticeExercise[]
+  >([])
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
   const [isLoadingExercise, setIsLoadingExercise] = useState(true)
   const [isSavingRating, setIsSavingRating] = useState(false)
 
-  const flow = typeof id === "string" ? getFlowById(id) : undefined
+  const flow = typeof flowId === "string" ? getFlowById(flowId) : undefined
 
   useEffect(() => {
-    let cancelled = false
-
     async function loadExerciseSpec() {
-      if (typeof id !== "string") {
+      if (typeof flowId !== "string") {
         setExerciseQueue([])
         setCurrentExerciseIndex(0)
         setIsLoadingExercise(false)
@@ -550,17 +501,15 @@ export default function Practice() {
       setIsLoadingExercise(true)
 
       if (!flow) {
-        if (!cancelled) {
-          setExerciseQueue([])
-          setCurrentExerciseIndex(0)
-          setIsLoadingExercise(false)
-        }
+        setExerciseQueue([])
+        setCurrentExerciseIndex(0)
+        setIsLoadingExercise(false)
         return
       }
 
       try {
         const generated = expandFlowDraftToExerciseSpecs(flow.config)
-        const storedExercises = await Exercise.list(id)
+        const storedExercises = await Exercise.list(flowId)
         const storedExerciseIds = storedExercises.map((exercise) => exercise.id)
         const storedStats =
           await ExercisePracticeStats.listByExerciseIDs(storedExerciseIds)
@@ -575,64 +524,56 @@ export default function Practice() {
         )
 
         console.log("[practice] loaded candidate exercises", {
-          flowId: id,
+          flowId: flowId,
           source: "flow-config",
           candidateCount: generated.length,
           persistedExerciseCount: storedExercises.length,
           persistedStatsCount: storedStats.length,
         })
 
-        if (!cancelled) {
-          const nextQueue = generated.map((spec) => {
-            const exerciseKey = toExerciseKey(spec)
-            const storedExerciseId = exerciseIdByKey.get(exerciseKey) ?? null
+        const nextQueue = generated.map((spec) => {
+          const exerciseKey = toExerciseKey(spec)
+          const storedExerciseId = exerciseIdByKey.get(exerciseKey) ?? null
 
-            const assignedTempo =
-              spec.tempo.kind === "single"
-                ? spec.tempo.bpm
-                : Math.ceil(
-                    Math.random() * (spec.tempo.maxBpm - spec.tempo.minBpm) +
-                      spec.tempo.minBpm,
-                  )
+          const assignedTempo =
+            spec.tempo.kind === "single"
+              ? spec.tempo.bpm
+              : Math.ceil(
+                  Math.random() * (spec.tempo.maxBpm - spec.tempo.minBpm) +
+                    spec.tempo.minBpm,
+                )
 
-            return {
-              id: storedExerciseId,
-              exerciseKey,
-              spec,
-              stats:
-                storedExerciseId !== null
-                  ? (statsByExerciseId.get(storedExerciseId) ?? null)
-                  : null,
-              assignedTempo,
-            }
-          })
+          return {
+            id: storedExerciseId,
+            exerciseKey,
+            spec,
+            stats:
+              storedExerciseId !== null
+                ? (statsByExerciseId.get(storedExerciseId) ?? null)
+                : null,
+            assignedTempo,
+          }
+        })
 
-          setExerciseQueue(nextQueue)
-          setCurrentExerciseIndex(pickWeightedExerciseIndex(nextQueue, -1))
-        }
+        setExerciseQueue(nextQueue)
+        setCurrentExerciseIndex(
+          ExerciseQueue.pickWeightedExerciseIndex(nextQueue, -1),
+        )
       } catch {
         console.log("[practice] failed to load candidate exercises", {
-          flowId: id,
+          flowId: flowId,
           source: "flow-config",
         })
 
-        if (!cancelled) {
-          setExerciseQueue([])
-          setCurrentExerciseIndex(0)
-        }
+        setExerciseQueue([])
+        setCurrentExerciseIndex(0)
       } finally {
-        if (!cancelled) {
-          setIsLoadingExercise(false)
-        }
+        setIsLoadingExercise(false)
       }
     }
 
-    void loadExerciseSpec()
-
-    return () => {
-      cancelled = true
-    }
-  }, [id, flow])
+    loadExerciseSpec()
+  }, [flowId, flow])
 
   const exercise = exerciseQueue[currentExerciseIndex] ?? null
 
@@ -682,19 +623,19 @@ export default function Practice() {
     }
 
     setCurrentExerciseIndex((current) =>
-      pickWeightedExerciseIndex(exerciseQueue, current),
+      ExerciseQueue.pickWeightedExerciseIndex(exerciseQueue, current),
     )
   }
 
   const handleRate = async (rating: ExercisePracticeStats.Rating) => {
-    if (typeof id !== "string" || isSavingRating) {
+    if (typeof flowId !== "string" || isSavingRating) {
       return
     }
 
     setIsSavingRating(true)
 
     try {
-      const storedExercise = await Exercise.upsert(id, exercise.spec)
+      const storedExercise = await Exercise.upsert(flowId, exercise.spec)
 
       if (!storedExercise) {
         throw new Error("Failed to upsert exercise.")
@@ -726,7 +667,7 @@ export default function Practice() {
       })
 
       console.log("[practice] rating persisted", {
-        flowId: id,
+        flowId: flowId,
         exerciseId: storedExercise.id,
         exerciseKey: storedExercise.exerciseKey,
         rating,
@@ -737,7 +678,7 @@ export default function Practice() {
       advanceToNextExercise()
     } catch (error) {
       console.error("[practice] failed to persist rating", {
-        flowId: id,
+        flowId: flowId,
         exerciseKey: exercise.exerciseKey,
         rating,
         error,
