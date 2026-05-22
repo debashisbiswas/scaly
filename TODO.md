@@ -14,9 +14,6 @@
 settings, with flow settings pre-populated
 - practice page: edit should do same as above ^
 
-- practice page: the done button should be a "blue oval like from system
-prompts", instead of left arrow like the edit button
-  - native button? he's talking about iOS
 - practice page: separate lines for the pattern
 - practice page, notation: remove bar lines
 - practice page, notation: center notation in parent box
