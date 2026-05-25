@@ -25,4 +25,3 @@ settings, with flow settings pre-populated
 - metronome
   - don't continue playing
   - better sound, maybe https://youtu.be/t4x6I-XKPIY
-- drone
