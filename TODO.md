@@ -12,10 +12,8 @@
 - every screen: disable next button until valid selection
   - remove validation and popup from final page
 
-- flow library: what is the progress bar tracking?
-  - overall grade?
-  - time spent out of a user-defined total time?
-
 - metronome
   - don't continue playing when app is closed?
   - better sound, maybe https://youtu.be/t4x6I-XKPIY
+
+- vendor osmd

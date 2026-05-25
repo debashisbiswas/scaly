@@ -1,12 +1,54 @@
-import { useRouter } from "expo-router"
-import { useState } from "react"
+import { useFocusEffect, useRouter } from "expo-router"
+import { useCallback, useState } from "react"
 import { Alert, Pressable, ScrollView, Text, View } from "react-native"
 import { LinearGradient } from "expo-linear-gradient"
 import { SafeAreaView } from "react-native-safe-area-context"
 
+import { Flow } from "@/core/flows"
+import { Exercise } from "@/core/flows/Exercise"
+import { ExercisePracticeStats } from "@/core/flows/ExercisePracticeStats"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 type LibraryTab = "saved" | "premade"
+type FlowMasterySummary = { kind: "new" } | { kind: "graded"; percent: number }
+
+const RATING_SCORES: Record<ExercisePracticeStats.Rating, number> = {
+  easy: 100,
+  good: 80,
+  hard: 45,
+  again: 15,
+}
+
+async function loadFlowMastery(flow: Flow): Promise<FlowMasterySummary> {
+  const exercises = await Exercise.list(flow.id)
+
+  if (exercises.length === 0) {
+    return { kind: "new" }
+  }
+
+  const stats = await ExercisePracticeStats.listByExerciseIDs(
+    exercises.map((exercise) => exercise.id),
+  )
+  const practicedStats = stats.filter((stat) => stat.lastRating !== null)
+
+  if (practicedStats.length === 0) {
+    return { kind: "new" }
+  }
+
+  const totalScore = practicedStats.reduce((sum, stat) => {
+    if (!stat.lastRating) {
+      return sum
+    }
+
+    return sum + RATING_SCORES[stat.lastRating]
+  }, 0)
+  const percent = Math.round(totalScore / practicedStats.length)
+
+  return {
+    kind: "graded",
+    percent,
+  }
+}
 
 function ActionButton({
   label,
@@ -19,7 +61,11 @@ function ActionButton({
   destructive?: boolean
   onPress: () => void
 }) {
-  const backgroundColor = primary ? "#3f83ef" : destructive ? "#ef4444" : "#d1d5db"
+  const backgroundColor = primary
+    ? "#3f83ef"
+    : destructive
+      ? "#ef4444"
+      : "#d1d5db"
   const color = primary || destructive ? "#fff" : "#5e6772"
 
   return (
@@ -44,11 +90,39 @@ export default function FlowLibrary() {
   const router = useRouter()
   const { flows, premadeFlows, startEditingFlow, deleteFlow } = useFlowStore()
   const [activeTab, setActiveTab] = useState<LibraryTab>("saved")
+  const [masteryByFlowId, setMasteryByFlowId] = useState<
+    Record<string, FlowMasterySummary>
+  >({})
 
   const panelPadding = 16
   const gap = 10
   const cardWidth = "48.6%"
   const displayedFlows = activeTab === "saved" ? flows : premadeFlows
+
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false
+
+      async function loadDisplayedFlowMastery() {
+        const summaries = await Promise.all(
+          displayedFlows.map(async (flow) => [
+            flow.id,
+            await loadFlowMastery(flow),
+          ]),
+        )
+
+        if (!cancelled) {
+          setMasteryByFlowId(Object.fromEntries(summaries))
+        }
+      }
+
+      loadDisplayedFlowMastery()
+
+      return () => {
+        cancelled = true
+      }
+    }, [displayedFlows]),
+  )
 
   return (
     <LinearGradient
@@ -150,99 +224,105 @@ export default function FlowLibrary() {
                 rowGap: gap,
               }}
             >
-              {displayedFlows.map((flow) => (
-                <View
-                  key={`${activeTab}-${flow.id}`}
-                  style={{
-                    width: cardWidth,
-                    borderRadius: 12,
-                    backgroundColor: "#e0e4ea",
-                    padding: 10,
-                    gap: 10,
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <Text
-                      style={{ fontWeight: "700", color: "#202633" }}
-                      numberOfLines={1}
-                    >
-                      {flow.name}
-                    </Text>
-                    <Text style={{ color: "#a2aab6", fontSize: 17 }}>★</Text>
-                  </View>
+              {displayedFlows.map((flow) => {
+                const mastery = masteryByFlowId[flow.id] ?? { kind: "new" }
+                const masteryPercent =
+                  mastery.kind === "graded" ? mastery.percent : 0
 
+                return (
                   <View
+                    key={`${activeTab}-${flow.id}`}
                     style={{
-                      height: 18,
-                      borderRadius: 6,
-                      backgroundColor: "#d2d6dc",
-                      overflow: "hidden",
+                      width: cardWidth,
+                      borderRadius: 12,
+                      backgroundColor: "#e0e4ea",
+                      padding: 10,
+                      gap: 10,
                     }}
                   >
                     <View
                       style={{
-                        height: "100%",
-                        width: `${flow.progressPercent}%`,
-                        backgroundColor: "#1fb785",
-                        justifyContent: "center",
-                        paddingLeft: 8,
+                        flexDirection: "row",
+                        justifyContent: "space-between",
                       }}
                     >
                       <Text
+                        style={{ fontWeight: "700", color: "#202633" }}
+                        numberOfLines={1}
+                      >
+                        {flow.name}
+                      </Text>
+                      <Text style={{ color: "#a2aab6", fontSize: 17 }}>★</Text>
+                    </View>
+
+                    <View
+                      style={{
+                        height: 18,
+                        borderRadius: 6,
+                        backgroundColor: "#d2d6dc",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <View
                         style={{
-                          color: "#fff",
-                          fontWeight: "700",
-                          fontSize: 12,
+                          height: "100%",
+                          width: `${masteryPercent}%`,
+                          backgroundColor: "#1fb785",
+                          justifyContent: "center",
+                          paddingLeft: 8,
                         }}
                       >
-                        {flow.progressPercent}%
-                      </Text>
+                        <Text
+                          style={{
+                            color: "#fff",
+                            fontWeight: "700",
+                            fontSize: 12,
+                          }}
+                        >
+                          {masteryPercent}%
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                      <ActionButton
+                        label="Play"
+                        primary
+                        onPress={() => router.push(`/practice/${flow.id}`)}
+                      />
+                      {activeTab === "saved" ? (
+                        <>
+                          <ActionButton
+                            label="Edit"
+                            onPress={() => {
+                              startEditingFlow(flow)
+                              router.push("/choose-keys")
+                            }}
+                          />
+                          <ActionButton
+                            label="Delete"
+                            destructive
+                            onPress={() => {
+                              Alert.alert(
+                                `Delete “${flow.name}”?`,
+                                "This can’t be undone.",
+                                [
+                                  { text: "Cancel", style: "cancel" },
+                                  {
+                                    text: "Delete",
+                                    style: "destructive",
+                                    onPress: () => void deleteFlow(flow.id),
+                                  },
+                                ],
+                              )
+                            }}
+                          />
+                        </>
+                      ) : null}
                     </View>
                   </View>
-
-                  <View style={{ flexDirection: "row", gap: 8 }}>
-                    <ActionButton
-                      label="Play"
-                      primary
-                      onPress={() => router.push(`/practice/${flow.id}`)}
-                    />
-                    {activeTab === "saved" ? (
-                      <>
-                        <ActionButton
-                          label="Edit"
-                          onPress={() => {
-                            startEditingFlow(flow)
-                            router.push("/choose-keys")
-                          }}
-                        />
-                        <ActionButton
-                          label="Delete"
-                          destructive
-                          onPress={() => {
-                            Alert.alert(
-                              `Delete “${flow.name}”?`,
-                              "This can’t be undone.",
-                              [
-                                { text: "Cancel", style: "cancel" },
-                                {
-                                  text: "Delete",
-                                  style: "destructive",
-                                  onPress: () => void deleteFlow(flow.id),
-                                },
-                              ],
-                            )
-                          }}
-                        />
-                      </>
-                    ) : null}
-                  </View>
-                </View>
-              ))}
+                )
+              })}
             </View>
 
             {activeTab === "saved" && displayedFlows.length === 0 ? (
