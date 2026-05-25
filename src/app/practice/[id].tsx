@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router"
 import { useEffect, useRef, useState } from "react"
 import { Ionicons } from "@expo/vector-icons"
+import { Note as TonalNote } from "tonal"
 import { Host, Button } from "@expo/ui"
 
 import {
@@ -23,6 +24,7 @@ import { toExerciseKey } from "@/core/flows/exerciseKey"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 import { ExerciseQueue } from "@/core/flows/ExerciseQueue"
 import { createMetronome } from "@/core/metronome"
+import { createDrone } from "@/core/drone"
 
 function DebugQueueSidebar(props: {
   queue: ExerciseQueue.PracticeExercise[]
@@ -490,7 +492,9 @@ export default function Practice() {
   const [isLoadingExercise, setIsLoadingExercise] = useState(true)
   const [isSavingRating, setIsSavingRating] = useState(false)
   const [isMetronomeRunning, setIsMetronomeRunning] = useState(false)
+  const [isDroneRunning, setIsDroneRunning] = useState(false)
   const metronomeRef = useRef<ReturnType<typeof createMetronome> | null>(null)
+  const droneRef = useRef<ReturnType<typeof createDrone> | null>(null)
 
   const flow = typeof flowId === "string" ? getFlowById(flowId) : undefined
 
@@ -581,6 +585,9 @@ export default function Practice() {
   }, [flowId, flow])
 
   const exercise = exerciseQueue[currentExerciseIndex] ?? null
+  const droneFrequency = exercise
+    ? (TonalNote.freq(`${exercise.spec.key.split("/")[0]}4`) ?? null)
+    : null
 
   const handleMetronomeToggle = () => {
     if (!exercise) {
@@ -594,15 +601,34 @@ export default function Practice() {
     setIsMetronomeRunning(metronomeRef.current.toggle())
   }
 
+  const handleDroneToggle = () => {
+    if (droneFrequency === null) {
+      return
+    }
+
+    if (!droneRef.current) {
+      droneRef.current = createDrone({ frequency: droneFrequency })
+    }
+
+    setIsDroneRunning(droneRef.current.toggle())
+  }
+
   useEffect(() => {
     if (exercise && metronomeRef.current) {
       metronomeRef.current.setBpm(exercise.assignedTempo)
     }
   }, [exercise])
 
+  useEffect(() => {
+    if (droneFrequency !== null && droneRef.current) {
+      droneRef.current.setFrequency(droneFrequency)
+    }
+  }, [droneFrequency])
+
   useEffect(
     () => () => {
       metronomeRef.current?.dispose()
+      droneRef.current?.dispose()
     },
     [],
   )
@@ -939,7 +965,12 @@ export default function Practice() {
               active={isMetronomeRunning}
               onPress={handleMetronomeToggle}
             />
-            <SideToggleButton label="Drone" icon="pulse-outline" />
+            <SideToggleButton
+              label="Drone"
+              icon="pulse-outline"
+              active={isDroneRunning}
+              onPress={handleDroneToggle}
+            />
           </View>
         </View>
 
