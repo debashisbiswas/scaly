@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router"
 import { useState } from "react"
-import { Pressable, ScrollView, Text, View } from "react-native"
+import { Alert, Pressable, ScrollView, Text, View } from "react-native"
 import { LinearGradient } from "expo-linear-gradient"
 import { SafeAreaView } from "react-native-safe-area-context"
 
@@ -11,12 +11,17 @@ type LibraryTab = "saved" | "premade"
 function ActionButton({
   label,
   primary,
+  destructive,
   onPress,
 }: {
   label: string
   primary?: boolean
+  destructive?: boolean
   onPress: () => void
 }) {
+  const backgroundColor = primary ? "#3f83ef" : destructive ? "#ef4444" : "#d1d5db"
+  const color = primary || destructive ? "#fff" : "#5e6772"
+
   return (
     <Pressable
       onPress={onPress}
@@ -27,19 +32,17 @@ function ActionButton({
         borderRadius: 8,
         paddingVertical: 9,
         paddingHorizontal: 14,
-        backgroundColor: primary ? "#3f83ef" : "#d1d5db",
+        backgroundColor,
       }}
     >
-      <Text style={{ color: primary ? "#fff" : "#5e6772", fontWeight: "600" }}>
-        {label}
-      </Text>
+      <Text style={{ color, fontWeight: "600" }}>{label}</Text>
     </Pressable>
   )
 }
 
 export default function FlowLibrary() {
   const router = useRouter()
-  const { flows, premadeFlows, startEditingFlow } = useFlowStore()
+  const { flows, premadeFlows, startEditingFlow, deleteFlow } = useFlowStore()
   const [activeTab, setActiveTab] = useState<LibraryTab>("saved")
 
   const panelPadding = 16
@@ -209,13 +212,33 @@ export default function FlowLibrary() {
                       onPress={() => router.push(`/practice/${flow.id}`)}
                     />
                     {activeTab === "saved" ? (
-                      <ActionButton
-                        label="Edit"
-                        onPress={() => {
-                          startEditingFlow(flow)
-                          router.push("/choose-keys")
-                        }}
-                      />
+                      <>
+                        <ActionButton
+                          label="Edit"
+                          onPress={() => {
+                            startEditingFlow(flow)
+                            router.push("/choose-keys")
+                          }}
+                        />
+                        <ActionButton
+                          label="Delete"
+                          destructive
+                          onPress={() => {
+                            Alert.alert(
+                              `Delete “${flow.name}”?`,
+                              "This can’t be undone.",
+                              [
+                                { text: "Cancel", style: "cancel" },
+                                {
+                                  text: "Delete",
+                                  style: "destructive",
+                                  onPress: () => void deleteFlow(flow.id),
+                                },
+                              ],
+                            )
+                          }}
+                        />
+                      </>
                     ) : null}
                   </View>
                 </View>

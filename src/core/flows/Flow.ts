@@ -120,6 +120,10 @@ export namespace Flow2 {
     } as const
   }
 
+  export async function deleteByID(id: string) {
+    await db.delete(flows).where(eq(flows.id, id))
+  }
+
   export async function list() {
     const rows = await db.select().from(flows).orderBy(desc(flows.updatedAt))
     return rows.map(serialize)

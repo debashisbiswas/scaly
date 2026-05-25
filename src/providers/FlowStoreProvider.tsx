@@ -30,6 +30,7 @@ type FlowStoreContextValue = {
   startEditingFlow: (flow: Flow) => void
   createFlow: (name: string) => Promise<CreateFlowResult>
   saveFlow: (name: string) => Promise<CreateFlowResult>
+  deleteFlow: (id: string) => Promise<void>
 }
 
 const FlowStoreContext = createContext<FlowStoreContextValue | null>(null)
@@ -186,6 +187,22 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
     [flows],
   )
 
+  const deleteFlow = useCallback(
+    async (id: string) => {
+      await Flow2.deleteByID(id)
+
+      const storedFlows = await Flow2.list()
+      setFlows(storedFlows)
+
+      if (editingFlow?.id === id) {
+        draftRepositoryRef.current.reset()
+        setDraft(draftRepositoryRef.current.get())
+        setEditingFlow(null)
+      }
+    },
+    [editingFlow, setFlows, setDraft],
+  )
+
   const value = useMemo(
     () => ({
       draft,
@@ -198,6 +215,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
       startEditingFlow,
       createFlow,
       saveFlow,
+      deleteFlow,
     }),
     [
       draft,
@@ -209,6 +227,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
       startEditingFlow,
       createFlow,
       saveFlow,
+      deleteFlow,
     ],
   )
 
