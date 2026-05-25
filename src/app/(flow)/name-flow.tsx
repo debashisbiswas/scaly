@@ -11,8 +11,8 @@ import { Ionicons } from "@expo/vector-icons"
 
 export default function ChooseTempo() {
   const router = useRouter()
-  const { createFlow } = useFlowStore()
-  const [flowName, setFlowName] = useState("")
+  const { editingFlow, saveFlow } = useFlowStore()
+  const [flowName, setFlowName] = useState(editingFlow?.name ?? "")
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -21,17 +21,19 @@ export default function ChooseTempo() {
         subtitle="This can be changed later"
         onBack={() => router.back()}
         onNext={async () => {
-          const result = await createFlow(flowName)
+          const result = await saveFlow(flowName)
 
           if (!result.ok) {
             Alert.alert(
-              "Unable to create flow",
-              getFlowCreationErrorMessage(result.errors, flowName),
+              editingFlow ? "Unable to save flow" : "Unable to create flow",
+              editingFlow && result.errors.length === 0
+                ? "Unable to save flow."
+                : getFlowCreationErrorMessage(result.errors, flowName),
             )
             return
           }
 
-          router.push("/flow-library")
+          router.replace("/flow-library")
         }}
         nextLabel={<Ionicons name="checkmark-sharp" size={34} />}
       />

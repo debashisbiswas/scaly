@@ -36,7 +36,12 @@ export default function RootLayout() {
 
   return (
     <FlowStoreProvider>
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          animationTypeForReplace: "pop",
+        }}
+      />
     </FlowStoreProvider>
   )
 }

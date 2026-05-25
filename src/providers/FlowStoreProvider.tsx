@@ -21,12 +21,15 @@ import { Flow2 } from "@/core/flows/Flow"
 
 type FlowStoreContextValue = {
   draft: FlowDraft
+  editingFlow: Flow | null
   flows: Flow[]
   premadeFlows: Flow[]
   getFlowById: (id: string) => Flow | undefined
   updateDraft: (partial: Partial<FlowDraft>) => void
   resetDraft: () => void
+  startEditingFlow: (flow: Flow) => void
   createFlow: (name: string) => Promise<CreateFlowResult>
+  saveFlow: (name: string) => Promise<CreateFlowResult>
 }
 
 const FlowStoreContext = createContext<FlowStoreContextValue | null>(null)
@@ -38,6 +41,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
 
   const [flows, setFlows] = useState<Flow[]>([])
   const [draft, setDraft] = useState(() => draftRepositoryRef.current.get())
+  const [editingFlow, setEditingFlow] = useState<Flow | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -79,6 +83,13 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
   const resetDraft = useCallback(() => {
     draftRepositoryRef.current.reset()
     setDraft(draftRepositoryRef.current.get())
+    setEditingFlow(null)
+  }, [])
+
+  const startEditingFlow = useCallback((flow: Flow) => {
+    draftRepositoryRef.current.save(flow.config)
+    setDraft(draftRepositoryRef.current.get())
+    setEditingFlow(flow)
   }, [])
 
   const createFlow = useCallback(
@@ -119,6 +130,55 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
     [setFlows, setDraft],
   )
 
+  const saveFlow = useCallback(
+    async (name: string) => {
+      if (!editingFlow) {
+        return createFlow(name)
+      }
+
+      const result = await Flow2.updateFromDraft({
+        flowId: editingFlow.id,
+        draft: draftRepositoryRef.current.get(),
+        name,
+      })
+
+      if (!result.ok) {
+        const legacyResult: CreateFlowResult = {
+          ok: false,
+          errors: [...result.errors],
+        }
+
+        return legacyResult
+      }
+
+      const updatedFlow = await Flow2.fromID(result.flowId)
+
+      if (!updatedFlow) {
+        const legacyResult: CreateFlowResult = {
+          ok: false,
+          errors: [],
+        }
+
+        return legacyResult
+      }
+
+      const storedFlows = await Flow2.list()
+      setFlows(storedFlows)
+
+      draftRepositoryRef.current.reset()
+      setDraft(draftRepositoryRef.current.get())
+      setEditingFlow(null)
+
+      const legacyResult: CreateFlowResult = {
+        ok: true,
+        value: updatedFlow,
+      }
+
+      return legacyResult
+    },
+    [createFlow, editingFlow, setFlows, setDraft],
+  )
+
   const getFlowById = useCallback(
     (id: string) =>
       flows.find((flow) => flow.id === id) ??
@@ -129,14 +189,27 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
   const value = useMemo(
     () => ({
       draft,
+      editingFlow,
       flows,
       premadeFlows: PREMADE_FLOWS,
       getFlowById,
       updateDraft,
       resetDraft,
+      startEditingFlow,
       createFlow,
+      saveFlow,
     }),
-    [draft, flows, getFlowById, updateDraft, resetDraft, createFlow],
+    [
+      draft,
+      editingFlow,
+      flows,
+      getFlowById,
+      updateDraft,
+      resetDraft,
+      startEditingFlow,
+      createFlow,
+      saveFlow,
+    ],
   )
 
   return (

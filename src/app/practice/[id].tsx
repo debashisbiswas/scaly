@@ -484,7 +484,7 @@ export default function Practice() {
   const [mainPanelHeight, setMainPanelHeight] = useState(0)
 
   const { id: flowId } = useLocalSearchParams<{ id: string }>()
-  const { getFlowById } = useFlowStore()
+  const { flows, getFlowById, startEditingFlow } = useFlowStore()
   const [exerciseQueue, setExerciseQueue] = useState<
     ExerciseQueue.PracticeExercise[]
   >([])
@@ -497,6 +497,10 @@ export default function Practice() {
   const droneRef = useRef<ReturnType<typeof createDrone> | null>(null)
 
   const flow = typeof flowId === "string" ? getFlowById(flowId) : undefined
+  const savedFlow =
+    typeof flowId === "string"
+      ? flows.find((storedFlow) => storedFlow.id === flowId)
+      : undefined
 
   useEffect(() => {
     async function loadExerciseSpec() {
@@ -755,11 +759,18 @@ export default function Practice() {
             marginBottom: 4,
           }}
         >
-          <TopBarButton
-            label="Edit"
-            icon="arrow-back"
-            onPress={() => router.back()}
-          />
+          {savedFlow ? (
+            <TopBarButton
+              label="Edit"
+              icon="create-outline"
+              onPress={() => {
+                startEditingFlow(savedFlow)
+                router.push("/choose-keys")
+              }}
+            />
+          ) : (
+            <View style={{ width: 72 }} />
+          )}
 
           <View style={{ flex: 1 }}>
             <Text

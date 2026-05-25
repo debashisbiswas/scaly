@@ -73,6 +73,53 @@ export namespace Flow2 {
     } as const
   }
 
+  export async function updateFromDraft({
+    flowId,
+    name,
+    draft,
+    now = new Date(),
+  }: {
+    flowId: string
+    name: string
+    draft: FlowDraft
+    now?: Date
+  }) {
+    const errors = validateFlowDraft(draft)
+
+    if (name.trim().length === 0 || errors.length > 0) {
+      return toFlowErrorResult(errors, name)
+    }
+
+    const existingFlow = await fromID(flowId)
+
+    if (!existingFlow) {
+      return {
+        ok: false,
+        errors: [],
+        message: "Unable to find this flow.",
+      } as const
+    }
+
+    const nextConfigJson = JSON.stringify(draft)
+    const configChanged = nextConfigJson !== JSON.stringify(existingFlow.config)
+
+    await db
+      .update(flows)
+      .set({
+        name: name.trim(),
+        configJson: nextConfigJson,
+        progressPercent: configChanged ? 0 : existingFlow.progressPercent,
+        updatedAt: now,
+      })
+      .where(eq(flows.id, flowId))
+
+    return {
+      ok: true,
+      flowId,
+      exerciseCount: expandFlowDraftToExerciseSpecs(draft).length,
+    } as const
+  }
+
   export async function list() {
     const rows = await db.select().from(flows).orderBy(desc(flows.updatedAt))
     return rows.map(serialize)

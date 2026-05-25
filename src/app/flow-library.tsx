@@ -4,19 +4,9 @@ import { Pressable, ScrollView, Text, View } from "react-native"
 import { LinearGradient } from "expo-linear-gradient"
 import { SafeAreaView } from "react-native-safe-area-context"
 
-import { Flow } from "@/core/flows"
-
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 type LibraryTab = "saved" | "premade"
-
-function flowToCard(flow: Flow) {
-  return {
-    id: flow.id,
-    name: flow.name,
-    progress: flow.progressPercent,
-  }
-}
 
 function ActionButton({
   label,
@@ -49,16 +39,13 @@ function ActionButton({
 
 export default function FlowLibrary() {
   const router = useRouter()
-  const { flows, premadeFlows } = useFlowStore()
+  const { flows, premadeFlows, startEditingFlow } = useFlowStore()
   const [activeTab, setActiveTab] = useState<LibraryTab>("saved")
 
   const panelPadding = 16
   const gap = 10
   const cardWidth = "48.6%"
-  const displayedFlows =
-    activeTab === "saved"
-      ? flows.map(flowToCard)
-      : premadeFlows.map(flowToCard)
+  const displayedFlows = activeTab === "saved" ? flows : premadeFlows
 
   return (
     <LinearGradient
@@ -84,10 +71,7 @@ export default function FlowLibrary() {
           }}
         >
           <Pressable
-            onPress={
-              () =>
-                router.back() /* TODO: if we go back after creating a flow, it should go back to the homepage */
-            }
+            onPress={() => router.replace("/")}
             style={{
               width: 44,
               height: 32,
@@ -200,7 +184,7 @@ export default function FlowLibrary() {
                     <View
                       style={{
                         height: "100%",
-                        width: `${flow.progress}%`,
+                        width: `${flow.progressPercent}%`,
                         backgroundColor: "#1fb785",
                         justifyContent: "center",
                         paddingLeft: 8,
@@ -213,7 +197,7 @@ export default function FlowLibrary() {
                           fontSize: 12,
                         }}
                       >
-                        {flow.progress}%
+                        {flow.progressPercent}%
                       </Text>
                     </View>
                   </View>
@@ -224,10 +208,15 @@ export default function FlowLibrary() {
                       primary
                       onPress={() => router.push(`/practice/${flow.id}`)}
                     />
-                    <ActionButton
-                      label="Edit"
-                      onPress={() => console.log(`Edit flow: ${flow.name}`)}
-                    />
+                    {activeTab === "saved" ? (
+                      <ActionButton
+                        label="Edit"
+                        onPress={() => {
+                          startEditingFlow(flow)
+                          router.push("/choose-keys")
+                        }}
+                      />
+                    ) : null}
                   </View>
                 </View>
               ))}
