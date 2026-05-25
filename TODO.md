@@ -1,10 +1,5 @@
 # TODO
 
-- flow library: delete flow
-- flow library: edit should take the user to beginning of the flow
-settings, with flow settings pre-populated
-- practice page: edit should do same as above ^
-
 - tempo on exercise identity, tempo buckets for tempo range
 
 - practice page
