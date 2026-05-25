@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Ionicons } from "@expo/vector-icons"
 import { Host, Button } from "@expo/ui"
 
@@ -22,6 +22,7 @@ import { ExercisePracticeStats } from "@/core/flows/ExercisePracticeStats"
 import { toExerciseKey } from "@/core/flows/exerciseKey"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 import { ExerciseQueue } from "@/core/flows/ExerciseQueue"
+import { createMetronome } from "@/core/metronome"
 
 function DebugQueueSidebar(props: {
   queue: ExerciseQueue.PracticeExercise[]
@@ -488,6 +489,8 @@ export default function Practice() {
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0)
   const [isLoadingExercise, setIsLoadingExercise] = useState(true)
   const [isSavingRating, setIsSavingRating] = useState(false)
+  const [isMetronomeRunning, setIsMetronomeRunning] = useState(false)
+  const metronomeRef = useRef<ReturnType<typeof createMetronome> | null>(null)
 
   const flow = typeof flowId === "string" ? getFlowById(flowId) : undefined
 
@@ -578,6 +581,31 @@ export default function Practice() {
   }, [flowId, flow])
 
   const exercise = exerciseQueue[currentExerciseIndex] ?? null
+
+  const handleMetronomeToggle = () => {
+    if (!exercise) {
+      return
+    }
+
+    if (!metronomeRef.current) {
+      metronomeRef.current = createMetronome({ bpm: exercise.assignedTempo })
+    }
+
+    setIsMetronomeRunning(metronomeRef.current.toggle())
+  }
+
+  useEffect(() => {
+    if (exercise && metronomeRef.current) {
+      metronomeRef.current.setBpm(exercise.assignedTempo)
+    }
+  }, [exercise])
+
+  useEffect(
+    () => () => {
+      metronomeRef.current?.dispose()
+    },
+    [],
+  )
 
   if (isLoadingExercise) {
     return (
@@ -905,7 +933,12 @@ export default function Practice() {
               active={showNotes}
               onPress={() => setShowNotes((previous) => !previous)}
             />
-            <SideToggleButton label="Metro" icon="timer-outline" />
+            <SideToggleButton
+              label="Metro"
+              icon="timer-outline"
+              active={isMetronomeRunning}
+              onPress={handleMetronomeToggle}
+            />
             <SideToggleButton label="Drone" icon="pulse-outline" />
           </View>
         </View>
