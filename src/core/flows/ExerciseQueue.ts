@@ -22,12 +22,19 @@ export namespace ExerciseQueue {
       return 0
     }
 
-    const weightedCandidates = exercises
+    const nonCurrentCandidates = exercises
       .map((exercise, index) => ({
         index,
+        exercise,
         weight: ExercisePracticeStats.getExercisePracticeWeight(exercise.stats),
       }))
       .filter((candidate) => candidate.index !== currentIndex)
+    const unseenCandidates = nonCurrentCandidates.filter(
+      (candidate) => candidate.exercise.id === null,
+    )
+
+    const weightedCandidates =
+      unseenCandidates.length > 0 ? unseenCandidates : nonCurrentCandidates
 
     const totalWeight = weightedCandidates.reduce(
       (sum, candidate) => sum + candidate.weight,
