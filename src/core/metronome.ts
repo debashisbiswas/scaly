@@ -1,8 +1,5 @@
 import { AudioContext } from "react-native-audio-api"
 
-const DEFAULT_SCHEDULE_AHEAD_TIME_SEC = 0.1
-const DEFAULT_SCHEDULER_INTERVAL_MS = 25
-
 export type MetronomeOptions = {
   bpm: number
 }
@@ -14,9 +11,7 @@ export function createMetronome(options: MetronomeOptions) {
   let running = false
   let bpm = options.bpm
 
-  const getBeatIntervalSec = () => 60 / bpm
-
-  const getAudioContext = () => {
+  const getOrCreateAudioContext = () => {
     if (!audioContext) {
       audioContext = new AudioContext()
     }
@@ -25,7 +20,7 @@ export function createMetronome(options: MetronomeOptions) {
   }
 
   const playClickAtTime = (time: number) => {
-    const context = getAudioContext()
+    const context = getOrCreateAudioContext()
     const oscillator = context.createOscillator()
     const gainNode = context.createGain()
 
@@ -48,12 +43,10 @@ export function createMetronome(options: MetronomeOptions) {
       return
     }
 
-    while (
-      nextBeatTime <
-      audioContext.currentTime + DEFAULT_SCHEDULE_AHEAD_TIME_SEC
-    ) {
+    const secondsToScheduleAhead = 0.1
+    while (nextBeatTime < audioContext.currentTime + secondsToScheduleAhead) {
       playClickAtTime(nextBeatTime)
-      nextBeatTime += getBeatIntervalSec()
+      nextBeatTime += 60 / bpm
     }
   }
 
@@ -71,10 +64,13 @@ export function createMetronome(options: MetronomeOptions) {
       return
     }
 
-    const context = getAudioContext()
+    const context = getOrCreateAudioContext()
     nextBeatTime = context.currentTime
-    schedulerId = setInterval(scheduler, DEFAULT_SCHEDULER_INTERVAL_MS)
+
+    const schedulerIntervalMs = 25
+    schedulerId = setInterval(scheduler, schedulerIntervalMs)
     scheduler()
+
     running = true
   }
 

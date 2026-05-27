@@ -35,17 +35,10 @@ export namespace Flow2 {
   export async function createFromDraft({
     name,
     draft,
-    now = new Date(),
   }: {
     name: string
     draft: FlowDraft
-    now?: Date
   }) {
-    function createFlowId(now: Date) {
-      const randomSuffix = Math.random().toString(36).slice(2, 8)
-      return `flow_${now.getTime()}_${randomSuffix}`
-    }
-
     const errors = validateFlowDraft(draft)
 
     if (name.trim().length === 0 || errors.length > 0) {
@@ -53,7 +46,10 @@ export namespace Flow2 {
     }
 
     const generated = expandFlowDraftToExerciseSpecs(draft)
-    const flowId = createFlowId(now)
+
+    const now = new Date()
+    const randomSuffix = Math.random().toString(36).slice(2, 8)
+    const flowId = `flow_${now.getTime()}_${randomSuffix}`
 
     await db.transaction(async (tx) => {
       await tx.insert(flows).values({

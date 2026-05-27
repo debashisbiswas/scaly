@@ -45,25 +45,16 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
   const [editingFlow, setEditingFlow] = useState<Flow | null>(null)
 
   useEffect(() => {
-    let cancelled = false
-
     async function loadFlows() {
       try {
         const storedFlows = await Flow2.list()
-
-        if (!cancelled) {
-          setFlows(storedFlows)
-        }
+        setFlows(storedFlows)
       } catch (error) {
         console.error("[db] failed to load flows:", error)
       }
     }
 
-    void loadFlows()
-
-    return () => {
-      cancelled = true
-    }
+    loadFlows()
   }, [])
 
   const updateDraft = useCallback((partial: Partial<FlowDraft>) => {
