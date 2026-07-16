@@ -5,6 +5,8 @@ import { Note as TonalNote } from "tonal"
 import { Host, Button } from "@expo/ui"
 
 import {
+  AppState,
+  type AppStateStatus,
   Pressable,
   ScrollView,
   Text,
@@ -680,13 +682,40 @@ export default function Practice() {
     }
   }, [droneFrequency])
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    const disposePracticeAudio = () => {
       metronomeRef.current?.dispose()
+      metronomeRef.current = null
       droneRef.current?.dispose()
-    },
-    [],
-  )
+      droneRef.current = null
+    }
+
+    const stopPracticeAudio = () => {
+      disposePracticeAudio()
+      setIsMetronomeRunning(false)
+      setIsDroneRunning(false)
+    }
+
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (nextAppState !== "active") {
+        stopPracticeAudio()
+      }
+    }
+
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange,
+    )
+
+    if (AppState.currentState !== "active") {
+      stopPracticeAudio()
+    }
+
+    return () => {
+      subscription.remove()
+      disposePracticeAudio()
+    }
+  }, [])
 
   if (isLoadingExercise) {
     return (
