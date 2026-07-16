@@ -4,11 +4,12 @@ import {
   MAX_BPM,
   MIN_BPM,
   MODE_OPTIONS,
+  TEMPO_BUCKETS,
   getClefRangeConfig,
 } from "./constants"
 import { Note } from "./Note"
 import { Pitch } from "./Pitch"
-import { FlowDraft, FlowDraftValidationError } from "./types"
+import { FlowDraft, FlowDraftValidationError, TempoSetting } from "./types"
 
 const DEFAULT_RANGE_CONFIG = getClefRangeConfig(null)
 const DEFAULT_LOW_PITCH = DEFAULT_RANGE_CONFIG.defaultLow
@@ -54,6 +55,22 @@ function sortByOrder<T extends string>(values: T[], order: readonly T[]) {
 
     return aIndex - bIndex
   })
+}
+
+export function expandTempoSettingToExerciseTempos(
+  tempo: TempoSetting,
+): TempoSetting[] {
+  if (tempo.kind === "single") {
+    return [tempo]
+  }
+
+  return TEMPO_BUCKETS.filter(
+    (bucket) => bucket.maxBpm >= tempo.minBpm && bucket.minBpm <= tempo.maxBpm,
+  ).map((bucket) => ({
+    kind: "range",
+    minBpm: bucket.minBpm,
+    maxBpm: bucket.maxBpm,
+  }))
 }
 
 function pitchLabelToMidi(label: string) {
@@ -133,6 +150,7 @@ export function expandFlowDraftToExerciseSpecs(
 
   const clef: GeneratedExerciseSpec["clef"] =
     draft.clef === "Bass Clef" ? "bass" : "treble"
+  const tempoBuckets = expandTempoSettingToExerciseTempos(draft.tempo)
 
   const exerciseSpecs: GeneratedExerciseSpec[] = []
 
@@ -164,14 +182,16 @@ export function expandFlowDraftToExerciseSpecs(
         continue
       }
 
-      exerciseSpecs.push({
-        key: Note.fullName(tonicNote),
-        mode: SCALE_MODE_MAP[mode],
-        startOctave: tonicPitch.octave,
-        octaves,
-        clef,
-        tempo: draft.tempo,
-      })
+      for (const tempo of tempoBuckets) {
+        exerciseSpecs.push({
+          key: Note.fullName(tonicNote),
+          mode: SCALE_MODE_MAP[mode],
+          startOctave: tonicPitch.octave,
+          octaves,
+          clef,
+          tempo,
+        })
+      }
     }
   }
 

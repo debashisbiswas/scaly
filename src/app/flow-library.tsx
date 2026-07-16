@@ -101,8 +101,6 @@ export default function FlowLibrary() {
 
   useFocusEffect(
     useCallback(() => {
-      let cancelled = false
-
       async function loadDisplayedFlowMastery() {
         const summaries = await Promise.all(
           displayedFlows.map(async (flow) => [
@@ -111,16 +109,10 @@ export default function FlowLibrary() {
           ]),
         )
 
-        if (!cancelled) {
-          setMasteryByFlowId(Object.fromEntries(summaries))
-        }
+        setMasteryByFlowId(Object.fromEntries(summaries))
       }
 
       loadDisplayedFlowMastery()
-
-      return () => {
-        cancelled = true
-      }
     }, [displayedFlows]),
   )
 

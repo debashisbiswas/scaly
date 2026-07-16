@@ -227,7 +227,7 @@ function DebugQueueSidebar(props: {
                     {getModeLabel(queuedExercise.spec.mode)}
                   </Text>
                   <Text style={{ color: "#3c6fa7", fontSize: 12 }}>
-                    Tempo: {queuedExercise.assignedTempo} BPM, {octaveLabel},
+                    Tempo bucket: {formatTempoBucket(queuedExercise.spec.tempo)}, {octaveLabel},
                     start on {queuedExercise.spec.key}
                     {queuedExercise.spec.startOctave}
                   </Text>
@@ -477,6 +477,56 @@ function getModeLabel(mode: GeneratedExerciseSpec["mode"]) {
   return "Melodic Minor"
 }
 
+function formatTempoBucket(tempo: GeneratedExerciseSpec["tempo"]) {
+  if (tempo.kind === "single") {
+    return `${tempo.bpm} BPM`
+  }
+
+  return `${tempo.minBpm}–${tempo.maxBpm} BPM`
+}
+
+function assignTempo(
+  exerciseTempo: GeneratedExerciseSpec["tempo"],
+  flowTempo: GeneratedExerciseSpec["tempo"],
+) {
+  if (exerciseTempo.kind === "single") {
+    return exerciseTempo.bpm
+  }
+
+  const flowMinBpm =
+    flowTempo.kind === "single" ? flowTempo.bpm : flowTempo.minBpm
+  const flowMaxBpm =
+    flowTempo.kind === "single" ? flowTempo.bpm : flowTempo.maxBpm
+  const minBpm = Math.max(exerciseTempo.minBpm, flowMinBpm)
+  const maxBpm = Math.min(exerciseTempo.maxBpm, flowMaxBpm)
+
+  if (minBpm > maxBpm) {
+    return exerciseTempo.minBpm
+  }
+
+  return Math.floor(Math.random() * (maxBpm - minBpm + 1)) + minBpm
+}
+
+function assignTempoToQueueItem(
+  queue: ExerciseQueue.PracticeExercise[],
+  index: number,
+  flowTempo: GeneratedExerciseSpec["tempo"],
+) {
+  const exercise = queue[index]
+
+  if (!exercise) {
+    return queue
+  }
+
+  const nextQueue = [...queue]
+  nextQueue[index] = {
+    ...exercise,
+    assignedTempo: assignTempo(exercise.spec.tempo, flowTempo),
+  }
+
+  return nextQueue
+}
+
 export default function Practice() {
   const router = useRouter()
   const [showNotes, setShowNotes] = useState(false)
@@ -548,14 +598,6 @@ export default function Practice() {
           const exerciseKey = toExerciseKey(spec)
           const storedExerciseId = exerciseIdByKey.get(exerciseKey) ?? null
 
-          const assignedTempo =
-            spec.tempo.kind === "single"
-              ? spec.tempo.bpm
-              : Math.ceil(
-                  Math.random() * (spec.tempo.maxBpm - spec.tempo.minBpm) +
-                    spec.tempo.minBpm,
-                )
-
           return {
             id: storedExerciseId,
             exerciseKey,
@@ -564,14 +606,23 @@ export default function Practice() {
               storedExerciseId !== null
                 ? (statsByExerciseId.get(storedExerciseId) ?? null)
                 : null,
-            assignedTempo,
+            assignedTempo: null,
           }
         })
 
-        setExerciseQueue(nextQueue)
-        setCurrentExerciseIndex(
-          ExerciseQueue.pickWeightedExerciseIndex(nextQueue, -1),
+        const nextExerciseIndex = ExerciseQueue.pickWeightedExerciseIndex(
+          nextQueue,
+          -1,
         )
+
+        setExerciseQueue(
+          assignTempoToQueueItem(
+            nextQueue,
+            nextExerciseIndex,
+            flow.config.tempo,
+          ),
+        )
+        setCurrentExerciseIndex(nextExerciseIndex)
       } catch {
         console.log("[practice] failed to load candidate exercises", {
           flowId: flowId,
@@ -594,7 +645,7 @@ export default function Practice() {
     : null
 
   const handleMetronomeToggle = () => {
-    if (!exercise) {
+    if (!exercise || exercise.assignedTempo === null) {
       return
     }
 
@@ -618,7 +669,7 @@ export default function Practice() {
   }
 
   useEffect(() => {
-    if (exercise && metronomeRef.current) {
+    if (exercise && exercise.assignedTempo !== null && metronomeRef.current) {
       metronomeRef.current.setBpm(exercise.assignedTempo)
     }
   }, [exercise])
@@ -675,20 +726,45 @@ export default function Practice() {
     )
   }
 
-  const octaveCount = exercise.spec.octaves
-
-  const advanceToNextExercise = () => {
-    if (exerciseQueue.length === 0) {
-      return
-    }
-
-    setCurrentExerciseIndex((current) =>
-      ExerciseQueue.pickWeightedExerciseIndex(exerciseQueue, current),
+  if (exercise.assignedTempo === null) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ fontSize: 32, color: "#202737" }}>
+          Loading exercise...
+        </Text>
+      </View>
     )
   }
 
+  const assignedTempo = exercise.assignedTempo
+  const octaveCount = exercise.spec.octaves
+
+  const advanceToNextExercise = (
+    queue: ExerciseQueue.PracticeExercise[] = exerciseQueue,
+  ) => {
+    if (queue.length === 0 || !flow) {
+      return
+    }
+
+    const nextExerciseIndex = ExerciseQueue.pickWeightedExerciseIndex(
+      queue,
+      currentExerciseIndex,
+    )
+
+    setExerciseQueue(
+      assignTempoToQueueItem(queue, nextExerciseIndex, flow.config.tempo),
+    )
+    setCurrentExerciseIndex(nextExerciseIndex)
+  }
+
   const handleRate = async (rating: ExercisePracticeStats.Rating) => {
-    if (typeof flowId !== "string" || isSavingRating) {
+    if (typeof flowId !== "string" || !flow || isSavingRating) {
       return
     }
 
@@ -710,21 +786,17 @@ export default function Practice() {
         throw new Error("Failed to record exercise rating.")
       }
 
-      setExerciseQueue((currentQueue) => {
-        const nextQueue = [...currentQueue]
-        const currentExercise = nextQueue[currentExerciseIndex]
+      const nextQueue = [...exerciseQueue]
+      const currentExercise = nextQueue[currentExerciseIndex]
 
-        if (currentExercise) {
-          nextQueue[currentExerciseIndex] = {
-            ...currentExercise,
-            id: storedExercise.id,
-            exerciseKey: storedExercise.exerciseKey,
-            stats: nextStats,
-          }
+      if (currentExercise) {
+        nextQueue[currentExerciseIndex] = {
+          ...currentExercise,
+          id: storedExercise.id,
+          exerciseKey: storedExercise.exerciseKey,
+          stats: nextStats,
         }
-
-        return nextQueue
-      })
+      }
 
       console.log("[practice] rating persisted", {
         flowId: flowId,
@@ -735,7 +807,7 @@ export default function Practice() {
         action: "advance_to_next_exercise",
       })
 
-      advanceToNextExercise()
+      advanceToNextExercise(nextQueue)
     } catch (error) {
       console.error("[practice] failed to persist rating", {
         flowId: flowId,
@@ -935,7 +1007,7 @@ export default function Practice() {
                         textAlign: "center",
                       }}
                     >
-                      {exercise.assignedTempo}
+                      {assignedTempo}
                     </Text>
                     <Text
                       style={{

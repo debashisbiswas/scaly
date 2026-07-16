@@ -7,7 +7,7 @@ export namespace ExerciseQueue {
     exerciseKey: string
     spec: GeneratedExerciseSpec
     stats: ExercisePracticeStats.Shape | null
-    assignedTempo: number
+    assignedTempo: number | null
   }
 
   export function pickWeightedExerciseIndex(
