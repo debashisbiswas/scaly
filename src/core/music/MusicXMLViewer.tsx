@@ -1,5 +1,9 @@
 import { WebView } from "react-native-webview"
 
+import osmdBundle from "../../vendor/opensheetmusicdisplay.min.txt"
+
+const openSheetMusicDisplayScript = osmdBundle.replace(/<\/script/gi, "<\\/script")
+
 interface MusicXMLViewerProps {
   musicXML: string
   style?: object
@@ -18,7 +22,9 @@ export function MusicXMLViewer({
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script src="https://unpkg.com/opensheetmusicdisplay@1.9.5/build/opensheetmusicdisplay.min.js"></script>
+    <script>
+${openSheetMusicDisplayScript}
+    </script>
     <style>
       html,
       body {
