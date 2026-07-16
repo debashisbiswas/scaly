@@ -8,5 +8,4 @@
   - remove validation and popup from final page
 
 - metronome
-  - don't continue playing when app is closed?
   - better sound, maybe https://youtu.be/t4x6I-XKPIY
