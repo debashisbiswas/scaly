@@ -229,8 +229,8 @@ function DebugQueueSidebar(props: {
                     {getModeLabel(queuedExercise.spec.mode)}
                   </Text>
                   <Text style={{ color: "#3c6fa7", fontSize: 12 }}>
-                    Tempo bucket: {formatTempoBucket(queuedExercise.spec.tempo)}, {octaveLabel},
-                    start on {queuedExercise.spec.key}
+                    Tempo bucket: {formatTempoBucket(queuedExercise.spec.tempo)}
+                    , {octaveLabel}, start on {queuedExercise.spec.key}
                     {queuedExercise.spec.startOctave}
                   </Text>
                   <Text style={{ color: "#5c6b7d", fontSize: 11 }}>
@@ -997,6 +997,17 @@ export default function Practice() {
                       }}
                     >
                       {getModeLabel(exercise.spec.mode)}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        lineHeight: 34,
+                        color: "#4b5563",
+                        textAlign: "center",
+                        marginTop: 8,
+                      }}
+                    >
+                      Scale
                     </Text>
                     <Text
                       style={{
