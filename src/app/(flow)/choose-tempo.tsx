@@ -29,6 +29,8 @@ const TEMPO_BANDS = [
 
 const THUMB_SIZE = 24
 const RANGE_VALUE_INDICATOR_WIDTH = 80
+const RANGE_VALUE_INDICATOR_GAP = 8
+const INITIAL_RANGE_RIGHT_INDICATOR_WIDTH = 120
 
 type TempoMode = "single" | "range"
 type EditingField = "single" | "range-low" | "range-high" | null
@@ -48,6 +50,60 @@ function sanitizeTempoInput(value: string) {
 function parseTempoInput(value: string) {
   const parsed = Number.parseInt(value, 10)
   return Number.isFinite(parsed) ? clampBpm(parsed) : null
+}
+
+function clampPosition(value: number, max: number) {
+  return Math.max(0, Math.min(max, value))
+}
+
+function getRangeIndicatorPositions({
+  sliderWidth,
+  lowCenter,
+  highCenter,
+  lowWidth,
+  highNumberWidth,
+  highIndicatorWidth,
+}: {
+  sliderWidth: number
+  lowCenter: number
+  highCenter: number
+  lowWidth: number
+  highNumberWidth: number
+  highIndicatorWidth: number
+}) {
+  const idealLowLeft = lowCenter - lowWidth / 2
+  const idealHighLeft = highCenter - highNumberWidth / 2
+  const lowLeft = clampPosition(idealLowLeft, sliderWidth - lowWidth)
+  const highLeft = clampPosition(
+    idealHighLeft,
+    sliderWidth - highIndicatorWidth,
+  )
+
+  if (lowLeft + lowWidth + RANGE_VALUE_INDICATOR_GAP <= highLeft) {
+    return { lowLeft, highLeft }
+  }
+
+  const combinedWidth =
+    lowWidth + RANGE_VALUE_INDICATOR_GAP + highIndicatorWidth
+
+  if (combinedWidth > sliderWidth) {
+    return {
+      lowLeft: 0,
+      highLeft: Math.max(0, sliderWidth - highIndicatorWidth),
+    }
+  }
+
+  const idealCombinedLeft =
+    (idealLowLeft + idealHighLeft - lowWidth - RANGE_VALUE_INDICATOR_GAP) / 2
+  const combinedLeft = clampPosition(
+    idealCombinedLeft,
+    sliderWidth - combinedWidth,
+  )
+
+  return {
+    lowLeft: combinedLeft,
+    highLeft: combinedLeft + lowWidth + RANGE_VALUE_INDICATOR_GAP,
+  }
 }
 
 function getCommittedSingleBpm(inputValue: string, fallback: number) {
@@ -186,7 +242,9 @@ export default function ChooseTempo() {
   const [rangeHighInput, setRangeHighInput] = useState(String(rangeBpm[1]))
   const [editingField, setEditingField] = useState<EditingField>(null)
   const [singleNumberWidth, setSingleNumberWidth] = useState(64)
-  const [rangeRightNumberWidth, setRangeRightNumberWidth] = useState(64)
+  const [rangeRightIndicatorWidth, setRangeRightIndicatorWidth] = useState(
+    INITIAL_RANGE_RIGHT_INDICATOR_WIDTH,
+  )
 
   useEffect(() => {
     if (editingField !== "single") {
@@ -210,6 +268,15 @@ export default function ChooseTempo() {
     const ratio = (clampBpm(value) - MIN_BPM) / (MAX_BPM - MIN_BPM)
     return THUMB_SIZE / 2 + ratio * (sliderWidth - THUMB_SIZE)
   }
+
+  const rangeIndicatorPositions = getRangeIndicatorPositions({
+    sliderWidth,
+    lowCenter: getThumbCenter(rangeBpm[0]),
+    highCenter: getThumbCenter(rangeBpm[1]),
+    lowWidth: RANGE_VALUE_INDICATOR_WIDTH,
+    highNumberWidth: RANGE_VALUE_INDICATOR_WIDTH,
+    highIndicatorWidth: rangeRightIndicatorWidth,
+  })
 
   const commitSingleInput = () => {
     const nextBpm = getCommittedSingleBpm(singleInput, singleBpm)
@@ -457,9 +524,8 @@ export default function ChooseTempo() {
                 <View
                   style={{
                     position: "absolute",
-                    left:
-                      getThumbCenter(rangeBpm[0]) -
-                      RANGE_VALUE_INDICATOR_WIDTH / 2,
+                    top: 0,
+                    left: rangeIndicatorPositions.lowLeft,
                     width: RANGE_VALUE_INDICATOR_WIDTH,
                     alignItems: "center",
                   }}
@@ -478,11 +544,16 @@ export default function ChooseTempo() {
                   />
                 </View>
                 <View
+                  onLayout={({ nativeEvent }) => {
+                    const nextWidth = Math.round(nativeEvent.layout.width)
+                    if (nextWidth !== rangeRightIndicatorWidth) {
+                      setRangeRightIndicatorWidth(nextWidth)
+                    }
+                  }}
                   style={{
                     position: "absolute",
                     top: 0,
-                    left:
-                      getThumbCenter(rangeBpm[1]) - rangeRightNumberWidth / 2,
+                    left: rangeIndicatorPositions.highLeft,
                   }}
                 >
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -493,13 +564,10 @@ export default function ChooseTempo() {
                       onPress={() => startEditingField("range-high")}
                       onChangeText={setRangeHighInput}
                       onCommit={commitRangeHighInput}
-                      onWidthChange={(nextWidth) => {
-                        if (nextWidth !== rangeRightNumberWidth) {
-                          setRangeRightNumberWidth(nextWidth)
-                        }
-                      }}
                       backgroundColor="#3B82F6"
                       textColor="#FFFFFF"
+                      width={RANGE_VALUE_INDICATOR_WIDTH}
+                      minWidth={RANGE_VALUE_INDICATOR_WIDTH}
                     />
                     <Text
                       style={{
