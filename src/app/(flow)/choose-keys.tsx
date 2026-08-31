@@ -45,9 +45,14 @@ export default function ChooseKey() {
         subtitle="Select all that apply"
         onBack={() => router.back()}
         onNext={() => {
+          if (selectedNotes.size === 0) {
+            return
+          }
+
           updateDraft({ keys: [...selectedNotes] })
           router.navigate("/choose-clef")
         }}
+        nextDisabled={selectedNotes.size === 0}
       />
 
       <View

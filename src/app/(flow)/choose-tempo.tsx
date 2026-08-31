@@ -389,19 +389,31 @@ export default function ChooseTempo() {
     setRangeBpm([Math.min(start, end), Math.max(start, end)])
   }
 
+  const nextSingleBpm =
+    editingField === "single"
+      ? getCommittedSingleBpm(singleInput, singleBpm)
+      : singleBpm
+  const nextRangeBpm: [number, number] = [
+    editingField === "range-low"
+      ? getCommittedRangeLowBpm(rangeLowInput, rangeBpm)
+      : rangeBpm[0],
+    editingField === "range-high"
+      ? getCommittedRangeHighBpm(rangeHighInput, rangeBpm)
+      : rangeBpm[1],
+  ]
+  const canProceed =
+    mode === "single"
+      ? nextSingleBpm >= MIN_BPM && nextSingleBpm <= MAX_BPM
+      : nextRangeBpm[0] >= MIN_BPM &&
+        nextRangeBpm[0] <= MAX_BPM &&
+        nextRangeBpm[1] >= MIN_BPM &&
+        nextRangeBpm[1] <= MAX_BPM &&
+        nextRangeBpm[0] <= nextRangeBpm[1]
+
   const handleNext = () => {
-    const nextSingleBpm =
-      editingField === "single"
-        ? getCommittedSingleBpm(singleInput, singleBpm)
-        : singleBpm
-    const nextRangeBpm: [number, number] = [
-      editingField === "range-low"
-        ? getCommittedRangeLowBpm(rangeLowInput, rangeBpm)
-        : rangeBpm[0],
-      editingField === "range-high"
-        ? getCommittedRangeHighBpm(rangeHighInput, rangeBpm)
-        : rangeBpm[1],
-    ]
+    if (!canProceed) {
+      return
+    }
 
     const tempo: TempoSetting =
       mode === "single"
@@ -419,6 +431,7 @@ export default function ChooseTempo() {
         subtitle="Use the slider or input your desired tempo"
         onBack={() => router.back()}
         onNext={handleNext}
+        nextDisabled={!canProceed}
       />
 
       <View

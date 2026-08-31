@@ -39,9 +39,14 @@ export default function ChooseMode() {
         subtitle="Select all that apply"
         onBack={() => router.back()}
         onNext={() => {
+          if (selectedModes.size === 0) {
+            return
+          }
+
           updateDraft({ modes: [...selectedModes] })
           router.push("/choose-tempo")
         }}
+        nextDisabled={selectedModes.size === 0}
       />
 
       <View style={{ flex: 1, paddingHorizontal: 16 }}>

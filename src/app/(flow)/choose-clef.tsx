@@ -27,9 +27,14 @@ export default function ChooseClef() {
         subtitle="Select which clef you want to play"
         onBack={() => router.back()}
         onNext={() => {
+          if (selectedClef === null) {
+            return
+          }
+
           updateDraft({ clef: selectedClef })
           router.navigate("/choose-range")
         }}
+        nextDisabled={selectedClef === null}
       />
 
       <View style={{ flex: 1, paddingHorizontal: 16 }}>

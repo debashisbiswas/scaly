@@ -1,4 +1,5 @@
-import { View, Text } from "react-native"
+import { ReactNode } from "react"
+import { Pressable, View, Text } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 
 interface TopBarProps {
@@ -6,7 +7,8 @@ interface TopBarProps {
   subtitle: string
   onBack: () => void
   onNext?: () => void
-  nextLabel?: string | React.ReactElement
+  nextDisabled?: boolean
+  nextLabel?: ReactNode
 }
 
 export default function TopBar({
@@ -14,8 +16,10 @@ export default function TopBar({
   subtitle,
   onBack,
   onNext,
+  nextDisabled = false,
   nextLabel,
 }: TopBarProps) {
+  const isNextDisabled = !onNext || nextDisabled
   return (
     <View
       style={{
@@ -59,17 +63,23 @@ export default function TopBar({
           {subtitle}
         </Text>
       </View>
-      <Text
-        style={{
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Next"
+        accessibilityState={{ disabled: isNextDisabled }}
+        disabled={isNextDisabled}
+        hitSlop={8}
+        onPress={onNext}
+        style={({ pressed }) => ({
           width: 34,
           height: 34,
-          textAlign: "center",
-          opacity: onNext ? 1 : 0,
-        }}
-        onPress={onNext}
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: !onNext ? 0 : nextDisabled ? 0.3 : pressed ? 0.6 : 1,
+        })}
       >
-        {nextLabel ? nextLabel : <Ionicons name="arrow-forward" size={34} />}
-      </Text>
+        {nextLabel ?? <Ionicons name="arrow-forward" size={34} />}
+      </Pressable>
     </View>
   )
 }

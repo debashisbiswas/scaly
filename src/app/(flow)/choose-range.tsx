@@ -355,6 +355,13 @@ export default function ChooseKey() {
   const rightNote = noteSteps[rightIndex]
   const leftPitchLabel = getPitchLabelFromState(leftState, noteSteps)
   const rightPitchLabel = getPitchLabelFromState(rightState, noteSteps)
+  const leftMidi = pitchLabelToMidi(leftPitchLabel)
+  const rightMidi = pitchLabelToMidi(rightPitchLabel)
+  const canProceed =
+    draft.clef !== null &&
+    leftMidi < rightMidi &&
+    isPitchWithinClefRange(leftPitchLabel, rangeConfig) &&
+    isPitchWithinClefRange(rightPitchLabel, rangeConfig)
 
   const staffWidth = Math.max(180, Math.min(screenWidth - 152, 420))
 
@@ -365,21 +372,19 @@ export default function ChooseKey() {
         subtitle="Use the sliders and buttons to select your range"
         onBack={() => router.back()}
         onNext={() => {
-          const leftMidi = pitchLabelToMidi(leftPitchLabel)
-          const rightMidi = pitchLabelToMidi(rightPitchLabel)
-          const lowPitch =
-            leftMidi <= rightMidi ? leftPitchLabel : rightPitchLabel
-          const highPitch =
-            leftMidi <= rightMidi ? rightPitchLabel : leftPitchLabel
+          if (!canProceed) {
+            return
+          }
 
           updateDraft({
             range: {
-              low: lowPitch,
-              high: highPitch,
+              low: leftPitchLabel,
+              high: rightPitchLabel,
             },
           })
           router.push("/choose-mode")
         }}
+        nextDisabled={!canProceed}
       />
 
       <View
