@@ -14,7 +14,7 @@ const sanitizeVolume = (value: number | undefined) =>
 
 export function createMetronome(options: MetronomeOptions) {
   let audioContext: AudioContext | null = null
-  let schedulerId: NodeJS.Timeout | null = null
+  let schedulerId: number | null = null
   let nextBeatTime = 0
   let running = false
   let bpm = sanitizeBpm(options.bpm)
