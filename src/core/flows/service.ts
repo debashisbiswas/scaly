@@ -59,16 +59,6 @@ export function expandTempoSettingToExerciseTempos(
   }))
 }
 
-export function pitchLabelToMidi(label: string) {
-  const parsed = Pitch.fromLabel(label)
-
-  if (!parsed) {
-    return null
-  }
-
-  return Pitch.midi(parsed)
-}
-
 export function expandFlowDraftToExerciseSpecs(
   inputDraft: FlowDraft.Shape,
 ): GeneratedExerciseSpec[] {

@@ -4,6 +4,7 @@ import {
   MAX_BPM,
   getClefRangeConfig,
 } from "./constants"
+import { Pitch } from "./Pitch"
 import {
   Clef,
   KeySignature,
@@ -11,11 +12,20 @@ import {
   ScaleMode,
   TempoSetting,
 } from "./types"
-import { pitchLabelToMidi } from "./service"
 
 const DEFAULT_RANGE_CONFIG = getClefRangeConfig(null)
 const DEFAULT_LOW_PITCH = DEFAULT_RANGE_CONFIG.defaultLow
 const DEFAULT_HIGH_PITCH = DEFAULT_RANGE_CONFIG.defaultHigh
+
+function pitchLabelToMidi(label: string) {
+  const parsed = Pitch.fromLabel(label)
+
+  if (!parsed) {
+    return null
+  }
+
+  return Pitch.midi(parsed)
+}
 
 export namespace FlowDraft {
   export type Shape = {
