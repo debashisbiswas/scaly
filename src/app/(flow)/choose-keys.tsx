@@ -113,9 +113,7 @@ export default function ChooseKey() {
           label="Select All"
           selected={allSelected}
           onPress={() => {
-            setSelectedNotes(
-              allSelected ? new Set<KeySignature>() : new Set(ALL_KEYS),
-            )
+            setSelectedNotes(allSelected ? new Set() : new Set(ALL_KEYS))
           }}
           style={styles.selectAllButton}
           labelStyle={styles.selectAllLabel}
