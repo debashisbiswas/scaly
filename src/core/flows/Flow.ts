@@ -6,7 +6,6 @@ import { flows } from "@/db/schema"
 import {
   expandFlowDraftToExerciseSpecs,
   getFlowCreationErrorMessage,
-  validateFlowDraft,
 } from "./service"
 import { FlowDraft } from "./flow-draft"
 
@@ -21,7 +20,7 @@ export namespace Flow2 {
   }
 
   function toFlowErrorResult(
-    errors: ReturnType<typeof validateFlowDraft>,
+    errors: FlowDraft.ValidationError[],
     name: string,
   ) {
     return {
@@ -38,7 +37,7 @@ export namespace Flow2 {
     name: string
     draft: FlowDraft.Shape
   }) {
-    const errors = validateFlowDraft(draft)
+    const errors = FlowDraft.validate(draft)
 
     if (name.trim().length === 0 || errors.length > 0) {
       return toFlowErrorResult(errors, name)
@@ -79,7 +78,7 @@ export namespace Flow2 {
     draft: FlowDraft.Shape
     now?: Date
   }) {
-    const errors = validateFlowDraft(draft)
+    const errors = FlowDraft.validate(draft)
 
     if (name.trim().length === 0 || errors.length > 0) {
       return toFlowErrorResult(errors, name)

@@ -19,13 +19,6 @@ export type Flow = {
   updatedAt: string
 }
 
-export type FlowDraftValidationError =
-  | "missing_keys"
-  | "missing_clef"
-  | "missing_modes"
-  | "invalid_range"
-  | "invalid_tempo"
-
 export type CreateFlowResult =
   | { ok: true; value: Flow }
-  | { ok: false; errors: FlowDraftValidationError[] }
+  | { ok: false; errors: FlowDraft.ValidationError[] }

@@ -1,15 +1,8 @@
-import {
-  KEY_SIGNATURE_OPTIONS,
-  MAX_BPM,
-  MIN_BPM,
-  MODE_OPTIONS,
-  TEMPO_BUCKETS,
-  getClefRangeConfig,
-} from "./constants"
+import { KEY_SIGNATURE_OPTIONS, MODE_OPTIONS, TEMPO_BUCKETS } from "./constants"
 import { FlowDraft } from "./flow-draft"
 import { Note } from "./Note"
 import { Pitch } from "./Pitch"
-import { FlowDraftValidationError, TempoSetting } from "./types"
+import { TempoSetting } from "./types"
 
 const SCALE_MODE_MAP = {
   Major: "major",
@@ -66,7 +59,7 @@ export function expandTempoSettingToExerciseTempos(
   }))
 }
 
-function pitchLabelToMidi(label: string) {
+export function pitchLabelToMidi(label: string) {
   const parsed = Pitch.fromLabel(label)
 
   if (!parsed) {
@@ -76,30 +69,10 @@ function pitchLabelToMidi(label: string) {
   return Pitch.midi(parsed)
 }
 
-function isRangeWithinSelectedClef(
-  clef: FlowDraft.Shape["clef"],
-  lowMidi: number,
-  highMidi: number,
-) {
-  if (clef === null) {
-    return true
-  }
-
-  const rangeConfig = getClefRangeConfig(clef)
-  const minMidi = pitchLabelToMidi(rangeConfig.minPitch)
-  const maxMidi = pitchLabelToMidi(rangeConfig.maxPitch)
-
-  if (minMidi === null || maxMidi === null) {
-    return true
-  }
-
-  return lowMidi >= minMidi && highMidi <= maxMidi
-}
-
 export function expandFlowDraftToExerciseSpecs(
   inputDraft: FlowDraft.Shape,
 ): GeneratedExerciseSpec[] {
-  const errors = validateFlowDraft(inputDraft)
+  const errors = FlowDraft.validate(inputDraft)
 
   if (errors.length > 0) {
     throw new Error("Cannot expand invalid flow draft.")
@@ -170,58 +143,8 @@ export function expandFlowDraftToExerciseSpecs(
   return exerciseSpecs
 }
 
-export function validateFlowDraft(
-  inputDraft: FlowDraft.Shape,
-): FlowDraftValidationError[] {
-  const draft = FlowDraft.normalize(inputDraft)
-  const errors: FlowDraftValidationError[] = []
-
-  if (draft.keys.length === 0) {
-    errors.push("missing_keys")
-  }
-
-  if (draft.clef === null) {
-    errors.push("missing_clef")
-  }
-
-  if (draft.modes.length === 0) {
-    errors.push("missing_modes")
-  }
-
-  const lowMidi = pitchLabelToMidi(draft.range.low)
-  const highMidi = pitchLabelToMidi(draft.range.high)
-
-  if (
-    lowMidi === null ||
-    highMidi === null ||
-    lowMidi > highMidi ||
-    !isRangeWithinSelectedClef(draft.clef, lowMidi, highMidi)
-  ) {
-    errors.push("invalid_range")
-  }
-
-  if (draft.tempo.kind === "single") {
-    if (draft.tempo.bpm < MIN_BPM || draft.tempo.bpm > MAX_BPM) {
-      errors.push("invalid_tempo")
-    }
-  } else {
-    const { minBpm, maxBpm } = draft.tempo
-    if (
-      minBpm < MIN_BPM ||
-      minBpm > MAX_BPM ||
-      maxBpm < MIN_BPM ||
-      maxBpm > MAX_BPM ||
-      minBpm > maxBpm
-    ) {
-      errors.push("invalid_tempo")
-    }
-  }
-
-  return errors
-}
-
 export function getFlowCreationErrorMessage(
-  errors: FlowDraftValidationError[],
+  errors: FlowDraft.ValidationError[],
   name: string,
 ) {
   if (name.trim().length === 0) {
