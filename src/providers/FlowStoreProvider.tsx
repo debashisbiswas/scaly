@@ -5,16 +5,10 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react"
 
-import {
-  CreateFlowResult,
-  Flow,
-  InMemoryFlowDraftRepository,
-  PREMADE_FLOWS,
-} from "@/core/flows"
+import { CreateFlowResult, Flow, PREMADE_FLOWS } from "@/core/flows"
 import { Flow2 } from "@/core/flows/Flow"
 import { FlowDraft } from "@/core/flows/flow-draft"
 
@@ -35,12 +29,8 @@ type FlowStoreContextValue = {
 const FlowStoreContext = createContext<FlowStoreContextValue | null>(null)
 
 export function FlowStoreProvider({ children }: PropsWithChildren) {
-  const draftRepositoryRef = useRef(
-    new InMemoryFlowDraftRepository(FlowDraft.createEmpty),
-  )
-
   const [flows, setFlows] = useState<Flow[]>([])
-  const [draft, setDraft] = useState(() => draftRepositoryRef.current.get())
+  const [draft, setDraft] = useState(FlowDraft.createEmpty)
   const [editingFlow, setEditingFlow] = useState<Flow | null>(null)
 
   useEffect(() => {
@@ -57,36 +47,33 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
   }, [])
 
   const updateDraft = useCallback((partial: Partial<FlowDraft.Shape>) => {
-    const current = draftRepositoryRef.current.get()
-    const next: FlowDraft.Shape = {
+    setDraft((current) => ({
       ...current,
       ...partial,
       range: {
         ...current.range,
         ...partial.range,
       },
-    }
-
-    draftRepositoryRef.current.save(next)
-    setDraft(next)
+    }))
   }, [])
 
   const resetDraft = useCallback(() => {
-    draftRepositoryRef.current.reset()
-    setDraft(draftRepositoryRef.current.get())
+    setDraft(FlowDraft.createEmpty())
     setEditingFlow(null)
   }, [])
 
   const startEditingFlow = useCallback((flow: Flow) => {
-    draftRepositoryRef.current.save(flow.config)
-    setDraft(draftRepositoryRef.current.get())
+    setDraft({
+      ...flow.config,
+      range: { ...flow.config.range },
+    })
     setEditingFlow(flow)
   }, [])
 
   const createFlow = useCallback(
     async (name: string) => {
       const result = await Flow2.createFromDraft({
-        draft: draftRepositoryRef.current.get(),
+        draft,
         name,
       })
 
@@ -108,8 +95,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
       const storedFlows = await Flow2.list()
       setFlows(storedFlows)
 
-      draftRepositoryRef.current.reset()
-      setDraft(draftRepositoryRef.current.get())
+      setDraft(FlowDraft.createEmpty())
 
       const legacyResult: CreateFlowResult = {
         ok: true,
@@ -118,7 +104,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
 
       return legacyResult
     },
-    [setFlows, setDraft],
+    [draft],
   )
 
   const saveFlow = useCallback(
@@ -129,7 +115,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
 
       const result = await Flow2.updateFromDraft({
         flowId: editingFlow.id,
-        draft: draftRepositoryRef.current.get(),
+        draft,
         name,
       })
 
@@ -156,8 +142,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
       const storedFlows = await Flow2.list()
       setFlows(storedFlows)
 
-      draftRepositoryRef.current.reset()
-      setDraft(draftRepositoryRef.current.get())
+      setDraft(FlowDraft.createEmpty())
       setEditingFlow(null)
 
       const legacyResult: CreateFlowResult = {
@@ -167,7 +152,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
 
       return legacyResult
     },
-    [createFlow, editingFlow, setFlows, setDraft],
+    [createFlow, draft, editingFlow],
   )
 
   const getFlowById = useCallback(
@@ -185,12 +170,11 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
       setFlows(storedFlows)
 
       if (editingFlow?.id === id) {
-        draftRepositoryRef.current.reset()
-        setDraft(draftRepositoryRef.current.get())
+        setDraft(FlowDraft.createEmpty())
         setEditingFlow(null)
       }
     },
-    [editingFlow, setFlows, setDraft],
+    [editingFlow],
   )
 
   const value = useMemo(

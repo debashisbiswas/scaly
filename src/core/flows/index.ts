@@ -1,6 +1,5 @@
 export * from "./constants"
 export * from "./exerciseKey"
 export * from "./premade"
-export * from "./repository"
 export * from "./service"
 export * from "./types"
