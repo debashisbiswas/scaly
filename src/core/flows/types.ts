@@ -1,4 +1,5 @@
 import { CLEF_OPTIONS, KEY_SIGNATURE_OPTIONS, MODE_OPTIONS } from "./constants"
+import { FlowDraft } from "./flow-draft"
 
 export type KeySignature = (typeof KEY_SIGNATURE_OPTIONS)[number]
 export type Clef = (typeof CLEF_OPTIONS)[number]
@@ -9,21 +10,10 @@ export type TempoSetting =
   | { kind: "single"; bpm: number }
   | { kind: "range"; minBpm: number; maxBpm: number }
 
-export type FlowDraft = {
-  keys: KeySignature[]
-  clef: Clef | null
-  range: {
-    low: PitchLabel
-    high: PitchLabel
-  }
-  modes: ScaleMode[]
-  tempo: TempoSetting
-}
-
 export type Flow = {
   id: string
   name: string
-  config: FlowDraft
+  config: FlowDraft.Shape
   progressPercent: number
   createdAt: string
   updatedAt: string

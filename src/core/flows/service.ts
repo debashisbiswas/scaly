@@ -1,19 +1,16 @@
 import {
   KEY_SIGNATURE_OPTIONS,
-  DEFAULT_SINGLE_BPM,
   MAX_BPM,
   MIN_BPM,
   MODE_OPTIONS,
   TEMPO_BUCKETS,
   getClefRangeConfig,
 } from "./constants"
+import { FlowDraft } from "./flow-draft"
 import { Note } from "./Note"
 import { Pitch } from "./Pitch"
-import { FlowDraft, FlowDraftValidationError, TempoSetting } from "./types"
+import { FlowDraftValidationError, TempoSetting } from "./types"
 
-const DEFAULT_RANGE_CONFIG = getClefRangeConfig(null)
-const DEFAULT_LOW_PITCH = DEFAULT_RANGE_CONFIG.defaultLow
-const DEFAULT_HIGH_PITCH = DEFAULT_RANGE_CONFIG.defaultHigh
 const SCALE_MODE_MAP = {
   Major: "major",
   "Natural Minor": "minor",
@@ -27,11 +24,7 @@ export type GeneratedExerciseSpec = {
   startOctave: number
   octaves: number
   clef: "treble" | "bass"
-  tempo: FlowDraft["tempo"]
-}
-
-function unique<T extends string>(values: T[]) {
-  return [...new Set(values)]
+  tempo: FlowDraft.Shape["tempo"]
 }
 
 function sortByOrder<T extends string>(values: T[], order: readonly T[]) {
@@ -84,7 +77,7 @@ function pitchLabelToMidi(label: string) {
 }
 
 function isRangeWithinSelectedClef(
-  clef: FlowDraft["clef"],
+  clef: FlowDraft.Shape["clef"],
   lowMidi: number,
   highMidi: number,
 ) {
@@ -103,29 +96,16 @@ function isRangeWithinSelectedClef(
   return lowMidi >= minMidi && highMidi <= maxMidi
 }
 
-export function createEmptyFlowDraft(): FlowDraft {
-  return {
-    keys: [],
-    clef: null,
-    range: {
-      low: DEFAULT_LOW_PITCH,
-      high: DEFAULT_HIGH_PITCH,
-    },
-    modes: [],
-    tempo: { kind: "single", bpm: DEFAULT_SINGLE_BPM },
-  }
+export function createEmptyFlowDraft() {
+  return FlowDraft.createEmpty()
 }
 
-export function normalizeFlowDraft(draft: FlowDraft): FlowDraft {
-  return {
-    ...draft,
-    keys: unique(draft.keys),
-    modes: unique(draft.modes),
-  }
+export function normalizeFlowDraft(draft: FlowDraft.Shape): FlowDraft.Shape {
+  return FlowDraft.normalize(draft)
 }
 
 export function expandFlowDraftToExerciseSpecs(
-  inputDraft: FlowDraft,
+  inputDraft: FlowDraft.Shape,
 ): GeneratedExerciseSpec[] {
   const errors = validateFlowDraft(inputDraft)
 
@@ -199,7 +179,7 @@ export function expandFlowDraftToExerciseSpecs(
 }
 
 export function validateFlowDraft(
-  inputDraft: FlowDraft,
+  inputDraft: FlowDraft.Shape,
 ): FlowDraftValidationError[] {
   const draft = normalizeFlowDraft(inputDraft)
   const errors: FlowDraftValidationError[] = []

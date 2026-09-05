@@ -12,20 +12,20 @@ import {
 import {
   CreateFlowResult,
   Flow,
-  FlowDraft,
   InMemoryFlowDraftRepository,
   PREMADE_FLOWS,
   createEmptyFlowDraft,
 } from "@/core/flows"
 import { Flow2 } from "@/core/flows/Flow"
+import { FlowDraft } from "@/core/flows/flow-draft"
 
 type FlowStoreContextValue = {
-  draft: FlowDraft
+  draft: FlowDraft.Shape
   editingFlow: Flow | null
   flows: Flow[]
   premadeFlows: Flow[]
   getFlowById: (id: string) => Flow | undefined
-  updateDraft: (partial: Partial<FlowDraft>) => void
+  updateDraft: (partial: Partial<FlowDraft.Shape>) => void
   resetDraft: () => void
   startEditingFlow: (flow: Flow) => void
   createFlow: (name: string) => Promise<CreateFlowResult>
@@ -57,9 +57,9 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
     loadFlows()
   }, [])
 
-  const updateDraft = useCallback((partial: Partial<FlowDraft>) => {
+  const updateDraft = useCallback((partial: Partial<FlowDraft.Shape>) => {
     const current = draftRepositoryRef.current.get()
-    const next: FlowDraft = {
+    const next: FlowDraft.Shape = {
       ...current,
       ...partial,
       range: {

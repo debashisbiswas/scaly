@@ -9,13 +9,13 @@ import {
   getFlowCreationErrorMessage,
   validateFlowDraft,
 } from "./service"
-import { FlowDraft } from "./types"
+import { FlowDraft } from "./flow-draft"
 
 export namespace Flow2 {
   export type Shape = {
     id: string
     name: string
-    config: FlowDraft
+    config: FlowDraft.Shape
     progressPercent: number
     createdAt: string
     updatedAt: string
@@ -37,7 +37,7 @@ export namespace Flow2 {
     draft,
   }: {
     name: string
-    draft: FlowDraft
+    draft: FlowDraft.Shape
   }) {
     const errors = validateFlowDraft(draft)
 
@@ -77,7 +77,7 @@ export namespace Flow2 {
   }: {
     flowId: string
     name: string
-    draft: FlowDraft
+    draft: FlowDraft.Shape
     now?: Date
   }) {
     const errors = validateFlowDraft(draft)
@@ -131,9 +131,9 @@ export namespace Flow2 {
   }
 
   function serialize(row: typeof flows.$inferSelect): Shape {
-    function parseFlowDraft(configJson: string): FlowDraft {
+    function parseFlowDraft(configJson: string): FlowDraft.Shape {
       try {
-        return JSON.parse(configJson) as FlowDraft
+        return JSON.parse(configJson) as FlowDraft.Shape
       } catch {
         return createEmptyFlowDraft()
       }
