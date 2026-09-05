@@ -4,7 +4,6 @@ import { FlowDraft } from "./flow-draft"
 export type KeySignature = (typeof KEY_SIGNATURE_OPTIONS)[number]
 export type Clef = (typeof CLEF_OPTIONS)[number]
 export type ScaleMode = (typeof MODE_OPTIONS)[number]
-export type PitchLabel = string
 
 export type TempoSetting =
   | { kind: "single"; bpm: number }

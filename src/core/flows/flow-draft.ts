@@ -5,13 +5,7 @@ import {
   getClefRangeConfig,
 } from "./constants"
 import { Pitch } from "./Pitch"
-import {
-  Clef,
-  KeySignature,
-  PitchLabel,
-  ScaleMode,
-  TempoSetting,
-} from "./types"
+import { Clef, KeySignature, ScaleMode, TempoSetting } from "./types"
 
 const DEFAULT_RANGE_CONFIG = getClefRangeConfig(null)
 const DEFAULT_LOW_PITCH = DEFAULT_RANGE_CONFIG.defaultLow
@@ -32,8 +26,8 @@ export namespace FlowDraft {
     keys: KeySignature[]
     clef: Clef | null
     range: {
-      low: PitchLabel
-      high: PitchLabel
+      low: string
+      high: string
     }
     modes: ScaleMode[]
     tempo: TempoSetting
