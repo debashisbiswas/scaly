@@ -4,7 +4,6 @@ import { db } from "@/db/client"
 import { flows } from "@/db/schema"
 
 import {
-  createEmptyFlowDraft,
   expandFlowDraftToExerciseSpecs,
   getFlowCreationErrorMessage,
   validateFlowDraft,
@@ -135,7 +134,7 @@ export namespace Flow2 {
       try {
         return JSON.parse(configJson) as FlowDraft.Shape
       } catch {
-        return createEmptyFlowDraft()
+        return FlowDraft.createEmpty()
       }
     }
 

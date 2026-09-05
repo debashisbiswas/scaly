@@ -96,10 +96,6 @@ function isRangeWithinSelectedClef(
   return lowMidi >= minMidi && highMidi <= maxMidi
 }
 
-export function createEmptyFlowDraft() {
-  return FlowDraft.createEmpty()
-}
-
 export function normalizeFlowDraft(draft: FlowDraft.Shape): FlowDraft.Shape {
   return FlowDraft.normalize(draft)
 }

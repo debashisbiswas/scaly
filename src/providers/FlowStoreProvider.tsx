@@ -14,7 +14,6 @@ import {
   Flow,
   InMemoryFlowDraftRepository,
   PREMADE_FLOWS,
-  createEmptyFlowDraft,
 } from "@/core/flows"
 import { Flow2 } from "@/core/flows/Flow"
 import { FlowDraft } from "@/core/flows/flow-draft"
@@ -37,7 +36,7 @@ const FlowStoreContext = createContext<FlowStoreContextValue | null>(null)
 
 export function FlowStoreProvider({ children }: PropsWithChildren) {
   const draftRepositoryRef = useRef(
-    new InMemoryFlowDraftRepository(createEmptyFlowDraft),
+    new InMemoryFlowDraftRepository(FlowDraft.createEmpty),
   )
 
   const [flows, setFlows] = useState<Flow[]>([])
