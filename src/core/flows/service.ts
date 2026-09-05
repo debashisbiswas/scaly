@@ -96,10 +96,6 @@ function isRangeWithinSelectedClef(
   return lowMidi >= minMidi && highMidi <= maxMidi
 }
 
-export function normalizeFlowDraft(draft: FlowDraft.Shape): FlowDraft.Shape {
-  return FlowDraft.normalize(draft)
-}
-
 export function expandFlowDraftToExerciseSpecs(
   inputDraft: FlowDraft.Shape,
 ): GeneratedExerciseSpec[] {
@@ -109,7 +105,7 @@ export function expandFlowDraftToExerciseSpecs(
     throw new Error("Cannot expand invalid flow draft.")
   }
 
-  const draft = normalizeFlowDraft(inputDraft)
+  const draft = FlowDraft.normalize(inputDraft)
   const lowPitch = Pitch.fromLabel(draft.range.low)
   const highPitch = Pitch.fromLabel(draft.range.high)
 
@@ -177,7 +173,7 @@ export function expandFlowDraftToExerciseSpecs(
 export function validateFlowDraft(
   inputDraft: FlowDraft.Shape,
 ): FlowDraftValidationError[] {
-  const draft = normalizeFlowDraft(inputDraft)
+  const draft = FlowDraft.normalize(inputDraft)
   const errors: FlowDraftValidationError[] = []
 
   if (draft.keys.length === 0) {
