@@ -1,4 +1,4 @@
-import { ExercisePracticeStats } from "./ExercisePracticeStats"
+import { ExercisePracticeStats } from "./exercisePracticeStats"
 import { GeneratedExerciseSpec } from "./service"
 
 export namespace ExerciseQueue {

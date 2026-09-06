@@ -1,7 +1,7 @@
 import { KEY_SIGNATURE_OPTIONS, MODE_OPTIONS } from "./constants"
 import { FlowDraft } from "./flow-draft"
-import { Note } from "./Note"
-import { Pitch } from "./Pitch"
+import { Note } from "./note"
+import { Pitch } from "./pitch"
 import { TempoSetting } from "./tempo-setting"
 
 const SCALE_MODE_MAP = {

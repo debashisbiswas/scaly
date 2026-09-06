@@ -9,7 +9,7 @@ import {
 } from "react"
 
 import { CreateFlowResult, Flow, PREMADE_FLOWS } from "@/core/flows"
-import { Flow2 } from "@/core/flows/Flow"
+import { Flow2 } from "@/core/flows/flow"
 import { FlowDraft } from "@/core/flows/flow-draft"
 
 type FlowStoreContextValue = {

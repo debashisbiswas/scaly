@@ -4,7 +4,7 @@ import {
   MAX_BPM,
   getClefRangeConfig,
 } from "./constants"
-import { Pitch } from "./Pitch"
+import { Pitch } from "./pitch"
 import { Clef, KeySignature, ScaleMode } from "./types"
 import { TempoSetting } from "./tempo-setting"
 

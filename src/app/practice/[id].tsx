@@ -20,11 +20,11 @@ import {
   GeneratedExerciseSpec,
   expandFlowDraftToExerciseSpecs,
 } from "@/core/flows"
-import { Exercise } from "@/core/flows/Exercise"
-import { ExercisePracticeStats } from "@/core/flows/ExercisePracticeStats"
+import { Exercise } from "@/core/flows/exercise"
+import { ExercisePracticeStats } from "@/core/flows/exercisePracticeStats"
 import { toExerciseKey } from "@/core/flows/exerciseKey"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
-import { ExerciseQueue } from "@/core/flows/ExerciseQueue"
+import { ExerciseQueue } from "@/core/flows/exerciseQueue"
 import { createMetronome } from "@/core/metronome"
 import { createDrone } from "@/core/drone"
 

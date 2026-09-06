@@ -5,8 +5,8 @@ import { LinearGradient } from "expo-linear-gradient"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 import { Flow } from "@/core/flows"
-import { Exercise } from "@/core/flows/Exercise"
-import { ExercisePracticeStats } from "@/core/flows/ExercisePracticeStats"
+import { Exercise } from "@/core/flows/exercise"
+import { ExercisePracticeStats } from "@/core/flows/exercisePracticeStats"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 type LibraryTab = "saved" | "premade"

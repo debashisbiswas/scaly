@@ -1,4 +1,4 @@
-import { Note } from "./Note"
+import { Note } from "./note"
 import { Note as TonalNote } from "tonal"
 
 export namespace Pitch {

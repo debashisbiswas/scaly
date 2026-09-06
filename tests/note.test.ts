@@ -1,4 +1,4 @@
-import { Note } from "@/core/flows/Note"
+import { Note } from "@/core/flows/note"
 import { describe, expect, it } from "vitest"
 
 describe("Note", () => {

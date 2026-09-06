@@ -1,4 +1,4 @@
-import { Pitch } from "@/core/flows/Pitch"
+import { Pitch } from "@/core/flows/pitch"
 import { describe, expect, it } from "vitest"
 
 describe("Pitch", () => {
