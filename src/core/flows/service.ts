@@ -1,8 +1,8 @@
-import { KEY_SIGNATURE_OPTIONS, MODE_OPTIONS, TEMPO_BUCKETS } from "./constants"
+import { KEY_SIGNATURE_OPTIONS, MODE_OPTIONS } from "./constants"
 import { FlowDraft } from "./flow-draft"
 import { Note } from "./Note"
 import { Pitch } from "./Pitch"
-import { TempoSetting } from "./types"
+import { TempoSetting } from "./tempo-setting"
 
 const SCALE_MODE_MAP = {
   Major: "major",
@@ -43,22 +43,6 @@ function sortByOrder<T extends string>(values: T[], order: readonly T[]) {
   })
 }
 
-export function expandTempoSettingToExerciseTempos(
-  tempo: TempoSetting,
-): TempoSetting[] {
-  if (tempo.kind === "single") {
-    return [tempo]
-  }
-
-  return TEMPO_BUCKETS.filter(
-    (bucket) => bucket.maxBpm >= tempo.minBpm && bucket.minBpm <= tempo.maxBpm,
-  ).map((bucket) => ({
-    kind: "range",
-    minBpm: bucket.minBpm,
-    maxBpm: bucket.maxBpm,
-  }))
-}
-
 export function expandFlowDraftToExerciseSpecs(
   inputDraft: FlowDraft.Shape,
 ): GeneratedExerciseSpec[] {
@@ -85,7 +69,7 @@ export function expandFlowDraftToExerciseSpecs(
 
   const clef: GeneratedExerciseSpec["clef"] =
     draft.clef === "Bass Clef" ? "bass" : "treble"
-  const tempoBuckets = expandTempoSettingToExerciseTempos(draft.tempo)
+  const tempoBuckets = TempoSetting.expand(draft.tempo)
 
   const exerciseSpecs: GeneratedExerciseSpec[] = []
 

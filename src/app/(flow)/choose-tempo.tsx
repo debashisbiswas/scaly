@@ -10,12 +10,8 @@ import {
 import { Slider } from "@miblanchard/react-native-slider"
 import { SafeAreaView } from "react-native-safe-area-context"
 
-import {
-  DEFAULT_SINGLE_BPM,
-  MAX_BPM,
-  MIN_BPM,
-  TempoSetting,
-} from "@/core/flows"
+import { DEFAULT_SINGLE_BPM, MAX_BPM, MIN_BPM } from "@/core/flows"
+import { TempoSetting } from "@/core/flows/tempo-setting"
 
 import TopBar from "@/components/TopBar"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
@@ -415,7 +411,7 @@ export default function ChooseTempo() {
       return
     }
 
-    const tempo: TempoSetting =
+    const tempo: TempoSetting.Shape =
       mode === "single"
         ? { kind: "single", bpm: nextSingleBpm }
         : { kind: "range", minBpm: nextRangeBpm[0], maxBpm: nextRangeBpm[1] }

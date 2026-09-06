@@ -5,10 +5,6 @@ export type KeySignature = (typeof KEY_SIGNATURE_OPTIONS)[number]
 export type Clef = (typeof CLEF_OPTIONS)[number]
 export type ScaleMode = (typeof MODE_OPTIONS)[number]
 
-export type TempoSetting =
-  | { kind: "single"; bpm: number }
-  | { kind: "range"; minBpm: number; maxBpm: number }
-
 export type Flow = {
   id: string
   name: string

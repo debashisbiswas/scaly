@@ -1,7 +1,7 @@
 import { GeneratedExerciseSpec } from "./service"
-import { TempoSetting } from "./types"
+import { TempoSetting } from "./tempo-setting"
 
-function toTempoToken(tempo: TempoSetting) {
+function toTempoToken(tempo: TempoSetting.Shape) {
   if (tempo.kind === "single") {
     return `single:${tempo.bpm}`
   }
