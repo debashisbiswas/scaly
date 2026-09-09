@@ -17,27 +17,28 @@ export default function PracticeStaff({
   const notation = getExerciseNotation(exerciseSpec)
 
   return (
-    <View
-      style={{
-        width,
-        height,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
+    <View style={{ width, height }}>
       {notation.status === "ready" ? (
         <MusicXMLViewer musicXML={notation.musicXML} />
       ) : (
-        <Text
+        <View
           style={{
-            color: "#6b7280",
-            fontSize: 20,
-            textAlign: "center",
-            paddingHorizontal: 24,
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          Notation for this exercise isn&apos;t available yet.
-        </Text>
+          <Text
+            style={{
+              color: "#6b7280",
+              fontSize: 20,
+              textAlign: "center",
+              paddingHorizontal: 24,
+            }}
+          >
+            Notation for this exercise isn&apos;t available yet.
+          </Text>
+        </View>
       )}
     </View>
   )
