@@ -1,7 +1,7 @@
 import { Key, Note, Scale, Range } from "tonal";
 import { MusicXML } from "./musicxml";
 
-const Modes = ["major", "minor", "harmonic minor", "melodic minor"] as const;
+export const Modes = ["major", "minor", "harmonic minor", "melodic minor"] as const;
 
 export type Mode = (typeof Modes)[number];
 export type Rhythm = "quarter" | "eighth" | "sixteenth";

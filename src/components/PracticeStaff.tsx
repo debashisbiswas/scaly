@@ -1,7 +1,7 @@
 import { MusicXMLViewer } from "@/core/music/MusicXMLViewer"
 import { GeneratedExerciseSpec } from "@/core/flows"
-import { generateMusicXMLForScale } from "@/core/music/Scales"
-import { View } from "react-native"
+import { getExerciseNotation } from "@/core/music/practiceNotation"
+import { Text, View } from "react-native"
 
 interface PracticeStaffProps {
   exerciseSpec: GeneratedExerciseSpec
@@ -14,19 +14,31 @@ export default function PracticeStaff({
   width,
   height,
 }: PracticeStaffProps) {
-  const xml = generateMusicXMLForScale({
-    key: exerciseSpec.key,
-    mode: exerciseSpec.mode,
-    rhythm: "long octave",
-    slurPattern: "tongued",
-    octaves: exerciseSpec.octaves,
-    startOctave: exerciseSpec.startOctave,
-    clef: exerciseSpec.clef,
-  })
+  const notation = getExerciseNotation(exerciseSpec)
 
   return (
-    <View style={{ width, height }}>
-      <MusicXMLViewer musicXML={xml} />
+    <View
+      style={{
+        width,
+        height,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      {notation.status === "ready" ? (
+        <MusicXMLViewer musicXML={notation.musicXML} />
+      ) : (
+        <Text
+          style={{
+            color: "#6b7280",
+            fontSize: 20,
+            textAlign: "center",
+            paddingHorizontal: 24,
+          }}
+        >
+          Notation for this exercise isn&apos;t available yet.
+        </Text>
+      )}
     </View>
   )
 }

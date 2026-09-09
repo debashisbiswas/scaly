@@ -1,19 +1,17 @@
-import { KEY_SIGNATURE_OPTIONS, MODE_OPTIONS } from "./constants"
+import { KEY_SIGNATURE_OPTIONS } from "./constants"
+import {
+  ExerciseMode,
+  MODE_OPTIONS,
+  getExerciseDefinitionBySelection,
+} from "./exerciseCatalog"
 import { FlowDraft } from "./flow-draft"
 import { Note } from "./note"
 import { Pitch } from "./pitch"
 import { TempoSetting } from "./tempo-setting"
 
-const SCALE_MODE_MAP = {
-  Major: "major",
-  "Natural Minor": "minor",
-  "Harmonic Minor": "harmonic minor",
-  "Melodic Minor": "melodic minor",
-} as const
-
 export type GeneratedExerciseSpec = {
   key: string
-  mode: (typeof SCALE_MODE_MAP)[keyof typeof SCALE_MODE_MAP]
+  mode: ExerciseMode
   startOctave: number
   octaves: number
   clef: "treble" | "bass"
@@ -75,6 +73,7 @@ export function expandFlowDraftToExerciseSpecs(
 
   for (const key of canonicalKeys) {
     for (const mode of canonicalModes) {
+      const exerciseDefinition = getExerciseDefinitionBySelection(mode)
       const tonicNote = Note.fromKeySignature(key)
 
       if (!tonicNote) {
@@ -104,7 +103,7 @@ export function expandFlowDraftToExerciseSpecs(
       for (const tempo of tempoBuckets) {
         exerciseSpecs.push({
           key: Note.fullName(tonicNote),
-          mode: SCALE_MODE_MAP[mode],
+          mode: exerciseDefinition.mode,
           startOctave: tonicPitch.octave,
           octaves,
           clef,
@@ -134,7 +133,7 @@ export function getFlowCreationErrorMessage(
   }
 
   if (errors.includes("missing_modes")) {
-    return "Pick at least one mode."
+    return "Pick at least one exercise."
   }
 
   if (errors.includes("invalid_range")) {

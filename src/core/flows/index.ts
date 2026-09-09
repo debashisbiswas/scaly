@@ -1,4 +1,5 @@
 export * from "./constants"
+export * from "./exerciseCatalog"
 export * from "./exerciseKey"
 export * from "./premade"
 export * from "./service"

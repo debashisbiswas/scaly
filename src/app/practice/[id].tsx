@@ -19,6 +19,7 @@ import PracticeStaff from "@/components/PracticeStaff"
 import {
   GeneratedExerciseSpec,
   expandFlowDraftToExerciseSpecs,
+  getExerciseDefinitionByMode,
 } from "@/core/flows"
 import { Exercise } from "@/core/flows/exercise"
 import { ExercisePracticeStats } from "@/core/flows/exercisePracticeStats"
@@ -195,6 +196,9 @@ function DebugQueueSidebar(props: {
 
             {props.queue.map((queuedExercise, index) => {
               const stats = queuedExercise.stats
+              const exerciseDefinition = getExerciseDefinitionByMode(
+                queuedExercise.spec.mode,
+              )
               const weight =
                 ExercisePracticeStats.getExercisePracticeWeight(stats)
               const octaveCount = queuedExercise.spec.octaves
@@ -226,7 +230,7 @@ function DebugQueueSidebar(props: {
                     }}
                   >
                     #{index + 1} {queuedExercise.spec.key}{" "}
-                    {getModeLabel(queuedExercise.spec.mode)}
+                    {exerciseDefinition.pickerLabel}
                   </Text>
                   <Text style={{ color: "#3c6fa7", fontSize: 12 }}>
                     Tempo bucket: {formatTempoBucket(queuedExercise.spec.tempo)}
@@ -461,22 +465,6 @@ function DifficultyButtons(props: {
       ))}
     </View>
   )
-}
-
-function getModeLabel(mode: GeneratedExerciseSpec["mode"]) {
-  if (mode === "major") {
-    return "Major"
-  }
-
-  if (mode === "minor") {
-    return "Natural Minor"
-  }
-
-  if (mode === "harmonic minor") {
-    return "Harmonic Minor"
-  }
-
-  return "Melodic Minor"
 }
 
 function formatTempoBucket(tempo: GeneratedExerciseSpec["tempo"]) {
@@ -773,6 +761,7 @@ export default function Practice() {
 
   const assignedTempo = exercise.assignedTempo
   const octaveCount = exercise.spec.octaves
+  const exerciseDefinition = getExerciseDefinitionByMode(exercise.spec.mode)
 
   const advanceToNextExercise = (
     queue: ExerciseQueue.PracticeExercise[] = exerciseQueue,
@@ -882,7 +871,7 @@ export default function Practice() {
                 marginVertical: 10,
               }}
             >
-              After playing the scale, mark how challenging it was below
+              After playing the exercise, mark how challenging it was below
             </Text>
             <Text
               style={{
@@ -996,7 +985,7 @@ export default function Practice() {
                         textAlign: "center",
                       }}
                     >
-                      {getModeLabel(exercise.spec.mode)}
+                      {exerciseDefinition.variantLabel}
                     </Text>
                     <Text
                       style={{
@@ -1007,7 +996,7 @@ export default function Practice() {
                         marginTop: 8,
                       }}
                     >
-                      Scale
+                      {exerciseDefinition.familyLabel}
                     </Text>
                     <Text
                       style={{

@@ -5,7 +5,8 @@ import {
   getClefRangeConfig,
 } from "./constants"
 import { Pitch } from "./pitch"
-import { Clef, KeySignature, ScaleMode } from "./types"
+import { ExerciseSelection } from "./exerciseCatalog"
+import { Clef, KeySignature } from "./types"
 import { TempoSetting } from "./tempo-setting"
 
 const DEFAULT_RANGE_CONFIG = getClefRangeConfig(null)
@@ -30,7 +31,7 @@ export namespace FlowDraft {
       low: string
       high: string
     }
-    modes: ScaleMode[]
+    modes: ExerciseSelection[]
     tempo: TempoSetting.Shape
   }
 

@@ -10,13 +10,6 @@ export const KEY_SIGNATURE_OPTIONS = [
 
 export const CLEF_OPTIONS = ["Treble Clef", "Bass Clef"] as const
 
-export const MODE_OPTIONS = [
-  "Major",
-  "Natural Minor",
-  "Harmonic Minor",
-  "Melodic Minor",
-] as const
-
 const NOTE_NAMES = ["C", "D", "E", "F", "G", "A", "B"] as const
 
 export const NOTE_STEP_OPTIONS = (() => {

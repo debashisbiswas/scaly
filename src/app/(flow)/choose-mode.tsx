@@ -3,50 +3,52 @@ import { useState } from "react"
 import { StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
-import { MODE_OPTIONS, ScaleMode } from "@/core/flows"
+import { EXERCISE_CATALOG, ExerciseSelection, MODE_OPTIONS } from "@/core/flows"
 
 import SelectableButton from "@/components/SelectableButton"
 import TopBar from "@/components/TopBar"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 
-const MODES = MODE_OPTIONS
+const EXERCISES = EXERCISE_CATALOG
 
 export default function ChooseMode() {
   const router = useRouter()
   const { draft, updateDraft } = useFlowStore()
-  const [selectedModes, setSelectedModes] = useState<Set<ScaleMode>>(
-    new Set(draft.modes),
-  )
+  const [selectedExercises, setSelectedExercises] = useState<
+    Set<ExerciseSelection>
+  >(new Set(draft.modes))
 
-  const toggleMode = (mode: ScaleMode) => {
-    setSelectedModes((prev) => {
+  const toggleExercise = (exercise: ExerciseSelection) => {
+    setSelectedExercises((prev) => {
       const next = new Set(prev)
-      if (next.has(mode)) {
-        next.delete(mode)
+      if (next.has(exercise)) {
+        next.delete(exercise)
       } else {
-        next.add(mode)
+        next.add(exercise)
       }
       return next
     })
   }
 
-  const allSelected = MODES.every((mode) => selectedModes.has(mode))
+  const allSelected = MODE_OPTIONS.every((exercise) =>
+    selectedExercises.has(exercise),
+  )
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <TopBar
-        title="Choose your mode"
+        title="Choose your exercises"
         subtitle="Select all that apply"
         onBack={() => router.back()}
         onNext={() => {
-          if (selectedModes.size === 0) {
+          if (selectedExercises.size === 0) {
             return
           }
 
-          updateDraft({ modes: [...selectedModes] })
+          updateDraft({ modes: [...selectedExercises] })
           router.push("/choose-tempo")
         }}
-        nextDisabled={selectedModes.size === 0}
+        nextDisabled={selectedExercises.size === 0}
       />
 
       <View style={{ flex: 1, paddingHorizontal: 16 }}>
@@ -57,15 +59,15 @@ export default function ChooseMode() {
             alignItems: "center",
           }}
         >
-          <View style={styles.modesWrap}>
-            {MODES.map((mode) => (
+          <View style={styles.exercisesWrap}>
+            {EXERCISES.map((exercise) => (
               <SelectableButton
-                key={mode}
-                label={mode}
-                selected={selectedModes.has(mode)}
-                onPress={() => toggleMode(mode)}
-                style={styles.modeButton}
-                labelStyle={styles.modeLabel}
+                key={exercise.selection}
+                label={exercise.pickerLabel}
+                selected={selectedExercises.has(exercise.selection)}
+                onPress={() => toggleExercise(exercise.selection)}
+                style={styles.exerciseButton}
+                labelStyle={styles.exerciseLabel}
               />
             ))}
           </View>
@@ -75,8 +77,8 @@ export default function ChooseMode() {
           label="Select All"
           selected={allSelected}
           onPress={() => {
-            setSelectedModes(
-              allSelected ? new Set<ScaleMode>() : new Set(MODES),
+            setSelectedExercises(
+              allSelected ? new Set() : new Set(MODE_OPTIONS),
             )
           }}
           style={styles.selectAllButton}
@@ -88,17 +90,17 @@ export default function ChooseMode() {
 }
 
 const styles = StyleSheet.create({
-  modesWrap: {
+  exercisesWrap: {
     flexDirection: "row",
     gap: 12,
     flexWrap: "wrap",
     justifyContent: "center",
   },
-  modeButton: {
+  exerciseButton: {
     width: 150,
     height: 56,
   },
-  modeLabel: {
+  exerciseLabel: {
     fontSize: 16,
     textAlign: "center",
   },
