@@ -3,10 +3,12 @@ import { useEffect, useRef, useState } from "react"
 import { Ionicons } from "@expo/vector-icons"
 import { Note as TonalNote } from "tonal"
 import { Host, Button } from "@expo/ui"
+import Storage from "expo-sqlite/kv-store"
 
 import {
   AppState,
   type AppStateStatus,
+  Modal,
   Pressable,
   ScrollView,
   Text,
@@ -28,6 +30,14 @@ import { useFlowStore } from "@/providers/FlowStoreProvider"
 import { ExerciseQueue } from "@/core/flows/exerciseQueue"
 import { createMetronome } from "@/core/metronome"
 import { createDrone } from "@/core/drone"
+import {
+  DRONE_TRANSPOSITION_OPTIONS,
+  type DroneTransposition,
+  isDroneTransposition,
+  transposeDroneFrequency,
+} from "@/core/droneTransposition"
+
+const DRONE_TRANSPOSITION_STORAGE_KEY = "practice.droneTransposition"
 
 function DebugQueueSidebar(props: {
   queue: ExerciseQueue.PracticeExercise[]
@@ -361,41 +371,80 @@ function DebugQueueSidebar(props: {
 
 function SideToggleButton(props: {
   label: string
+  detail?: string
   active?: boolean
   icon: keyof typeof Ionicons.glyphMap
   onPress?: () => void
+  onSettingsPress?: () => void
 }) {
   return (
-    <Pressable
-      onPress={props.onPress}
+    <View
       style={{
         alignItems: "center",
-        gap: 4,
-        opacity: props.active || props.onPress ? 1 : 0.65,
+        width: 74,
+        position: "relative",
       }}
     >
-      <View
+      <Pressable
+        onPress={props.onPress}
         style={{
-          width: 38,
-          height: 38,
-          borderRadius: 19,
-          justifyContent: "center",
           alignItems: "center",
-          backgroundColor: props.active ? "#b7bfcb" : "#d6dbe3",
+          gap: 4,
+          opacity: props.active || props.onPress ? 1 : 0.65,
         }}
       >
-        <Ionicons name={props.icon} size={20} color="#8992a0" />
-      </View>
-      <Text
-        style={{
-          fontSize: 15,
-          color: "#7c8491",
-          fontWeight: props.active ? "600" : "500",
-        }}
-      >
-        {props.label}
-      </Text>
-    </Pressable>
+        <View
+          style={{
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: props.active ? "#b7bfcb" : "#d6dbe3",
+          }}
+        >
+          <Ionicons name={props.icon} size={20} color="#8992a0" />
+        </View>
+        <Text
+          style={{
+            fontSize: 15,
+            color: "#7c8491",
+            fontWeight: props.active ? "600" : "500",
+          }}
+        >
+          {props.label}
+        </Text>
+        {props.detail ? (
+          <Text style={{ fontSize: 11, color: "#8a919d", marginTop: -3 }}>
+            {props.detail}
+          </Text>
+        ) : null}
+      </Pressable>
+
+      {props.onSettingsPress ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${props.label} settings`}
+          hitSlop={8}
+          onPress={props.onSettingsPress}
+          style={{
+            position: "absolute",
+            top: 20,
+            right: 5,
+            width: 24,
+            height: 24,
+            borderRadius: 12,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#eef1f5",
+            borderWidth: 1,
+            borderColor: "#cfd5de",
+          }}
+        >
+          <Ionicons name="settings-sharp" size={13} color="#727c8b" />
+        </Pressable>
+      ) : null}
+    </View>
   )
 }
 
@@ -533,6 +582,9 @@ export default function Practice() {
   const [isSavingRating, setIsSavingRating] = useState(false)
   const [isMetronomeRunning, setIsMetronomeRunning] = useState(false)
   const [isDroneRunning, setIsDroneRunning] = useState(false)
+  const [droneTransposition, setDroneTransposition] =
+    useState<DroneTransposition>("concert")
+  const [isDroneSettingsOpen, setIsDroneSettingsOpen] = useState(false)
   const metronomeRef = useRef<ReturnType<typeof createMetronome> | null>(null)
   const droneRef = useRef<ReturnType<typeof createDrone> | null>(null)
 
@@ -630,9 +682,46 @@ export default function Practice() {
   }, [flowId, flow])
 
   const exercise = exerciseQueue[currentExerciseIndex] ?? null
-  const droneFrequency = exercise
+  const concertDroneFrequency = exercise
     ? (TonalNote.freq(`${exercise.spec.key.split("/")[0]}4`) ?? null)
     : null
+  const droneFrequency =
+    concertDroneFrequency === null
+      ? null
+      : transposeDroneFrequency(concertDroneFrequency, droneTransposition)
+
+  useEffect(() => {
+    let cancelled = false
+
+    Storage.getItemAsync(DRONE_TRANSPOSITION_STORAGE_KEY)
+      .then((storedTransposition) => {
+        if (
+          !cancelled &&
+          storedTransposition &&
+          isDroneTransposition(storedTransposition)
+        ) {
+          setDroneTransposition(storedTransposition)
+        }
+      })
+      .catch((error) => {
+        console.warn("[practice] failed to load drone transposition", error)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const selectDroneTransposition = (transposition: DroneTransposition) => {
+    setDroneTransposition(transposition)
+    setIsDroneSettingsOpen(false)
+
+    Storage.setItemAsync(DRONE_TRANSPOSITION_STORAGE_KEY, transposition).catch(
+      (error) => {
+        console.warn("[practice] failed to save drone transposition", error)
+      },
+    )
+  }
 
   const handleMetronomeToggle = () => {
     if (!exercise || exercise.assignedTempo === null) {
@@ -1079,9 +1168,19 @@ export default function Practice() {
             />
             <SideToggleButton
               label="Drone"
+              detail={
+                droneTransposition === "concert"
+                  ? "Concert"
+                  : droneTransposition === "bb"
+                    ? "Bb instr."
+                    : droneTransposition === "eb"
+                      ? "Eb instr."
+                      : "F instr."
+              }
               icon="pulse-outline"
               active={isDroneRunning}
               onPress={handleDroneToggle}
+              onSettingsPress={() => setIsDroneSettingsOpen(true)}
             />
           </View>
         </View>
@@ -1094,6 +1193,125 @@ export default function Practice() {
         currentExerciseIndex={currentExerciseIndex}
         flowConfig={flow?.config}
       />
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={isDroneSettingsOpen}
+        supportedOrientations={["landscape"]}
+        onRequestClose={() => setIsDroneSettingsOpen(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 24,
+          }}
+        >
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close drone settings"
+            onPress={() => setIsDroneSettingsOpen(false)}
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0,
+              backgroundColor: "rgba(20, 27, 38, 0.38)",
+            }}
+          />
+
+          <View
+            style={{
+              width: "100%",
+              maxWidth: 420,
+              borderRadius: 16,
+              padding: 20,
+              gap: 12,
+              backgroundColor: "#fff",
+              boxShadow: "0px 6px 24px rgba(0, 0, 0, 0.22)",
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Text
+                style={{ fontSize: 22, fontWeight: "700", color: "#202737" }}
+              >
+                Drone pitch
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Close drone settings"
+                hitSlop={8}
+                onPress={() => setIsDroneSettingsOpen(false)}
+              >
+                <Ionicons name="close" size={26} color="#596273" />
+              </Pressable>
+            </View>
+
+            <Text style={{ fontSize: 14, lineHeight: 20, color: "#667085" }}>
+              Choose your instrument&apos;s transposition. The exercise stays in
+              written pitch while the drone sounds at concert pitch.
+            </Text>
+
+            <View style={{ gap: 8 }}>
+              {DRONE_TRANSPOSITION_OPTIONS.map((option) => {
+                const selected = option.value === droneTransposition
+
+                return (
+                  <Pressable
+                    key={option.value}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: selected }}
+                    onPress={() => selectDroneTransposition(option.value)}
+                    style={{
+                      minHeight: 62,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: selected ? "#5587c2" : "#d8dee8",
+                      backgroundColor: selected ? "#edf5ff" : "#fff",
+                      paddingHorizontal: 14,
+                      paddingVertical: 10,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <View style={{ gap: 3 }}>
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: "600",
+                          color: "#273142",
+                        }}
+                      >
+                        {option.label}
+                      </Text>
+                      <Text style={{ fontSize: 13, color: "#727c8b" }}>
+                        {option.description}
+                      </Text>
+                    </View>
+                    {selected ? (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={24}
+                        color="#5587c2"
+                      />
+                    ) : null}
+                  </Pressable>
+                )
+              })}
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   )
 }
