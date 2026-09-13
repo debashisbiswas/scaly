@@ -2,7 +2,10 @@ import { WebView } from "react-native-webview"
 
 import osmdBundle from "../../vendor/opensheetmusicdisplay.min.txt"
 
-const openSheetMusicDisplayScript = osmdBundle.replace(/<\/script/gi, "<\\/script")
+const openSheetMusicDisplayScript = osmdBundle.replace(
+  /<\/script/gi,
+  "<\\/script",
+)
 
 interface MusicXMLViewerProps {
   musicXML: string
