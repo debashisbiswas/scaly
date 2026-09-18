@@ -20,7 +20,11 @@ describe("practice notation", () => {
 
     expect(notation.status).toBe("ready")
     if (notation.status === "ready") {
-      expect(notation.musicXML).not.toBeNull()
+      expect(notation.score.measures).not.toHaveLength(0)
+      expect(notation.score.measures[0].notes[0].pitch).toEqual({
+        step: "C",
+        octave: 4,
+      })
     }
   })
 

@@ -1,15 +1,15 @@
 import { MusicXMLViewer } from "@/core/music/MusicXMLViewer"
-import { generateMusicXMLForScale } from "@/core/music/Scales"
+import { generateScaleNotation } from "@/core/music/Scales"
+import { MusicXML } from "@/core/music/musicxml"
 import { Ionicons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
-import React from "react"
 import { StyleSheet, TouchableOpacity } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 export default function Scratchpad() {
   const router = useRouter()
 
-  const xml = generateMusicXMLForScale({
+  const score = generateScaleNotation({
     key: "C",
     mode: "major",
     rhythm: "sixteenths",
@@ -18,6 +18,8 @@ export default function Scratchpad() {
     startOctave: 4,
     clef: "treble",
   })
+
+  const xml = MusicXML.render(score)
 
   return (
     <SafeAreaView style={{ flex: 1 }}>

@@ -1,6 +1,7 @@
 import { MusicXMLViewer } from "@/core/music/MusicXMLViewer"
 import { GeneratedExerciseSpec } from "@/core/flows"
 import { getExerciseNotation } from "@/core/music/practiceNotation"
+import { MusicXML } from "@/core/music/musicxml"
 import { Text, View } from "react-native"
 
 interface PracticeStaffProps {
@@ -19,7 +20,7 @@ export default function PracticeStaff({
   return (
     <View style={{ width, height }}>
       {notation.status === "ready" ? (
-        <MusicXMLViewer musicXML={notation.musicXML} />
+        <MusicXMLViewer musicXML={MusicXML.render(notation.score)} />
       ) : (
         <View
           style={{

@@ -1,127 +1,80 @@
+import { MusicIR } from "./musicir"
+
 export namespace MusicXML {
-  export interface MeasureNote {
-    pitch: {
-      step: string
-      alter?: -1 | 1
-      octave: number
-    }
+  const quarterNoteDivisions = 4
 
-    /**
-     * If not specified, a slur in progress will be continued.
-     */
-    slurState?: "start" | "stop"
-
-    /**
-     * Duration of the note in beats. Relative to the divisions, which represents
-     * the division of a quarter note.
-     */
-    duration: number
+  function durationToDivisions(duration: MusicIR.Duration) {
+    return MusicIR.durationInSixteenths(duration)
   }
 
-  export interface MeasureAttributes {
-    key?: {
-      fifths: number
-    }
-    time?: {
-      beats: number
-      beatType: number
-    }
-    clef?: {
-      sign: string
-      line: number
-    }
-  }
-
-  export interface Measure {
-    attributes?: MeasureAttributes
-    notes: MeasureNote[]
-    doubleBar?: boolean
-  }
-
-  const _quarterNoteDivision = 4
-  export const Divisions = {
-    "16th": _quarterNoteDivision / 4,
-    eighth: _quarterNoteDivision / 2,
-    quarter: _quarterNoteDivision,
-    half: _quarterNoteDivision * 2,
-    whole: _quarterNoteDivision * 4,
-  } as const
-
-  export const getDuration = (measure: MusicXML.Measure) =>
-    measure.notes.reduce((acc, note) => acc + note.duration, 0)
-
-  const noteToMusicXML = (note: MeasureNote) => {
-    const type = (() => {
-      if (note.duration === Divisions["16th"]) {
-        return "16th"
-      } else if (note.duration === Divisions.eighth) {
-        return "eighth"
-      } else if (note.duration === Divisions.quarter) {
-        return "quarter"
-      } else if (note.duration === Divisions.half) {
-        return "half"
-      } else if (note.duration === Divisions.whole) {
-        return "whole"
-      }
-
-      return "quarter"
-    })()
+  function noteToMusicXML(note: MusicIR.Note) {
+    const alter =
+      note.pitch.accidental === undefined
+        ? ""
+        : `<alter>${note.pitch.accidental}</alter>`
+    const notations = note.slur
+      ? `<notations><slur type="${note.slur}"></slur></notations>`
+      : ""
 
     return `
       <note>
         <pitch>
           <step>${note.pitch.step}</step>
-          <alter>${note.pitch.alter ? note.pitch.alter : ""}</alter>
+          ${alter}
           <octave>${note.pitch.octave}</octave>
         </pitch>
-        <duration>${note.duration}</duration>
-        <type>${type}</type>
-        <notations>
-          ${note.slurState ? `<slur type="${note.slurState}"></slur>` : ""}
-        </notations>
+        <duration>${durationToDivisions(note.duration)}</duration>
+        ${notations}
       </note>
     `
   }
 
-  const attributesToMusicXML = (attributes: MeasureAttributes) => {
+  function attributesToMusicXML(score: MusicIR.Score) {
+    const clef =
+      score.clef === "bass" ? { sign: "F", line: 4 } : { sign: "G", line: 2 }
+
     return `
       <attributes>
-        <divisions>${Divisions.quarter}</divisions>
-        ${attributes.key?.fifths ? `<key><fifths>${attributes.key.fifths}</fifths></key>` : ""}
+        <divisions>${quarterNoteDivisions}</divisions>
+        <key><fifths>${score.keySignature.fifths}</fifths></key>
         <time>
-          <beats>${attributes.time?.beats}</beats>
-          <beat-type>${attributes.time?.beatType}</beat-type>
+          <beats>${score.timeSignature.numerator}</beats>
+          <beat-type>${score.timeSignature.denominator}</beat-type>
         </time>
         <clef>
-          <sign>${attributes.clef?.sign}</sign>
-          <line>${attributes.clef?.line}</line>
+          <sign>${clef.sign}</sign>
+          <line>${clef.line}</line>
         </clef>
       </attributes>
     `
   }
 
-  const measureToMusicXML = (measure: Measure) => {
+  function measureToMusicXML(
+    measure: MusicIR.Measure,
+    score: MusicIR.Score,
+    index: number,
+  ) {
     const doubleBarXML = `
       <barline location="right">
         <bar-style>light-heavy</bar-style>
       </barline>
     `
 
-    const notesXML = measure.notes.map(noteToMusicXML).join("")
-
     return `
       <measure>
-        ${measure.attributes ? attributesToMusicXML(measure.attributes) : ""}
-        ${notesXML}
-        ${measure.doubleBar ? doubleBarXML : ""}
+        ${index === 0 ? attributesToMusicXML(score) : ""}
+        ${measure.notes.map(noteToMusicXML).join("")}
+        ${measure.finalBarline ? doubleBarXML : ""}
       </measure>
     `
   }
 
-  export const generateMusicXML = (measures: Measure[]) => {
-    const measuresXML = measures.map(measureToMusicXML)
+  export function render(score: MusicIR.Score) {
+    const measuresXML = score.measures
+      .map((measure, index) => measureToMusicXML(measure, score, index))
+      .join("")
 
-    const xml = `
+    return `
       <?xml version="1.0" encoding="UTF-8" standalone="no"?>
       <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
       <score-partwise version="4.0">
@@ -135,7 +88,5 @@ export namespace MusicXML {
         </part>
       </score-partwise>
     `
-
-    return xml
   }
 }

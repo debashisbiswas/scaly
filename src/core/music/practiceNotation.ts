@@ -1,14 +1,15 @@
 import { GeneratedExerciseSpec } from "@/core/flows"
 
-import { Mode, Modes, generateMusicXMLForScale } from "./Scales"
+import { Mode, Modes, generateScaleNotation } from "./Scales"
+import { MusicIR } from "./musicir"
 
 export type ExerciseNotationResult =
-  | { status: "ready"; musicXML: string }
+  | { status: "ready"; score: MusicIR.Score }
   | { status: "unsupported" }
 
 type ExerciseNotationRenderer = {
   canRender: (spec: GeneratedExerciseSpec) => boolean
-  render: (spec: GeneratedExerciseSpec) => string
+  render: (spec: GeneratedExerciseSpec) => MusicIR.Score
 }
 
 function isScaleMode(mode: GeneratedExerciseSpec["mode"]): mode is Mode {
@@ -22,7 +23,7 @@ const scaleRenderer: ExerciseNotationRenderer = {
       throw new Error(`Scale renderer cannot render mode: ${spec.mode}`)
     }
 
-    return generateMusicXMLForScale({
+    return generateScaleNotation({
       key: spec.key,
       mode: spec.mode,
       rhythm: "long octave",
@@ -47,5 +48,5 @@ export function getExerciseNotation(
     return { status: "unsupported" }
   }
 
-  return { status: "ready", musicXML: renderer.render(spec) }
+  return { status: "ready", score: renderer.render(spec) }
 }

@@ -1,5 +1,5 @@
 import { Key, Note, Scale, Range } from "tonal"
-import { MusicXML } from "./musicxml"
+import { MusicIR } from "./musicir"
 
 export const Modes = [
   "major",
@@ -30,7 +30,7 @@ export type SlurPattern =
   | "tongued"
   | "slur four"
 
-export const getNotesForScale = (
+const getNotesForScale = (
   key: string,
   mode: Mode,
   startOctave: number,
@@ -58,27 +58,30 @@ export const getNotesForScale = (
     .map(Note.get)
 }
 
-export const applyRhythmPattern = (
+const applyRhythmPattern = (
   notes: ReturnType<typeof Note.get>[],
   pattern: RhythmPattern,
 ) => {
-  const result = []
+  const result: {
+    note: ReturnType<typeof Note.get>
+    duration: MusicIR.Duration
+  }[] = []
 
   for (const [i, note] of notes.entries()) {
     const duration = (() => {
       if (pattern === "long octave") {
         if (i % 7 === 0) {
-          return MusicXML.Divisions.eighth
+          return "eighth"
         } else {
-          return MusicXML.Divisions["16th"]
+          return "sixteenth"
         }
       } else if (pattern === "sixteenths") {
-        return MusicXML.Divisions["16th"]
+        return "sixteenth"
       } else if (pattern === "eighth two sixteenths") {
         if (i % 3 === 0) {
-          return MusicXML.Divisions.eighth
+          return "eighth"
         } else {
-          return MusicXML.Divisions["16th"]
+          return "sixteenth"
         }
       } else {
         const _never: never = pattern
@@ -95,7 +98,7 @@ export const applyRhythmPattern = (
 function getSlurType(
   slurPattern: SlurPattern,
   timeAccumulator: number,
-): MusicXML.MeasureNote["slurState"] {
+): MusicIR.Note["slur"] {
   const currentSixteenth = timeAccumulator % 4
 
   switch (slurPattern) {
@@ -143,11 +146,23 @@ function getSlurType(
   }
 }
 
-function narrowAlter(alt: number) {
-  return alt === 1 || alt === -1 ? alt : undefined
+function toPitch(note: ReturnType<typeof Note.get>): MusicIR.Pitch {
+  if (!isStep(note.letter)) {
+    throw new Error(`Unexpected note step: ${note.letter}`)
+  }
+
+  return {
+    step: note.letter,
+    ...(note.alt === 0 ? {} : { accidental: note.alt }),
+    octave: note.oct ?? 4,
+  }
 }
 
-export function generateMusicXMLForScale(opts: {
+function isStep(step: string): step is MusicIR.Step {
+  return ["A", "B", "C", "D", "E", "F", "G"].includes(step)
+}
+
+export function generateScaleNotation(opts: {
   key: string
   mode: Mode
   rhythm: RhythmPattern
@@ -166,8 +181,8 @@ export function generateMusicXMLForScale(opts: {
   )
   const notesWithRhythm = applyRhythmPattern(notes, opts.rhythm)
 
-  const measures: MusicXML.Measure[] = []
-  let currentMeasure: MusicXML.Measure = { notes: [] }
+  const measures: MusicIR.Measure[] = []
+  let currentMeasure: MusicIR.Measure = { notes: [] }
   let timeAccumulator = 0
 
   const timeSignatureTop = (() => {
@@ -184,25 +199,22 @@ export function generateMusicXMLForScale(opts: {
   })()
 
   const timeSignature = {
-    top: timeSignatureTop,
-    bottom: 4,
+    numerator: timeSignatureTop,
+    denominator: 4,
   }
 
-  const measureDuration = MusicXML.Divisions.quarter * timeSignature.top
+  const measureDuration =
+    timeSignature.numerator * (16 / timeSignature.denominator)
 
   for (const currentNote of notesWithRhythm) {
     const newNote = {
-      pitch: {
-        step: currentNote.note.letter,
-        alter: narrowAlter(currentNote.note.alt),
-        octave: currentNote.note.oct ?? 4,
-      },
+      pitch: toPitch(currentNote.note),
       duration: currentNote.duration,
-    } as const
+    }
 
     currentMeasure.notes.push(newNote)
 
-    timeAccumulator += currentNote.duration
+    timeAccumulator += MusicIR.durationInSixteenths(currentNote.duration)
 
     if (timeAccumulator >= measureDuration) {
       measures.push(currentMeasure)
@@ -213,7 +225,7 @@ export function generateMusicXMLForScale(opts: {
 
   if (currentMeasure.notes.length > 0) {
     const remainingDuration =
-      measureDuration - MusicXML.getDuration(currentMeasure)
+      measureDuration - MusicIR.measureDurationInSixteenths(currentMeasure)
 
     if (remainingDuration === 3) {
       // 1 3 5 3 1
@@ -221,7 +233,7 @@ export function generateMusicXMLForScale(opts: {
       const third = Note.get(
         Note.transpose(
           `${tonic.pitch.step}${tonic.pitch.octave}`,
-          `3${getDescendingThirdModeLetter(opts.key, opts.mode)}`,
+          `3${getDescendingThirdModeLetter(opts.mode)}`,
         ),
       )
       const fifth = Note.get(
@@ -229,36 +241,24 @@ export function generateMusicXMLForScale(opts: {
       )
 
       currentMeasure.notes.push({
-        pitch: {
-          step: third.letter,
-          alter: narrowAlter(third.alt),
-          octave: third.oct ?? 4,
-        },
-        duration: MusicXML.Divisions["16th"],
+        pitch: toPitch(third),
+        duration: "sixteenth",
       })
 
       currentMeasure.notes.push({
-        pitch: {
-          step: fifth.letter,
-          alter: narrowAlter(fifth.alt),
-          octave: fifth.oct ?? 4,
-        },
-        duration: MusicXML.Divisions["16th"],
+        pitch: toPitch(fifth),
+        duration: "sixteenth",
       })
 
       currentMeasure.notes.push({
-        pitch: {
-          step: third.letter,
-          alter: narrowAlter(third.alt),
-          octave: third.oct ?? 4,
-        },
-        duration: MusicXML.Divisions["16th"],
+        pitch: toPitch(third),
+        duration: "sixteenth",
       })
 
       measures.push(currentMeasure)
       // land on whole note tonic
       measures.push({
-        notes: [{ ...tonic, duration: MusicXML.Divisions.whole }],
+        notes: [{ ...tonic, duration: "whole" }],
       })
     } else if (remainingDuration === 1) {
       const tonic = currentMeasure.notes[currentMeasure.notes.length - 1]
@@ -267,40 +267,38 @@ export function generateMusicXMLForScale(opts: {
       )
 
       currentMeasure.notes.push({
-        pitch: {
-          step: fifth.letter,
-          alter: narrowAlter(fifth.alt),
-          octave: fifth.oct ?? 4,
-        },
-        duration: MusicXML.Divisions["16th"],
+        pitch: toPitch(fifth),
+        duration: "sixteenth",
       })
 
       measures.push(currentMeasure)
       // land on whole note tonic
       measures.push({
-        notes: [{ ...tonic, duration: MusicXML.Divisions.whole }],
+        notes: [{ ...tonic, duration: "whole" }],
       })
     } else if (currentMeasure.notes.length === 1) {
       // Extend the last note
       const lastNote = currentMeasure.notes[0]
-      lastNote.duration = MusicXML.Divisions.whole
+      lastNote.duration = "whole"
       measures.push(currentMeasure)
     } else if (currentMeasure.notes.length > 2) {
       // if the last note is longer than the (worst case: eighth) we would have landed on...
       const tonic = currentMeasure.notes[currentMeasure.notes.length - 1]
 
       // pad out the last measure
-      while (MusicXML.getDuration(currentMeasure) < measureDuration) {
+      while (
+        MusicIR.measureDurationInSixteenths(currentMeasure) < measureDuration
+      ) {
         currentMeasure.notes.push({
           ...tonic,
-          duration: MusicXML.Divisions["16th"],
+          duration: "sixteenth",
         })
       }
 
       measures.push(currentMeasure)
       // land on whole note tonic
       measures.push({
-        notes: [{ ...tonic, duration: MusicXML.Divisions.whole }],
+        notes: [{ ...tonic, duration: "whole" }],
       })
     }
   }
@@ -308,39 +306,47 @@ export function generateMusicXMLForScale(opts: {
   for (const measure of measures) {
     let timeAccumulator = 0
     for (const note of measure.notes) {
-      if (note.duration !== MusicXML.Divisions.whole) {
-        const slurState = getSlurType(opts.slurPattern, timeAccumulator)
-        note.slurState = slurState
+      if (note.duration !== "whole") {
+        const slur = getSlurType(opts.slurPattern, timeAccumulator)
+        note.slur = slur
       }
 
-      timeAccumulator += note.duration
+      timeAccumulator += MusicIR.durationInSixteenths(note.duration)
     }
   }
 
   if (measures.length > 0) {
-    const key = getKeyWithMode(opts.key, opts.mode)
-
-    // Add attributes to first measure
-    let clef = { sign: "G", line: 2 }
-    if (opts.clef === "bass") {
-      clef = { sign: "F", line: 4 }
-    }
-
-    measures[0].attributes = {
-      key: { fifths: key.alteration },
-      time: {
-        beats: timeSignature.top,
-        beatType: timeSignature.bottom,
-      },
-      clef,
-    }
-
-    // Double bar last measure
-    measures[measures.length - 1].doubleBar = true
+    measures[measures.length - 1].finalBarline = true
   }
 
-  const xml = MusicXML.generateMusicXML(measures)
-  return xml
+  return {
+    keySignature: { fifths: getKeyWithMode(opts.key, opts.mode).alteration },
+    timeSignature,
+    clef: opts.clef,
+    measures,
+  } satisfies MusicIR.Score
+}
+
+export const generateArpeggio = () => {
+  return {
+    keySignature: { fifths: 0 },
+    timeSignature: { numerator: 2, denominator: 4 },
+    clef: "treble",
+    measures: [
+      {
+        notes: [
+          { pitch: { step: "C", octave: 4 }, duration: "sixteenth" },
+          { pitch: { step: "E", octave: 4 }, duration: "sixteenth" },
+          { pitch: { step: "G", octave: 4 }, duration: "sixteenth" },
+          { pitch: { step: "C", octave: 5 }, duration: "sixteenth" },
+
+          { pitch: { step: "G", octave: 4 }, duration: "sixteenth" },
+          { pitch: { step: "E", octave: 4 }, duration: "sixteenth" },
+          { pitch: { step: "C", octave: 4 }, duration: "eighth" },
+        ],
+      },
+    ],
+  } satisfies MusicIR.Score
 }
 
 const getKeyWithMode = (key: string, mode: Mode) => {
@@ -358,7 +364,7 @@ const getKeyWithMode = (key: string, mode: Mode) => {
   }
 }
 
-const getDescendingThirdModeLetter = (key: string, mode: Mode) => {
+const getDescendingThirdModeLetter = (mode: Mode) => {
   if (mode === "major") {
     return "M"
   } else if (
