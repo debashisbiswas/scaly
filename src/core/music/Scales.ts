@@ -328,24 +328,30 @@ export function generateScaleNotation(opts: {
 }
 
 export const generateArpeggio = () => {
+  const measures: MusicIR.Measure[] = [
+    {
+      notes: [
+        { pitch: { step: "C", octave: 4 }, duration: "sixteenth" },
+        { pitch: { step: "E", octave: 4 }, duration: "sixteenth" },
+        { pitch: { step: "G", octave: 4 }, duration: "sixteenth" },
+        { pitch: { step: "C", octave: 5 }, duration: "sixteenth" },
+
+        { pitch: { step: "G", octave: 4 }, duration: "sixteenth" },
+        { pitch: { step: "E", octave: 4 }, duration: "sixteenth" },
+        { pitch: { step: "C", octave: 4 }, duration: "eighth" },
+      ],
+    },
+  ]
+
+  if (measures.length > 0) {
+    measures[measures.length - 1].finalBarline = true
+  }
+
   return {
     keySignature: { fifths: 0 },
     timeSignature: { numerator: 2, denominator: 4 },
     clef: "treble",
-    measures: [
-      {
-        notes: [
-          { pitch: { step: "C", octave: 4 }, duration: "sixteenth" },
-          { pitch: { step: "E", octave: 4 }, duration: "sixteenth" },
-          { pitch: { step: "G", octave: 4 }, duration: "sixteenth" },
-          { pitch: { step: "C", octave: 5 }, duration: "sixteenth" },
-
-          { pitch: { step: "G", octave: 4 }, duration: "sixteenth" },
-          { pitch: { step: "E", octave: 4 }, duration: "sixteenth" },
-          { pitch: { step: "C", octave: 4 }, duration: "eighth" },
-        ],
-      },
-    ],
+    measures,
   } satisfies MusicIR.Score
 }
 
