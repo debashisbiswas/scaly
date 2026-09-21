@@ -36,7 +36,6 @@ describe("MusicXML renderer", () => {
     }
 
     const xml = MusicXML.render(score)
-    console.log(xml)
 
     expect(xml).toContain("<divisions>4</divisions>")
     expect(xml).toContain("<fifths>0</fifths>")

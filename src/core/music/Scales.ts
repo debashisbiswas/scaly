@@ -1,4 +1,4 @@
-import { Key, Note, Scale, Range } from "tonal"
+import { Chord, Key, Note, Scale, Range } from "tonal"
 import { MusicIR } from "./musicir"
 
 export const Modes = [
@@ -327,21 +327,65 @@ export function generateScaleNotation(opts: {
   } satisfies MusicIR.Score
 }
 
-export const generateArpeggio = () => {
-  const measures: MusicIR.Measure[] = [
-    {
-      notes: [
-        { pitch: { step: "C", octave: 4 }, duration: "sixteenth" },
-        { pitch: { step: "E", octave: 4 }, duration: "sixteenth" },
-        { pitch: { step: "G", octave: 4 }, duration: "sixteenth" },
-        { pitch: { step: "C", octave: 5 }, duration: "sixteenth" },
+export const getArpeggioSkeleton = (opts: {
+  key: string
+  startOctave: number
+  octaves: number
+}) => {
+  if (opts.startOctave < 1) {
+    throw new Error(
+      `Start octave must be at least 1, received: ${opts.startOctave}`,
+    )
+  }
 
-        { pitch: { step: "G", octave: 4 }, duration: "sixteenth" },
-        { pitch: { step: "E", octave: 4 }, duration: "sixteenth" },
-        { pitch: { step: "C", octave: 4 }, duration: "eighth" },
-      ],
-    },
-  ]
+  if (opts.octaves < 1) {
+    throw new Error(`Octaves must be at least 1, received: ${opts.octaves}`)
+  }
+
+  const baseNotes = Range.numeric([0, 3 * opts.octaves])
+    .map(Chord.steps("major", `${opts.key}${opts.startOctave}`))
+    .map(Note.get)
+    .map((note) => ({
+      step: note.letter as MusicIR.Step,
+      oct: note.oct,
+    }))
+
+  const ascending = baseNotes
+  const descending = baseNotes.toReversed().slice(1) // remove the tonic at the top
+
+  const allNotes = [...ascending, ...descending]
+  return allNotes
+}
+
+export const generateArpeggio = (opts: {
+  key: string
+  octaves: number
+  startOctave: number
+}) => {
+  if (opts.startOctave < 1) {
+    throw new Error(
+      `Start octave must be at least 1; received: ${opts.startOctave}`,
+    )
+  }
+
+  if (opts.octaves < 1) {
+    throw new Error(`Octaves must be at least 1; received: ${opts.octaves}`)
+  }
+
+  const skeleton = getArpeggioSkeleton(opts)
+
+  // one octave
+  const measures: MusicIR.Measure[] = []
+  const measure: MusicIR.Measure = { notes: [] }
+  for (let i = 0; i < skeleton.length; i++) {
+    const note = skeleton[i]
+    measure.notes.push({
+      pitch: { step: note.step, octave: note.oct ?? 1 },
+      duration: i !== skeleton.length - 1 ? "sixteenth" : "eighth",
+    })
+  }
+
+  measures.push(measure)
 
   if (measures.length > 0) {
     measures[measures.length - 1].finalBarline = true

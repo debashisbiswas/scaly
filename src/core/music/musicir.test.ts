@@ -1,5 +1,9 @@
 import { describe, expect, test } from "vitest"
-import { generateScaleNotation, generateArpeggio } from "./Scales"
+import {
+  generateArpeggio,
+  generateScaleNotation,
+  getArpeggioSkeleton,
+} from "./Scales"
 
 function generateScale(
   overrides: Partial<Parameters<typeof generateScaleNotation>[0]> = {},
@@ -162,7 +166,7 @@ describe("Music IR", () => {
   })
 
   test("generates C major arpgeggio, one octave", () => {
-    const score = generateArpeggio()
+    const score = generateArpeggio({ key: "C", startOctave: 4, octaves: 1 })
 
     expect(score).toEqual({
       keySignature: { fifths: 0 },
@@ -186,8 +190,135 @@ describe("Music IR", () => {
     })
   })
 
+  test("generates G major arpgeggio, one octave", () => {
+    const score = generateArpeggio({ key: "G", startOctave: 3, octaves: 1 })
+
+    expect(score).toEqual({
+      keySignature: { fifths: 0 },
+      timeSignature: { numerator: 2, denominator: 4 },
+      clef: "treble",
+      measures: [
+        {
+          notes: [
+            { pitch: { step: "G", octave: 3 }, duration: "sixteenth" },
+            { pitch: { step: "B", octave: 3 }, duration: "sixteenth" },
+            { pitch: { step: "D", octave: 4 }, duration: "sixteenth" },
+            { pitch: { step: "G", octave: 4 }, duration: "sixteenth" },
+
+            { pitch: { step: "D", octave: 4 }, duration: "sixteenth" },
+            { pitch: { step: "B", octave: 3 }, duration: "sixteenth" },
+            { pitch: { step: "G", octave: 3 }, duration: "eighth" },
+          ],
+          finalBarline: true,
+        },
+      ],
+    })
+  })
+
+  test("arpeggio skeleton", () => {
+    const skeleton = getArpeggioSkeleton({
+      key: "C",
+      octaves: 1,
+      startOctave: 4,
+    })
+
+    expect(skeleton).toEqual([
+      {
+        step: "C",
+        oct: 4,
+      },
+      {
+        step: "E",
+        oct: 4,
+      },
+      {
+        step: "G",
+        oct: 4,
+      },
+      {
+        step: "C",
+        oct: 5,
+      },
+      {
+        step: "G",
+        oct: 4,
+      },
+      {
+        step: "E",
+        oct: 4,
+      },
+      {
+        step: "C",
+        oct: 4,
+      },
+    ])
+  })
+
+  test("arpeggio skeleton, two octaves", () => {
+    const skeleton = getArpeggioSkeleton({
+      key: "C",
+      octaves: 2,
+      startOctave: 4,
+    })
+
+    expect(skeleton).toEqual([
+      {
+        step: "C",
+        oct: 4,
+      },
+      {
+        step: "E",
+        oct: 4,
+      },
+      {
+        step: "G",
+        oct: 4,
+      },
+      {
+        step: "C",
+        oct: 5,
+      },
+      {
+        step: "E",
+        oct: 5,
+      },
+      {
+        step: "G",
+        oct: 5,
+      },
+      {
+        step: "C",
+        oct: 6,
+      },
+      {
+        step: "G",
+        oct: 5,
+      },
+      {
+        step: "E",
+        oct: 5,
+      },
+      {
+        step: "C",
+        oct: 5,
+      },
+      {
+        step: "G",
+        oct: 4,
+      },
+      {
+        step: "E",
+        oct: 4,
+      },
+      {
+        step: "C",
+        oct: 4,
+      },
+    ])
+  })
+
   test.skip("generates C major arpgeggio, two octaves", () => {
-    const score = generateArpeggio()
+    const score = generateArpeggio({ key: "C", startOctave: 4, octaves: 2 })
 
     expect(score).toEqual({
       keySignature: { fifths: 0 },
