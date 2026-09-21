@@ -349,4 +349,44 @@ describe("Music IR", () => {
       ],
     })
   })
+
+  test("generates C major arpgeggio, three octaves", () => {
+    const score = generateArpeggio({ key: "C", startOctave: 4, octaves: 3 })
+
+    expect(score).toEqual({
+      keySignature: { fifths: 0 },
+      timeSignature: { numerator: 5, denominator: 4 },
+      clef: "treble",
+      measures: [
+        {
+          notes: [
+            { pitch: { step: "C", octave: 4 }, duration: "sixteenth" },
+            { pitch: { step: "E", octave: 4 }, duration: "sixteenth" },
+            { pitch: { step: "G", octave: 4 }, duration: "sixteenth" },
+            { pitch: { step: "C", octave: 5 }, duration: "sixteenth" },
+
+            { pitch: { step: "E", octave: 5 }, duration: "sixteenth" },
+            { pitch: { step: "G", octave: 5 }, duration: "sixteenth" },
+            { pitch: { step: "C", octave: 6 }, duration: "sixteenth" },
+            { pitch: { step: "E", octave: 6 }, duration: "sixteenth" },
+
+            { pitch: { step: "G", octave: 6 }, duration: "sixteenth" },
+            { pitch: { step: "C", octave: 7 }, duration: "sixteenth" },
+            { pitch: { step: "G", octave: 6 }, duration: "sixteenth" },
+            { pitch: { step: "E", octave: 6 }, duration: "sixteenth" },
+
+            { pitch: { step: "C", octave: 6 }, duration: "sixteenth" },
+            { pitch: { step: "G", octave: 5 }, duration: "sixteenth" },
+            { pitch: { step: "E", octave: 5 }, duration: "sixteenth" },
+            { pitch: { step: "C", octave: 5 }, duration: "sixteenth" },
+
+            { pitch: { step: "G", octave: 4 }, duration: "sixteenth" },
+            { pitch: { step: "E", octave: 4 }, duration: "sixteenth" },
+            { pitch: { step: "C", octave: 4 }, duration: "eighth" },
+          ],
+          finalBarline: true,
+        },
+      ],
+    })
+  })
 })

@@ -422,6 +422,30 @@ export const generateArpeggio = (opts: {
       clef: "treble",
       measures,
     } satisfies MusicIR.Score
+  } else if (opts.octaves === 3) {
+    const measures: MusicIR.Measure[] = []
+    const measure: MusicIR.Measure = { notes: [] }
+
+    for (let i = 0; i < skeleton.length; i++) {
+      const note = skeleton[i]
+      measure.notes.push({
+        pitch: { step: note.step, octave: note.oct ?? 1 },
+        duration: i !== skeleton.length - 1 ? "sixteenth" : "eighth",
+      })
+    }
+
+    measures.push(measure)
+
+    if (measures.length > 0) {
+      measures[measures.length - 1].finalBarline = true
+    }
+
+    return {
+      keySignature: { fifths: 0 },
+      timeSignature: { numerator: 5, denominator: 4 },
+      clef: "treble",
+      measures,
+    } satisfies MusicIR.Score
   } else {
     throw new Error(`Unsupported arpeggio octave count: ${opts.octaves}`)
   }
