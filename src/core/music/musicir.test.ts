@@ -317,7 +317,7 @@ describe("Music IR", () => {
     ])
   })
 
-  test.skip("generates C major arpgeggio, two octaves", () => {
+  test("generates C major arpgeggio, two octaves", () => {
     const score = generateArpeggio({ key: "C", startOctave: 4, octaves: 2 })
 
     expect(score).toEqual({

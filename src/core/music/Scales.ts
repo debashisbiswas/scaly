@@ -374,29 +374,57 @@ export const generateArpeggio = (opts: {
 
   const skeleton = getArpeggioSkeleton(opts)
 
-  // one octave
-  const measures: MusicIR.Measure[] = []
-  const measure: MusicIR.Measure = { notes: [] }
-  for (let i = 0; i < skeleton.length; i++) {
-    const note = skeleton[i]
-    measure.notes.push({
-      pitch: { step: note.step, octave: note.oct ?? 1 },
-      duration: i !== skeleton.length - 1 ? "sixteenth" : "eighth",
-    })
+  if (opts.octaves === 1) {
+    const measures: MusicIR.Measure[] = []
+    const measure: MusicIR.Measure = { notes: [] }
+
+    for (let i = 0; i < skeleton.length; i++) {
+      const note = skeleton[i]
+      measure.notes.push({
+        pitch: { step: note.step, octave: note.oct ?? 1 },
+        duration: i !== skeleton.length - 1 ? "sixteenth" : "eighth",
+      })
+    }
+
+    measures.push(measure)
+
+    if (measures.length > 0) {
+      measures[measures.length - 1].finalBarline = true
+    }
+
+    return {
+      keySignature: { fifths: 0 },
+      timeSignature: { numerator: 2, denominator: 4 },
+      clef: "treble",
+      measures,
+    } satisfies MusicIR.Score
+  } else if (opts.octaves === 2) {
+    const measures: MusicIR.Measure[] = []
+    const measure: MusicIR.Measure = { notes: [] }
+
+    for (let i = 0; i < skeleton.length; i++) {
+      const note = skeleton[i]
+      measure.notes.push({
+        pitch: { step: note.step, octave: note.oct ?? 1 },
+        duration: i !== skeleton.length - 1 ? "sixteenth" : "quarter",
+      })
+    }
+
+    measures.push(measure)
+
+    if (measures.length > 0) {
+      measures[measures.length - 1].finalBarline = true
+    }
+
+    return {
+      keySignature: { fifths: 0 },
+      timeSignature: { numerator: 4, denominator: 4 },
+      clef: "treble",
+      measures,
+    } satisfies MusicIR.Score
+  } else {
+    throw new Error(`Unsupported arpeggio octave count: ${opts.octaves}`)
   }
-
-  measures.push(measure)
-
-  if (measures.length > 0) {
-    measures[measures.length - 1].finalBarline = true
-  }
-
-  return {
-    keySignature: { fifths: 0 },
-    timeSignature: { numerator: 2, denominator: 4 },
-    clef: "treble",
-    measures,
-  } satisfies MusicIR.Score
 }
 
 const getKeyWithMode = (key: string, mode: Mode) => {
