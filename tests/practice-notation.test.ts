@@ -28,14 +28,12 @@ describe("practice notation", () => {
     }
   })
 
-  it.each([
-    "major arpeggio",
-    "minor arpeggio",
-    "major thirds",
-    "minor thirds",
-  ] as const)("reports %s notation as unsupported", (mode) => {
-    expect(getExerciseNotation(createExerciseSpec(mode))).toEqual({
-      status: "unsupported",
-    })
-  })
+  it.each(["major thirds", "minor thirds"] as const)(
+    "reports %s notation as unsupported",
+    (mode) => {
+      expect(getExerciseNotation(createExerciseSpec(mode))).toEqual({
+        status: "unsupported",
+      })
+    },
+  )
 })

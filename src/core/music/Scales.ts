@@ -147,19 +147,15 @@ function getSlurType(
 }
 
 function toPitch(note: ReturnType<typeof Note.get>): MusicIR.Pitch {
-  if (!isStep(note.letter)) {
+  if (!MusicIR.isStep(note.letter)) {
     throw new Error(`Unexpected note step: ${note.letter}`)
   }
 
   return {
     step: note.letter,
-    ...(note.alt === 0 ? {} : { accidental: note.alt }),
+    accidental: note.alt || undefined, // 0 -> undefined
     octave: note.oct ?? 4,
   }
-}
-
-function isStep(step: string): step is MusicIR.Step {
-  return ["A", "B", "C", "D", "E", "F", "G"].includes(step)
 }
 
 export function generateScaleNotation(opts: {
@@ -331,7 +327,8 @@ export const getArpeggioSkeleton = (opts: {
   key: string
   startOctave: number
   octaves: number
-}) => {
+  mode: string
+}): MusicIR.Pitch[] => {
   if (opts.startOctave < 1) {
     throw new Error(
       `Start octave must be at least 1, received: ${opts.startOctave}`,
@@ -343,11 +340,12 @@ export const getArpeggioSkeleton = (opts: {
   }
 
   const baseNotes = Range.numeric([0, 3 * opts.octaves])
-    .map(Chord.steps("major", `${opts.key}${opts.startOctave}`))
+    .map(Chord.steps(opts.mode, `${opts.key}${opts.startOctave}`))
     .map(Note.get)
     .map((note) => ({
       step: note.letter as MusicIR.Step,
-      oct: note.oct,
+      accidental: note.alt || undefined, // 0 -> undefined
+      octave: note.oct ?? 1,
     }))
 
   const ascending = baseNotes
@@ -361,6 +359,8 @@ export const generateArpeggio = (opts: {
   key: string
   octaves: number
   startOctave: number
+  clef: "treble" | "bass"
+  mode: Mode
 }) => {
   if (opts.startOctave < 1) {
     throw new Error(
@@ -373,6 +373,10 @@ export const generateArpeggio = (opts: {
   }
 
   const skeleton = getArpeggioSkeleton(opts)
+  const commonScoreConfig = {
+    keySignature: { fifths: getKeyWithMode(opts.key, opts.mode).alteration },
+    clef: opts.clef,
+  }
 
   if (opts.octaves === 1) {
     const measures: MusicIR.Measure[] = []
@@ -381,7 +385,7 @@ export const generateArpeggio = (opts: {
     for (let i = 0; i < skeleton.length; i++) {
       const note = skeleton[i]
       measure.notes.push({
-        pitch: { step: note.step, octave: note.oct ?? 1 },
+        pitch: note,
         duration: i !== skeleton.length - 1 ? "sixteenth" : "eighth",
       })
     }
@@ -393,9 +397,8 @@ export const generateArpeggio = (opts: {
     }
 
     return {
-      keySignature: { fifths: 0 },
+      ...commonScoreConfig,
       timeSignature: { numerator: 2, denominator: 4 },
-      clef: "treble",
       measures,
     } satisfies MusicIR.Score
   } else if (opts.octaves === 2) {
@@ -405,7 +408,7 @@ export const generateArpeggio = (opts: {
     for (let i = 0; i < skeleton.length; i++) {
       const note = skeleton[i]
       measure.notes.push({
-        pitch: { step: note.step, octave: note.oct ?? 1 },
+        pitch: note,
         duration: i !== skeleton.length - 1 ? "sixteenth" : "quarter",
       })
     }
@@ -417,9 +420,8 @@ export const generateArpeggio = (opts: {
     }
 
     return {
-      keySignature: { fifths: 0 },
+      ...commonScoreConfig,
       timeSignature: { numerator: 4, denominator: 4 },
-      clef: "treble",
       measures,
     } satisfies MusicIR.Score
   } else if (opts.octaves === 3) {
@@ -429,7 +431,7 @@ export const generateArpeggio = (opts: {
     for (let i = 0; i < skeleton.length; i++) {
       const note = skeleton[i]
       measure.notes.push({
-        pitch: { step: note.step, octave: note.oct ?? 1 },
+        pitch: note,
         duration: i !== skeleton.length - 1 ? "sixteenth" : "eighth",
       })
     }
@@ -441,9 +443,8 @@ export const generateArpeggio = (opts: {
     }
 
     return {
-      keySignature: { fifths: 0 },
+      ...commonScoreConfig,
       timeSignature: { numerator: 5, denominator: 4 },
-      clef: "treble",
       measures,
     } satisfies MusicIR.Score
   } else {

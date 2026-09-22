@@ -1,6 +1,6 @@
 import { GeneratedExerciseSpec } from "@/core/flows"
 
-import { Mode, Modes, generateScaleNotation } from "./Scales"
+import { Mode, Modes, generateScaleNotation, generateArpeggio } from "./Scales"
 import { MusicIR } from "./musicir"
 
 export type ExerciseNotationResult =
@@ -12,7 +12,7 @@ type ExerciseNotationRenderer = {
   render: (spec: GeneratedExerciseSpec) => MusicIR.Score
 }
 
-function isScaleMode(mode: GeneratedExerciseSpec["mode"]): mode is Mode {
+function isScaleMode(mode: string): mode is Mode {
   return (Modes as readonly string[]).includes(mode)
 }
 
@@ -35,7 +35,29 @@ const scaleRenderer: ExerciseNotationRenderer = {
   },
 }
 
-const notationRenderers: ExerciseNotationRenderer[] = [scaleRenderer]
+const arpeggioRenderer: ExerciseNotationRenderer = {
+  canRender: (spec) => spec.mode.includes("arpeggio"),
+  render: (spec) => {
+    // TODO... yeah
+    const musicMode = spec.mode.replace(" arpeggio", "")
+    if (!isScaleMode(musicMode)) {
+      throw new Error(`Arpeggio renderer cannot render mode: ${spec.mode}`)
+    }
+
+    return generateArpeggio({
+      key: spec.key,
+      mode: musicMode,
+      octaves: spec.octaves,
+      startOctave: spec.startOctave,
+      clef: spec.clef,
+    })
+  },
+}
+
+const notationRenderers: ExerciseNotationRenderer[] = [
+  scaleRenderer,
+  arpeggioRenderer,
+]
 
 export function getExerciseNotation(
   spec: GeneratedExerciseSpec,

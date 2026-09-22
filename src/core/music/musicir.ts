@@ -1,12 +1,9 @@
 export namespace MusicIR {
-  export type Step = "A" | "B" | "C" | "D" | "E" | "F" | "G"
+  const Steps = ["A", "B", "C", "D", "E", "F", "G"] as const
 
-  export type Duration =
-    | "sixteenth"
-    | "eighth"
-    | "quarter"
-    | "half"
-    | "whole"
+  export type Step = (typeof Steps)[number]
+
+  export type Duration = "sixteenth" | "eighth" | "quarter" | "half" | "whole"
 
   export type Pitch = {
     step: Step
@@ -31,6 +28,9 @@ export namespace MusicIR {
     clef: "treble" | "bass"
     measures: Measure[]
   }
+
+  export const isStep = (step: string): step is Step =>
+    (Steps as readonly string[]).includes(step)
 
   export function durationInSixteenths(duration: Duration) {
     switch (duration) {
