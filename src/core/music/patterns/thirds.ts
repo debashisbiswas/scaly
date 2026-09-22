@@ -1,11 +1,11 @@
 import { Note, Range, Scale } from "tonal"
 
 import { MusicIR } from "../musicir"
-import { Mode, getKeyWithMode } from "../modes"
+import { getKeyWithMode } from "../modes"
 
 type ThirdsOptions = {
   key: string
-  mode: Mode
+  mode: "major" | "minor"
   startOctave: number
   octaves: number
 }
@@ -31,7 +31,7 @@ function validateOptions(opts: ThirdsOptions) {
     )
   }
 
-  if (opts.octaves !== 1 && opts.octaves !== 2) {
+  if (opts.octaves < 1 || opts.octaves > 3) {
     throw new Error(`Unsupported thirds octave count: ${opts.octaves}`)
   }
 }
@@ -39,18 +39,26 @@ function validateOptions(opts: ThirdsOptions) {
 export function getThirdsSkeleton(opts: ThirdsOptions): MusicIR.Pitch[] {
   validateOptions(opts)
 
-  const scaleSteps = Scale.steps(`${opts.key}${opts.startOctave} ${opts.mode}`)
+  const ascendingScaleSteps = Scale.steps(
+    `${opts.key}${opts.startOctave} ${opts.mode === "minor" ? "melodic minor" : "major"}`,
+  )
+  const descendingScaleSteps = Scale.steps(
+    `${opts.key}${opts.startOctave} ${opts.mode}`,
+  )
   const topScaleStep = 7 * opts.octaves
 
-  const ascending = Range.numeric([0, topScaleStep]).flatMap((scaleStep) => [
-    scaleSteps(scaleStep),
-    scaleSteps(scaleStep + 2),
-  ])
-  const descending = Range.numeric([topScaleStep + 1, 1]).flatMap(
-    (scaleStep) => [scaleSteps(scaleStep), scaleSteps(scaleStep - 2)],
+  const ascending = Range.numeric([0, topScaleStep - 1]).flatMap(
+    (scaleStep) => [
+      ascendingScaleSteps(scaleStep),
+      ascendingScaleSteps(scaleStep + 2),
+    ],
   )
+  const descending = Range.numeric([topScaleStep, 1]).flatMap((scaleStep) => [
+    descendingScaleSteps(scaleStep),
+    descendingScaleSteps(scaleStep - 2),
+  ])
 
-  return [...ascending, ...descending, scaleSteps(0)].map(toPitch)
+  return [...ascending, ...descending, descendingScaleSteps(0)].map(toPitch)
 }
 
 export function generateThirds(
@@ -63,16 +71,18 @@ export function generateThirds(
 
   for (const [index, pitch] of skeleton.entries()) {
     const duration =
-      index === skeleton.length - 1
-        ? opts.octaves === 1
-          ? "whole"
-          : "quarter"
-        : "sixteenth"
+      index === skeleton.length - 1 && opts.octaves === 2
+        ? "half"
+        : index === skeleton.length - 1
+          ? "quarter"
+          : "sixteenth"
 
     currentMeasure.notes.push({ pitch, duration })
     currentDuration += MusicIR.durationInSixteenths(duration)
 
-    if (currentDuration === 16) {
+    const measureDuration = opts.octaves === 3 ? 44 : 16
+
+    if (currentDuration === measureDuration) {
       measures.push(currentMeasure)
       currentMeasure = { notes: [] }
       currentDuration = 0
@@ -87,7 +97,10 @@ export function generateThirds(
 
   return {
     keySignature: { fifths: getKeyWithMode(opts.key, opts.mode).alteration },
-    timeSignature: { numerator: 4, denominator: 4 },
+    timeSignature: {
+      numerator: opts.octaves === 3 ? 11 : 4,
+      denominator: 4,
+    },
     clef: opts.clef,
     measures,
   } satisfies MusicIR.Score
