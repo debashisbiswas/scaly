@@ -1,5 +1,5 @@
 import { MusicXMLViewer } from "@/core/music/MusicXMLViewer"
-import { generateScaleNotation } from "@/core/music/Scales"
+import { generateScaleNotation } from "@/core/music/patterns/scales"
 import { MusicXML } from "@/core/music/musicxml"
 import { Ionicons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"

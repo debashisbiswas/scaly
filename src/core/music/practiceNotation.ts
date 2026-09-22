@@ -1,6 +1,8 @@
 import { GeneratedExerciseSpec } from "@/core/flows"
 
-import { Mode, Modes, generateScaleNotation, generateArpeggio } from "./Scales"
+import { Mode, Modes } from "./modes"
+import { generateScaleNotation } from "./patterns/scales"
+import { generateArpeggio } from "./patterns/arpeggios"
 import { MusicIR } from "./musicir"
 
 export type ExerciseNotationResult =
