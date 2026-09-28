@@ -1,8 +1,9 @@
 import { GeneratedExerciseSpec } from "@/core/flows"
 
 import { Mode, Modes } from "./modes"
-import { generateScaleNotation } from "./patterns/scales"
 import { generateArpeggio } from "./patterns/arpeggios"
+import { generateScaleNotation } from "./patterns/scales"
+import { generateThirds } from "./patterns/thirds"
 import { MusicIR } from "./musicir"
 
 export type ExerciseNotationResult =
@@ -56,9 +57,37 @@ const arpeggioRenderer: ExerciseNotationRenderer = {
   },
 }
 
+function getThirdsMode(mode: string): "major" | "minor" | undefined {
+  if (mode === "major thirds") return "major"
+  if (mode === "minor thirds") return "minor"
+}
+
+const thirdsRenderer: ExerciseNotationRenderer = {
+  canRender: (spec) =>
+    getThirdsMode(spec.mode) !== undefined &&
+    spec.octaves >= 1 &&
+    spec.octaves <= 3,
+  render: (spec) => {
+    const mode = getThirdsMode(spec.mode)
+
+    if (!mode) {
+      throw new Error(`Thirds renderer cannot render mode: ${spec.mode}`)
+    }
+
+    return generateThirds({
+      key: spec.key,
+      mode,
+      octaves: spec.octaves,
+      startOctave: spec.startOctave,
+      clef: spec.clef,
+    })
+  },
+}
+
 const notationRenderers: ExerciseNotationRenderer[] = [
   scaleRenderer,
   arpeggioRenderer,
+  thirdsRenderer,
 ]
 
 export function getExerciseNotation(
