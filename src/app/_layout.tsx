@@ -34,12 +34,16 @@ export default function RootLayout() {
     return null
   }
 
+  // TODO: We can disable fullScreenGestureEnabled here, but how do we just
+  // disable it for a single screen?
+  // Or maybe disabling it for all screens is fine for now?
   return (
     <FlowStoreProvider>
       <Stack
         screenOptions={{
           headerShown: false,
           animationTypeForReplace: "pop",
+          fullScreenGestureEnabled: false,
         }}
       />
     </FlowStoreProvider>
