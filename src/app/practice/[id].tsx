@@ -36,6 +36,7 @@ import {
   isDroneTransposition,
   transposeDroneFrequency,
 } from "@/core/droneTransposition"
+import { TempoSetting } from "@/core/flows/tempo-setting"
 
 const DRONE_TRANSPOSITION_STORAGE_KEY = "practice.droneTransposition"
 
@@ -525,31 +526,23 @@ function formatTempoBucket(tempo: GeneratedExerciseSpec["tempo"]) {
 }
 
 function assignTempo(
-  exerciseTempo: GeneratedExerciseSpec["tempo"],
-  flowTempo: GeneratedExerciseSpec["tempo"],
+  exerciseTempo: TempoSetting.Shape,
+  flowTempo: TempoSetting.Shape,
 ) {
   if (exerciseTempo.kind === "single") {
     return exerciseTempo.bpm
   }
 
-  const flowMinBpm =
-    flowTempo.kind === "single" ? flowTempo.bpm : flowTempo.minBpm
-  const flowMaxBpm =
-    flowTempo.kind === "single" ? flowTempo.bpm : flowTempo.maxBpm
-  const minBpm = Math.max(exerciseTempo.minBpm, flowMinBpm)
-  const maxBpm = Math.min(exerciseTempo.maxBpm, flowMaxBpm)
-
-  if (minBpm > maxBpm) {
-    return exerciseTempo.minBpm
-  }
-
-  return Math.floor(Math.random() * (maxBpm - minBpm + 1)) + minBpm
+  // Not well-named at the moment, but this is the exercise's tempo bucket.
+  // Returning the bottom tempo of the bucket to ensure tempos look even rather
+  // than assigning something like 111 bpm.
+  return exerciseTempo.minBpm
 }
 
 function assignTempoToQueueItem(
   queue: ExerciseQueue.PracticeExercise[],
   index: number,
-  flowTempo: GeneratedExerciseSpec["tempo"],
+  flowTempo: TempoSetting.Shape,
 ) {
   const exercise = queue[index]
 

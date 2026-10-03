@@ -15,7 +15,7 @@ export type GeneratedExerciseSpec = {
   startOctave: number
   octaves: number
   clef: "treble" | "bass"
-  tempo: FlowDraft.Shape["tempo"]
+  tempo: TempoSetting.Shape
 }
 
 function sortByOrder<T extends string>(values: T[], order: readonly T[]) {
