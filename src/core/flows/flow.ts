@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm"
+import { desc, eq, inArray } from "drizzle-orm"
 
 import { db } from "@/db/client"
 import { flows } from "@/db/schema"
@@ -116,6 +116,14 @@ export namespace Flow2 {
 
   export async function deleteByID(id: string) {
     await db.delete(flows).where(eq(flows.id, id))
+  }
+
+  export async function deleteByIDs(ids: string[]) {
+    if (ids.length === 0) {
+      return
+    }
+
+    await db.delete(flows).where(inArray(flows.id, ids))
   }
 
   export async function list() {
