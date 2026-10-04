@@ -244,19 +244,22 @@ export default function FlowLibrary() {
             marginBottom: -1,
           }}
         >
-          <Pressable
-            onPress={() => router.replace("/")}
-            style={{
-              width: 44,
-              height: 32,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ fontSize: 34, color: "#202737", lineHeight: 34 }}>
-              {"←"}
-            </Text>
-          </Pressable>
+          <View style={{ width: 42, height: 42, marginBottom: 5 }}>
+            <PanelIconButton
+              accessibilityLabel="Back"
+              onPress={() => router.replace("/")}
+            >
+              <SymbolView
+                name={{ ios: "chevron.left" }}
+                fallback={
+                  <Ionicons name="chevron-back" color="#334155" size={22} />
+                }
+                size={19}
+                tintColor="#334155"
+                weight="semibold"
+              />
+            </PanelIconButton>
+          </View>
 
           <View
             style={{ flexDirection: "row", alignItems: "flex-end", gap: 8 }}
