@@ -1,6 +1,6 @@
 import { useFocusEffect, useRouter } from "expo-router"
 import { useCallback, useState } from "react"
-import { Alert, Pressable, ScrollView, Text, View } from "react-native"
+import { Alert, Pressable, Text, View } from "react-native"
 import Ionicons from "@expo/vector-icons/Ionicons"
 import { LinearGradient } from "expo-linear-gradient"
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect"
@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context"
 import { Flow } from "@/core/flows"
 import { Exercise } from "@/core/flows/exercise"
 import { ExercisePracticeStats } from "@/core/flows/exercisePracticeStats"
+import { SortableGrid } from "@/components/SortableGrid"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 type LibraryTab = "saved" | "premade"
@@ -144,8 +145,14 @@ function ActionButton({
 
 export default function FlowLibrary() {
   const router = useRouter()
-  const { flows, premadeFlows, startEditingFlow, deleteFlow, deleteFlows } =
-    useFlowStore()
+  const {
+    flows,
+    premadeFlows,
+    startEditingFlow,
+    deleteFlow,
+    deleteFlows,
+    reorderFlows,
+  } = useFlowStore()
   const [activeTab, setActiveTab] = useState<LibraryTab>("saved")
   const [selectMode, setSelectMode] = useState(false)
   const [selectedFlowIds, setSelectedFlowIds] = useState<Set<string>>(
@@ -158,7 +165,6 @@ export default function FlowLibrary() {
 
   const panelPadding = 16
   const gap = 10
-  const cardWidth = "48.6%"
   const displayedFlows = activeTab === "saved" ? flows : premadeFlows
   const selectedCount = selectedFlowIds.size
 
@@ -202,6 +208,13 @@ export default function FlowLibrary() {
     } finally {
       setDeletingSelection(false)
     }
+  }
+
+  function reorderSavedFlows(orderedIds: string[]) {
+    void reorderFlows(orderedIds).catch((error) => {
+      console.error("[storage] failed to reorder flows:", error)
+      Alert.alert("Couldn’t reorder flows", "Please try again.")
+    })
   }
 
   useFocusEffect(
@@ -371,189 +384,189 @@ export default function FlowLibrary() {
             paddingBottom: 16,
           }}
         >
-          <ScrollView
-            style={{ flex: 1 }}
-            contentContainerStyle={{
-              paddingBottom: selectMode ? 64 : 20,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                justifyContent: "space-between",
-                rowGap: gap,
-              }}
-            >
-              {displayedFlows.map((flow) => {
-                const mastery = masteryByFlowId[flow.id] ?? { kind: "new" }
-                const masteryPercent =
-                  mastery.kind === "graded" ? mastery.percent : 0
-                const selected = selectedFlowIds.has(flow.id)
+          <SortableGrid
+            data={displayedFlows}
+            enabled={activeTab === "saved" && !selectMode}
+            itemHeight={selectMode ? 70 : 110}
+            columnGap={gap}
+            rowGap={gap}
+            contentBottomPadding={selectMode ? 64 : 20}
+            onReorder={reorderSavedFlows}
+            renderItem={(flow) => {
+              const mastery = masteryByFlowId[flow.id] ?? { kind: "new" }
+              const masteryPercent =
+                mastery.kind === "graded" ? mastery.percent : 0
+              const selected = selectedFlowIds.has(flow.id)
 
-                const cardContents = (
-                  <>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                      }}
+              const cardContents = (
+                <>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Text
+                      style={{ fontWeight: "700", color: "#202633", flex: 1 }}
+                      numberOfLines={1}
                     >
-                      <Text
-                        style={{ fontWeight: "700", color: "#202633", flex: 1 }}
-                        numberOfLines={1}
-                      >
-                        {flow.name}
-                      </Text>
-                      {selectMode ? (
-                        <View
-                          style={{
-                            width: 21,
-                            height: 21,
-                            marginLeft: 8,
-                            borderRadius: 11,
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderWidth: selected ? 0 : 2,
-                            borderColor: "#98a2b3",
-                            backgroundColor: selected
-                              ? "#636366"
-                              : "transparent",
-                          }}
-                        >
-                          {selected ? (
-                            <Text
-                              style={{
-                                color: "#fff",
-                                fontSize: 14,
-                                fontWeight: "800",
-                                lineHeight: 17,
-                              }}
-                            >
-                              ✓
-                            </Text>
-                          ) : null}
-                        </View>
-                      ) : null}
-                    </View>
-
-                    <View
-                      style={{
-                        height: 18,
-                        borderRadius: 6,
-                        backgroundColor: "#d2d6dc",
-                        overflow: "hidden",
-                      }}
-                    >
+                      {flow.name}
+                    </Text>
+                    {selectMode ? (
                       <View
                         style={{
-                          height: "100%",
-                          width: `${masteryPercent}%`,
-                          backgroundColor: "#1fb785",
+                          width: 21,
+                          height: 21,
+                          marginLeft: 8,
+                          borderRadius: 11,
+                          alignItems: "center",
                           justifyContent: "center",
-                          paddingLeft: 8,
+                          borderWidth: selected ? 0 : 2,
+                          borderColor: "#98a2b3",
+                          backgroundColor: selected ? "#636366" : "transparent",
                         }}
                       >
-                        <Text
-                          style={{
-                            color: "#fff",
-                            fontWeight: "700",
-                            fontSize: 12,
-                          }}
-                        >
-                          {masteryPercent}%
-                        </Text>
-                      </View>
-                    </View>
-
-                    {!selectMode ? (
-                      <View style={{ flexDirection: "row", gap: 8 }}>
-                        <ActionButton
-                          label="Play"
-                          primary
-                          onPress={() => router.push(`/practice/${flow.id}`)}
-                        />
-                        {activeTab === "saved" ? (
-                          <>
-                            <ActionButton
-                              label="Edit"
-                              onPress={() => {
-                                startEditingFlow(flow)
-                                router.push("/choose-keys")
-                              }}
-                            />
-                            <ActionButton
-                              label="Delete"
-                              destructive
-                              onPress={() => {
-                                Alert.alert(
-                                  `Delete “${flow.name}”?`,
-                                  "This can’t be undone.",
-                                  [
-                                    { text: "Cancel", style: "cancel" },
-                                    {
-                                      text: "Delete",
-                                      style: "destructive",
-                                      onPress: () => void deleteFlow(flow.id),
-                                    },
-                                  ],
-                                )
-                              }}
-                            />
-                          </>
+                        {selected ? (
+                          <Text
+                            style={{
+                              color: "#fff",
+                              fontSize: 14,
+                              fontWeight: "800",
+                              lineHeight: 17,
+                            }}
+                          >
+                            ✓
+                          </Text>
                         ) : null}
                       </View>
                     ) : null}
-                  </>
-                )
-
-                return selectMode ? (
-                  <Pressable
-                    key={`${activeTab}-${flow.id}`}
-                    accessibilityRole="checkbox"
-                    accessibilityState={{ checked: selected }}
-                    accessibilityLabel={`${flow.name}, ${selected ? "selected" : "not selected"}`}
-                    onPress={() => toggleFlowSelection(flow.id)}
-                    style={{
-                      width: cardWidth,
-                      borderRadius: 12,
-                      borderWidth: 2,
-                      borderColor: selected ? "#636366" : "transparent",
-                      backgroundColor: selected ? "#d7d9dd" : "#e0e4ea",
-                      padding: 10,
-                      gap: 10,
-                    }}
-                  >
-                    {cardContents}
-                  </Pressable>
-                ) : (
-                  <View
-                    key={`${activeTab}-${flow.id}`}
-                    style={{
-                      width: cardWidth,
-                      borderRadius: 12,
-                      backgroundColor: "#e0e4ea",
-                      padding: 10,
-                      gap: 10,
-                    }}
-                  >
-                    {cardContents}
                   </View>
-                )
-              })}
-            </View>
 
-            {activeTab === "saved" && displayedFlows.length === 0 ? (
-              <View style={{ paddingVertical: 24, alignItems: "center" }}>
-                <Text style={{ color: "#667085", fontWeight: "600" }}>
-                  No saved flows yet.
-                </Text>
-                <Text style={{ color: "#667085", marginTop: 4 }}>
-                  Create one from the home screen.
-                </Text>
-              </View>
-            ) : null}
-          </ScrollView>
+                  <View
+                    style={{
+                      height: 18,
+                      borderRadius: 6,
+                      backgroundColor: "#d2d6dc",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <View
+                      style={{
+                        height: "100%",
+                        width: `${masteryPercent}%`,
+                        backgroundColor: "#1fb785",
+                        justifyContent: "center",
+                        paddingLeft: 8,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "#fff",
+                          fontWeight: "700",
+                          fontSize: 12,
+                        }}
+                      >
+                        {masteryPercent}%
+                      </Text>
+                    </View>
+                  </View>
+
+                  {!selectMode ? (
+                    <View style={{ flexDirection: "row", gap: 8 }}>
+                      <ActionButton
+                        label="Play"
+                        primary
+                        onPress={() => router.push(`/practice/${flow.id}`)}
+                      />
+                      {activeTab === "saved" ? (
+                        <>
+                          <ActionButton
+                            label="Edit"
+                            onPress={() => {
+                              startEditingFlow(flow)
+                              router.push("/choose-keys")
+                            }}
+                          />
+                          <ActionButton
+                            label="Delete"
+                            destructive
+                            onPress={() => {
+                              Alert.alert(
+                                `Delete “${flow.name}”?`,
+                                "This can’t be undone.",
+                                [
+                                  { text: "Cancel", style: "cancel" },
+                                  {
+                                    text: "Delete",
+                                    style: "destructive",
+                                    onPress: () => void deleteFlow(flow.id),
+                                  },
+                                ],
+                              )
+                            }}
+                          />
+                        </>
+                      ) : null}
+                    </View>
+                  ) : null}
+                </>
+              )
+
+              return selectMode ? (
+                <Pressable
+                  key={`${activeTab}-${flow.id}`}
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: selected }}
+                  accessibilityLabel={`${flow.name}, ${selected ? "selected" : "not selected"}`}
+                  onPress={() => toggleFlowSelection(flow.id)}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: 12,
+                    borderWidth: 2,
+                    borderColor: selected ? "#636366" : "transparent",
+                    backgroundColor: selected ? "#d7d9dd" : "#e0e4ea",
+                    padding: 10,
+                    gap: 10,
+                  }}
+                >
+                  {cardContents}
+                </Pressable>
+              ) : (
+                <View
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: 12,
+                    backgroundColor: "#e0e4ea",
+                    padding: 10,
+                    gap: 10,
+                  }}
+                >
+                  {cardContents}
+                </View>
+              )
+            }}
+          />
+
+          {activeTab === "saved" && displayedFlows.length === 0 ? (
+            <View
+              style={{
+                position: "absolute",
+                top: 24,
+                left: 0,
+                right: 0,
+                alignItems: "center",
+              }}
+            >
+              <Text style={{ color: "#667085", fontWeight: "600" }}>
+                No saved flows yet.
+              </Text>
+              <Text style={{ color: "#667085", marginTop: 4 }}>
+                Create one from the home screen.
+              </Text>
+            </View>
+          ) : null}
 
           {selectMode ? (
             <View

@@ -7,10 +7,60 @@ import {
   useMemo,
   useState,
 } from "react"
+import Storage from "expo-sqlite/kv-store"
 
 import { CreateFlowResult, Flow, PREMADE_FLOWS } from "@/core/flows"
 import { Flow2 } from "@/core/flows/flow"
 import { FlowDraft } from "@/core/flows/flow-draft"
+
+const FLOW_ORDER_STORAGE_KEY = "flows.order"
+
+async function listFlowsInSavedOrder() {
+  const storedFlows = await Flow2.list()
+  let rawOrder: string | null = null
+  let orderedIds: string[] = []
+
+  try {
+    rawOrder = await Storage.getItemAsync(FLOW_ORDER_STORAGE_KEY)
+  } catch (error) {
+    console.warn("[storage] failed to load flow order:", error)
+    return storedFlows
+  }
+
+  if (rawOrder) {
+    try {
+      const parsed = JSON.parse(rawOrder)
+      if (Array.isArray(parsed)) {
+        orderedIds = parsed.filter((id): id is string => typeof id === "string")
+      }
+    } catch {
+      // A corrupt preference should not prevent the flow library from loading.
+    }
+  }
+
+  const flowsById = new Map(storedFlows.map((flow) => [flow.id, flow]))
+  const orderedFlows = orderedIds.flatMap((id) => {
+    const flow = flowsById.get(id)
+    if (!flow) return []
+    flowsById.delete(id)
+    return [flow]
+  })
+  const reconciledFlows = [...flowsById.values(), ...orderedFlows]
+  const reconciledIds = reconciledFlows.map((flow) => flow.id)
+
+  if (JSON.stringify(reconciledIds) !== JSON.stringify(orderedIds)) {
+    try {
+      await Storage.setItemAsync(
+        FLOW_ORDER_STORAGE_KEY,
+        JSON.stringify(reconciledIds),
+      )
+    } catch (error) {
+      console.warn("[storage] failed to reconcile flow order:", error)
+    }
+  }
+
+  return reconciledFlows
+}
 
 type FlowStoreContextValue = {
   draft: FlowDraft.Shape
@@ -25,6 +75,7 @@ type FlowStoreContextValue = {
   saveFlow: (name: string) => Promise<CreateFlowResult>
   deleteFlow: (id: string) => Promise<void>
   deleteFlows: (ids: string[]) => Promise<void>
+  reorderFlows: (orderedIds: string[]) => Promise<void>
 }
 
 const FlowStoreContext = createContext<FlowStoreContextValue | null>(null)
@@ -37,7 +88,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     async function loadFlows() {
       try {
-        const storedFlows = await Flow2.list()
+        const storedFlows = await listFlowsInSavedOrder()
         setFlows(storedFlows)
       } catch (error) {
         console.error("[db] failed to load flows:", error)
@@ -93,7 +144,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
         return legacyResult
       }
 
-      const storedFlows = await Flow2.list()
+      const storedFlows = await listFlowsInSavedOrder()
       setFlows(storedFlows)
 
       setDraft(FlowDraft.createEmpty())
@@ -140,7 +191,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
         return legacyResult
       }
 
-      const storedFlows = await Flow2.list()
+      const storedFlows = await listFlowsInSavedOrder()
       setFlows(storedFlows)
 
       setDraft(FlowDraft.createEmpty())
@@ -167,7 +218,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
     async (id: string) => {
       await Flow2.deleteByID(id)
 
-      const storedFlows = await Flow2.list()
+      const storedFlows = await listFlowsInSavedOrder()
       setFlows(storedFlows)
 
       if (editingFlow?.id === id) {
@@ -182,7 +233,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
     async (ids: string[]) => {
       await Flow2.deleteByIDs(ids)
 
-      const storedFlows = await Flow2.list()
+      const storedFlows = await listFlowsInSavedOrder()
       setFlows(storedFlows)
 
       if (editingFlow && ids.includes(editingFlow.id)) {
@@ -191,6 +242,32 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
       }
     },
     [editingFlow],
+  )
+
+  const reorderFlows = useCallback(
+    async (orderedIds: string[]) => {
+      const previousFlows = flows
+      const flowsById = new Map(flows.map((flow) => [flow.id, flow]))
+      const reorderedFlows = orderedIds.flatMap((id) => {
+        const flow = flowsById.get(id)
+        if (!flow) return []
+        flowsById.delete(id)
+        return [flow]
+      })
+      reorderedFlows.push(...flowsById.values())
+      setFlows(reorderedFlows)
+
+      try {
+        await Storage.setItemAsync(
+          FLOW_ORDER_STORAGE_KEY,
+          JSON.stringify(reorderedFlows.map((flow) => flow.id)),
+        )
+      } catch (error) {
+        setFlows(previousFlows)
+        throw error
+      }
+    },
+    [flows],
   )
 
   const value = useMemo(
@@ -207,6 +284,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
       saveFlow,
       deleteFlow,
       deleteFlows,
+      reorderFlows,
     }),
     [
       draft,
@@ -220,6 +298,7 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
       saveFlow,
       deleteFlow,
       deleteFlows,
+      reorderFlows,
     ],
   )
 

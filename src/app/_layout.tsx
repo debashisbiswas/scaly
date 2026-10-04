@@ -3,6 +3,7 @@ import { Stack } from "expo-router"
 import * as SplashScreen from "expo-splash-screen"
 import { useFonts } from "expo-font"
 import { Inter_600SemiBold } from "@expo-google-fonts/inter"
+import { GestureHandlerRootView } from "react-native-gesture-handler"
 
 import { useLogDbBootStatus } from "@/db/bootstrap"
 import { useDbMigrations } from "@/db/migrate"
@@ -38,14 +39,16 @@ export default function RootLayout() {
   // disable it for a single screen?
   // Or maybe disabling it for all screens is fine for now?
   return (
-    <FlowStoreProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          animationTypeForReplace: "pop",
-          fullScreenGestureEnabled: false,
-        }}
-      />
-    </FlowStoreProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <FlowStoreProvider>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            animationTypeForReplace: "pop",
+            fullScreenGestureEnabled: false,
+          }}
+        />
+      </FlowStoreProvider>
+    </GestureHandlerRootView>
   )
 }
