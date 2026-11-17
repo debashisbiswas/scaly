@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { useLogDbBootStatus } from "@/db/bootstrap"
 import { useDbMigrations } from "@/db/migrate"
 import { FlowStoreProvider } from "@/providers/FlowStoreProvider"
+import { fullScreenGestureEnabled } from "@/config"
 
 SplashScreen.preventAutoHideAsync()
 
@@ -45,7 +46,7 @@ export default function RootLayout() {
           screenOptions={{
             headerShown: false,
             animationTypeForReplace: "pop",
-            fullScreenGestureEnabled: false,
+            fullScreenGestureEnabled,
           }}
         />
       </FlowStoreProvider>

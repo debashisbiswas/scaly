@@ -1,7 +1,8 @@
 import { Stack, usePathname } from "expo-router"
-import { StyleSheet, View, Text } from "react-native"
+import { StyleSheet, View } from "react-native"
 
 import ProgressDots from "@/components/ProgressDots"
+import { fullScreenGestureEnabled } from "@/config"
 
 const FLOW_ROUTES = [
   "/choose-keys",
@@ -16,6 +17,9 @@ export default function FlowLayout() {
   const pathname = usePathname()
   const activeIndex = FLOW_ROUTES.findIndex((route) => route === pathname)
 
+  // TODO: We can disable fullScreenGestureEnabled here, but how do we just
+  // disable it for a single screen?
+  // Or maybe disabling it for all screens is fine for now?
   return (
     <View style={styles.root}>
       <Stack
@@ -23,6 +27,7 @@ export default function FlowLayout() {
           headerShown: false,
           animation: "slide_from_right",
           contentStyle: { backgroundColor: "#ffffff" },
+          fullScreenGestureEnabled,
         }}
       />
       {typeof activeIndex === "number" ? (
