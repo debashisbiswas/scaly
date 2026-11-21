@@ -41,7 +41,7 @@ export const generateArpeggio = (opts: {
   startOctave: number
   clef: "treble" | "bass"
   mode: Mode
-}) => {
+}): MusicIR.Score => {
   if (opts.startOctave < 1) {
     throw new Error(
       `Start octave must be at least 1; received: ${opts.startOctave}`,
@@ -80,7 +80,7 @@ export const generateArpeggio = (opts: {
       ...commonScoreConfig,
       timeSignature: { numerator: 2, denominator: 4 },
       measures,
-    } satisfies MusicIR.Score
+    }
   } else if (opts.octaves === 2) {
     const measures: MusicIR.Measure[] = []
     const measure: MusicIR.Measure = { notes: [] }
@@ -103,7 +103,7 @@ export const generateArpeggio = (opts: {
       ...commonScoreConfig,
       timeSignature: { numerator: 4, denominator: 4 },
       measures,
-    } satisfies MusicIR.Score
+    }
   } else if (opts.octaves === 3) {
     const measures: MusicIR.Measure[] = []
     const measure: MusicIR.Measure = { notes: [] }
@@ -126,7 +126,7 @@ export const generateArpeggio = (opts: {
       ...commonScoreConfig,
       timeSignature: { numerator: 5, denominator: 4 },
       measures,
-    } satisfies MusicIR.Score
+    }
   } else {
     throw new Error(`Unsupported arpeggio octave count: ${opts.octaves}`)
   }

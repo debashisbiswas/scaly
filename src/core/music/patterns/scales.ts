@@ -156,7 +156,7 @@ export function generateScaleNotation(opts: {
   octaves: number
   startOctave: number
   clef: "treble" | "bass"
-}) {
+}): MusicIR.Score {
   const notes = getNotesForScale(
     opts.key,
     opts.mode,
@@ -310,7 +310,7 @@ export function generateScaleNotation(opts: {
     timeSignature,
     clef: opts.clef,
     measures,
-  } satisfies MusicIR.Score
+  }
 }
 
 const getDescendingThirdModeLetter = (mode: Mode) => {

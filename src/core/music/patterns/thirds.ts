@@ -63,7 +63,7 @@ export function getThirdsSkeleton(opts: ThirdsOptions): MusicIR.Pitch[] {
 
 export function generateThirds(
   opts: ThirdsOptions & { clef: "treble" | "bass" },
-) {
+): MusicIR.Score {
   const skeleton = getThirdsSkeleton(opts)
   const measures: MusicIR.Measure[] = []
   let currentMeasure: MusicIR.Measure = { notes: [] }
@@ -106,5 +106,5 @@ export function generateThirds(
     timeSignature,
     clef: opts.clef,
     measures,
-  } satisfies MusicIR.Score
+  }
 }
