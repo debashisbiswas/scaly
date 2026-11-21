@@ -254,14 +254,17 @@ describe("thirds", () => {
       { step: "B", octave: 3 },
       { step: "C", octave: 4 },
     ])
-    expect(score.timeSignature).toEqual({ numerator: 11, denominator: 4 })
-    expect(score.measures).toHaveLength(2)
-    expect(score.measures.map(MusicIR.measureDurationInSixteenths)).toEqual([
-      44, 44,
-    ])
+    expect(score.timeSignature).toEqual({ numerator: 4, denominator: 4 })
+
+    const expectedMeasureCount = 6
+    expect(score.measures).toHaveLength(expectedMeasureCount)
+    expect(score.measures.map(MusicIR.measureDurationInSixteenths)).toEqual(
+      new Array(expectedMeasureCount).fill(16),
+    )
+
     expect(score.measures.at(-1)?.notes.at(-1)).toEqual({
       pitch: { step: "C", octave: 4 },
-      duration: "quarter",
+      duration: "dotted half",
     })
     expect(score.measures.at(-1)?.finalBarline).toBe(true)
   })

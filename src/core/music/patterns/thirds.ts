@@ -69,18 +69,24 @@ export function generateThirds(
   let currentMeasure: MusicIR.Measure = { notes: [] }
   let currentDuration = 0
 
+  const timeSignature = {
+    numerator: 4,
+    denominator: 4,
+  }
+
   for (const [index, pitch] of skeleton.entries()) {
-    const duration =
-      index === skeleton.length - 1 && opts.octaves === 2
-        ? "half"
-        : index === skeleton.length - 1
-          ? "quarter"
-          : "sixteenth"
+    let duration: MusicIR.Duration = "sixteenth"
+
+    if (index === skeleton.length - 1) {
+      if (opts.octaves === 3) duration = "dotted half"
+      if (opts.octaves === 2) duration = "half"
+      if (opts.octaves === 1) duration = "quarter"
+    }
 
     currentMeasure.notes.push({ pitch, duration })
     currentDuration += MusicIR.durationInSixteenths(duration)
 
-    const measureDuration = opts.octaves === 3 ? 44 : 16
+    const measureDuration = timeSignature.numerator * timeSignature.denominator
 
     if (currentDuration === measureDuration) {
       measures.push(currentMeasure)
@@ -97,10 +103,7 @@ export function generateThirds(
 
   return {
     keySignature: { fifths: getKeyWithMode(opts.key, opts.mode).alteration },
-    timeSignature: {
-      numerator: opts.octaves === 3 ? 11 : 4,
-      denominator: 4,
-    },
+    timeSignature,
     clef: opts.clef,
     measures,
   } satisfies MusicIR.Score

@@ -3,7 +3,13 @@ export namespace MusicIR {
 
   export type Step = (typeof Steps)[number]
 
-  export type Duration = "sixteenth" | "eighth" | "quarter" | "half" | "whole"
+  export type Duration =
+    | "sixteenth"
+    | "eighth"
+    | "quarter"
+    | "half"
+    | "dotted half"
+    | "whole"
 
   export type Pitch = {
     step: Step
@@ -42,6 +48,8 @@ export namespace MusicIR {
         return 4
       case "half":
         return 8
+      case "dotted half":
+        return 12
       case "whole":
         return 16
       default: {
