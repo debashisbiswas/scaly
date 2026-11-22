@@ -1,6 +1,11 @@
 import { FlowDraft } from "./flow-draft"
 import { Clef } from "./types"
-import Storage from "expo-sqlite/kv-store"
+
+function getStorage(): typeof import("expo-sqlite/kv-store").default {
+  // Defer loading native storage to prevent the import from breaking tests.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require("expo-sqlite/kv-store").default
+}
 
 export namespace CachedRange {
   type Range = FlowDraft.Shape["range"]
@@ -27,12 +32,12 @@ export namespace CachedRange {
     if (!clef) return null
 
     const key = clefToStorageKey(clef)
-    Storage.setItemSync(key, JSON.stringify(range))
+    getStorage().setItemSync(key, JSON.stringify(range))
   }
 
   export const get = (clef: Clef): Range | undefined => {
     const key = clefToStorageKey(clef)
-    const cachedValue = Storage.getItemSync(key)
+    const cachedValue = getStorage().getItemSync(key)
 
     if (!cachedValue) return
 
