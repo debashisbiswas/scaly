@@ -2,6 +2,7 @@ export const EXERCISE_CATALOG = [
   {
     selection: "Major",
     mode: "major",
+    keyMode: "major",
     pickerLabel: "Major Scale",
     variantLabel: "Major",
     family: "scale",
@@ -10,6 +11,7 @@ export const EXERCISE_CATALOG = [
   {
     selection: "Natural Minor",
     mode: "minor",
+    keyMode: "minor",
     pickerLabel: "Natural Minor Scale",
     variantLabel: "Natural Minor",
     family: "scale",
@@ -18,6 +20,7 @@ export const EXERCISE_CATALOG = [
   {
     selection: "Harmonic Minor",
     mode: "harmonic minor",
+    keyMode: "harmonic minor",
     pickerLabel: "Harmonic Minor Scale",
     variantLabel: "Harmonic Minor",
     family: "scale",
@@ -26,6 +29,7 @@ export const EXERCISE_CATALOG = [
   {
     selection: "Melodic Minor",
     mode: "melodic minor",
+    keyMode: "melodic minor",
     pickerLabel: "Melodic Minor Scale",
     variantLabel: "Melodic Minor",
     family: "scale",
@@ -34,6 +38,7 @@ export const EXERCISE_CATALOG = [
   {
     selection: "Major Arpeggio",
     mode: "major arpeggio",
+    keyMode: "major",
     pickerLabel: "Major Arpeggio",
     variantLabel: "Major",
     family: "arpeggio",
@@ -42,6 +47,7 @@ export const EXERCISE_CATALOG = [
   {
     selection: "Minor Arpeggio",
     mode: "minor arpeggio",
+    keyMode: "minor",
     pickerLabel: "Minor Arpeggio",
     variantLabel: "Minor",
     family: "arpeggio",
@@ -50,6 +56,7 @@ export const EXERCISE_CATALOG = [
   {
     selection: "Major Thirds",
     mode: "major thirds",
+    keyMode: "major",
     pickerLabel: "Major Thirds",
     variantLabel: "Major",
     family: "thirds",
@@ -58,6 +65,7 @@ export const EXERCISE_CATALOG = [
   {
     selection: "Minor Thirds",
     mode: "minor thirds",
+    keyMode: "minor",
     pickerLabel: "Minor Thirds",
     variantLabel: "Minor",
     family: "thirds",

@@ -1,3 +1,4 @@
+import { getReasonableModes } from "../music/modes"
 import { KEY_SIGNATURE_OPTIONS } from "./constants"
 import {
   ExerciseMode,
@@ -72,14 +73,22 @@ export function expandFlowDraftToExerciseSpecs(
   const exerciseSpecs: GeneratedExerciseSpec[] = []
 
   for (const key of canonicalKeys) {
+    const tonicNote = Note.fromKeySignature(key)
+
+    if (!tonicNote) {
+      throw new Error(
+        `Cannot expand flow draft with invalid key signature: ${key}`,
+      )
+    }
+
+    const tonicKey = Note.fullName(tonicNote)
+    const reasonableModes = getReasonableModes(tonicKey)
+
     for (const mode of canonicalModes) {
       const exerciseDefinition = getExerciseDefinitionBySelection(mode)
-      const tonicNote = Note.fromKeySignature(key)
 
-      if (!tonicNote) {
-        throw new Error(
-          `Cannot expand flow draft with invalid key signature: ${key}`,
-        )
+      if (!reasonableModes.includes(exerciseDefinition.keyMode)) {
+        continue
       }
 
       const tonicPitch = Pitch.nextAvailablePitch(lowPitch, tonicNote)
@@ -102,7 +111,7 @@ export function expandFlowDraftToExerciseSpecs(
 
       for (const tempo of tempoBuckets) {
         exerciseSpecs.push({
-          key: Note.fullName(tonicNote),
+          key: tonicKey,
           mode: exerciseDefinition.mode,
           startOctave: tonicPitch.octave,
           octaves,
