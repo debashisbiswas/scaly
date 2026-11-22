@@ -8,10 +8,7 @@ import { Pitch } from "./pitch"
 import { ExerciseSelection } from "./exerciseCatalog"
 import { Clef, KeySignature } from "./types"
 import { TempoSetting } from "./tempo-setting"
-
-const DEFAULT_RANGE_CONFIG = getClefRangeConfig(null)
-const DEFAULT_LOW_PITCH = DEFAULT_RANGE_CONFIG.defaultLow
-const DEFAULT_HIGH_PITCH = DEFAULT_RANGE_CONFIG.defaultHigh
+import { CachedRange } from "./cached-range"
 
 function pitchLabelToMidi(label: string) {
   const parsed = Pitch.fromLabel(label)
@@ -23,14 +20,21 @@ function pitchLabelToMidi(label: string) {
   return Pitch.midi(parsed)
 }
 
+// TODO: This module is having an identity crisis in competition with
+// FlowStoreProvider. Commit to one or the other.
 export namespace FlowDraft {
+  // TODO: The low/high values should really be of type Pitch. Look into
+  // downstream consumers to see the implications of keeping this "stringly
+  // typed"
+  type Range = {
+    low: string
+    high: string
+  }
+
   export type Shape = {
     keys: KeySignature[]
     clef: Clef | null
-    range: {
-      low: string
-      high: string
-    }
+    range: Range
     modes: ExerciseSelection[]
     tempo: TempoSetting.Shape
   }
@@ -42,13 +46,31 @@ export namespace FlowDraft {
     | "invalid_range"
     | "invalid_tempo"
 
+  export const getInitialRange = (clef: Clef): Range => {
+    const cached = CachedRange.get(clef)
+    if (cached) return cached
+
+    const clefRangeConfig = getClefRangeConfig(clef)
+
+    return {
+      low: clefRangeConfig.defaultLow,
+      high: clefRangeConfig.defaultHigh,
+    }
+  }
+
   export function createEmpty(): Shape {
+    // TODO: Don't use a null clef to get a default for the range - just allow
+    // null for the range when the draft is created. Lots of downstream callers
+    // depend on the range type currently, so need to decouple that first.
+    const clef = null
+    const clefRangeConfig = getClefRangeConfig(clef)
+
     return {
       keys: [],
-      clef: null,
+      clef,
       range: {
-        low: DEFAULT_LOW_PITCH,
-        high: DEFAULT_HIGH_PITCH,
+        low: clefRangeConfig.defaultLow,
+        high: clefRangeConfig.defaultHigh,
       },
       modes: [],
       tempo: { kind: "single", bpm: DEFAULT_SINGLE_BPM },
@@ -112,7 +134,7 @@ export namespace FlowDraft {
   }
 
   function isRangeWithinSelectedClef(
-    clef: Shape["clef"],
+    clef: Clef | null,
     lowMidi: number,
     highMidi: number,
   ) {

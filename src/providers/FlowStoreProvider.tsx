@@ -9,9 +9,16 @@ import {
 } from "react"
 import Storage from "expo-sqlite/kv-store"
 
-import { CreateFlowResult, Flow, PREMADE_FLOWS } from "@/core/flows"
+import {
+  Clef,
+  CreateFlowResult,
+  Flow,
+  getClefRangeConfig,
+  PREMADE_FLOWS,
+} from "@/core/flows"
 import { Flow2 } from "@/core/flows/flow"
 import { FlowDraft } from "@/core/flows/flow-draft"
+import { CachedRange } from "@/core/flows/cached-range"
 
 const FLOW_ORDER_STORAGE_KEY = "flows.order"
 
@@ -99,14 +106,25 @@ export function FlowStoreProvider({ children }: PropsWithChildren) {
   }, [])
 
   const updateDraft = useCallback((partial: Partial<FlowDraft.Shape>) => {
-    setDraft((current) => ({
-      ...current,
-      ...partial,
-      range: {
-        ...current.range,
-        ...partial.range,
-      },
-    }))
+    setDraft((current) => {
+      // TODO: Maybe I just need dedicated functions for each update pattern?
+      if (
+        partial.clef &&
+        partial.range == null &&
+        partial.clef !== current.clef
+      ) {
+        partial.range = FlowDraft.getInitialRange(partial.clef)
+      }
+
+      return {
+        ...current,
+        ...partial,
+        range: {
+          ...current.range,
+          ...partial.range,
+        },
+      }
+    })
   }, [])
 
   const resetDraft = useCallback(() => {

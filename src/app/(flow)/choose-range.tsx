@@ -94,30 +94,14 @@ function getNoteStepsForClef(rangeConfig: RangeConfig) {
   return NOTE_STEPS.slice(startIndex, endIndex + 1)
 }
 
-function getInitialSliderState(
-  label: string,
-  noteSteps: NoteStep[],
-  fallbackLabel: string,
-) {
+function getInitialSliderState(label: string, noteSteps: NoteStep[]) {
   const { noteName, accidental, octave } = parsePitchLabel(label)
   const naturalLabel = `${noteName}${octave}`
   const index = noteSteps.findIndex((step) => step.label === naturalLabel)
 
-  if (index >= 0) {
-    return {
-      index,
-      accidental,
-    }
-  }
-
-  const fallback = parsePitchLabel(fallbackLabel)
-  const fallbackIndex = noteSteps.findIndex(
-    (step) => step.label === `${fallback.noteName}${fallback.octave}`,
-  )
-
   return {
-    index: fallbackIndex >= 0 ? fallbackIndex : 0,
-    accidental: fallback.accidental,
+    index,
+    accidental,
   }
 }
 
@@ -151,30 +135,10 @@ function isStateWithinClefRange(
   )
 }
 
-function getInitialSelection(
-  low: string,
-  high: string,
-  noteSteps: NoteStep[],
-  rangeConfig: RangeConfig,
-) {
-  const lowMidi = pitchLabelToMidi(low)
-  const highMidi = pitchLabelToMidi(high)
-  const shouldUseClefDefaults =
-    !isPitchWithinClefRange(low, rangeConfig) ||
-    !isPitchWithinClefRange(high, rangeConfig) ||
-    lowMidi > highMidi
-
+function getInitialSelection(low: string, high: string, noteSteps: NoteStep[]) {
   return {
-    left: getInitialSliderState(
-      shouldUseClefDefaults ? rangeConfig.defaultLow : low,
-      noteSteps,
-      rangeConfig.defaultLow,
-    ),
-    right: getInitialSliderState(
-      shouldUseClefDefaults ? rangeConfig.defaultHigh : high,
-      noteSteps,
-      rangeConfig.defaultHigh,
-    ),
+    left: getInitialSliderState(low, noteSteps),
+    right: getInitialSliderState(high, noteSteps),
   }
 }
 
@@ -215,7 +179,7 @@ function AccidentalControls({
   )
 }
 
-export default function ChooseKey() {
+export default function ChooseRange() {
   const router = useRouter()
   const { draft, updateDraft } = useFlowStore()
   const { width: screenWidth } = useWindowDimensions()
@@ -227,25 +191,7 @@ export default function ChooseKey() {
   const [selection, setSelection] = useState<{
     left: SliderState
     right: SliderState
-  }>(() =>
-    getInitialSelection(
-      draft.range.low,
-      draft.range.high,
-      noteSteps,
-      rangeConfig,
-    ),
-  )
-
-  useEffect(() => {
-    setSelection(
-      getInitialSelection(
-        draft.range.low,
-        draft.range.high,
-        noteSteps,
-        rangeConfig,
-      ),
-    )
-  }, [draft.range.low, draft.range.high, noteSteps, rangeConfig])
+  }>(() => getInitialSelection(draft.range.low, draft.range.high, noteSteps))
 
   const leftState = selection.left
   const rightState = selection.right
@@ -365,6 +311,15 @@ export default function ChooseKey() {
 
   const staffWidth = Math.max(180, Math.min(screenWidth - 152, 420))
 
+  useEffect(() => {
+    updateDraft({
+      range: {
+        low: leftPitchLabel,
+        high: rightPitchLabel,
+      },
+    })
+  }, [draft.clef, leftPitchLabel, rightPitchLabel, updateDraft])
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <TopBar
@@ -372,16 +327,6 @@ export default function ChooseKey() {
         subtitle="Use the sliders and buttons to select your range"
         onBack={() => router.back()}
         onNext={() => {
-          if (!canProceed) {
-            return
-          }
-
-          updateDraft({
-            range: {
-              low: leftPitchLabel,
-              high: rightPitchLabel,
-            },
-          })
           router.push("/choose-mode")
         }}
         nextDisabled={!canProceed}
