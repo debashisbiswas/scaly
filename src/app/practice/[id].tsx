@@ -448,7 +448,7 @@ export default function Practice() {
 
   if (isLoadingExercise) {
     return (
-      <View
+      <SafeAreaView
         style={{
           flex: 1,
           justifyContent: "center",
@@ -458,13 +458,35 @@ export default function Practice() {
         <Text style={{ fontSize: 32, color: "#202737" }}>
           Loading practice...
         </Text>
-      </View>
+      </SafeAreaView>
+    )
+  }
+
+  if (exerciseQueue.length === 0) {
+    return (
+      <SafeAreaView
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 16,
+        }}
+      >
+        <TopBarButton
+          label="Back"
+          icon="arrow-back"
+          onPress={() => router.back()}
+        />
+        <Text style={{ fontSize: 48, color: "#202737" }}>
+          No exercises possible within the current flow settings
+        </Text>
+      </SafeAreaView>
     )
   }
 
   if (!exercise) {
     return (
-      <View
+      <SafeAreaView
         style={{
           flex: 1,
           justifyContent: "center",
@@ -480,7 +502,7 @@ export default function Practice() {
         <Text style={{ fontSize: 48, color: "#202737" }}>
           Exercise not found
         </Text>
-      </View>
+      </SafeAreaView>
     )
   }
 
