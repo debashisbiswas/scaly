@@ -126,7 +126,7 @@ export default function RangeStaff({
   width,
   height = 160,
 }: RangeStaffProps) {
-  const webViewRef = useRef<WebView>(null)
+  const webViewRef = useRef<WebView<unknown>>(null)
   const initialLeftNoteKeyRef = useRef(leftNoteKey)
   const initialRightNoteKeyRef = useRef(rightNoteKey)
   const [isWebViewReady, setIsWebViewReady] = useState(false)

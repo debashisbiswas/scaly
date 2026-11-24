@@ -23,7 +23,7 @@ export default function Scratchpad() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <TouchableOpacity style={styles.backButton} onPress={router.back}>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={24} color="white" />
       </TouchableOpacity>
 
