@@ -124,7 +124,7 @@ export default function RangeStaff({
   leftNoteKey,
   rightNoteKey,
   width,
-  height = 190,
+  height = 160,
 }: RangeStaffProps) {
   const webViewRef = useRef<WebView>(null)
   const initialLeftNoteKeyRef = useRef(leftNoteKey)
@@ -162,9 +162,6 @@ export default function RangeStaff({
       style={{
         width,
         height,
-        borderWidth: 1,
-        borderColor: "#d0d0d0",
-        borderRadius: 8,
         overflow: "hidden",
       }}
     >
