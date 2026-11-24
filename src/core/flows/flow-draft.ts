@@ -8,7 +8,6 @@ import { Pitch } from "./pitch"
 import { ExerciseSelection } from "./exerciseCatalog"
 import { Clef, KeySignature } from "./types"
 import { TempoSetting } from "./tempo-setting"
-import { CachedRange } from "./cached-range"
 
 function pitchLabelToMidi(label: string) {
   const parsed = Pitch.fromLabel(label)
@@ -47,9 +46,6 @@ export namespace FlowDraft {
     | "invalid_tempo"
 
   export const getInitialRange = (clef: Clef): Range => {
-    const cached = CachedRange.get(clef)
-    if (cached) return cached
-
     const clefRangeConfig = getClefRangeConfig(clef)
 
     return {

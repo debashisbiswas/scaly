@@ -31,6 +31,9 @@ export namespace CachedRange {
   export const store = (clef: Clef | null, range: Range) => {
     if (!clef) return null
 
+    console.log(
+      `[initial range] storing cached value: ${JSON.stringify(range)}`,
+    )
     const key = clefToStorageKey(clef)
     getStorage().setItemSync(key, JSON.stringify(range))
   }
