@@ -3,13 +3,11 @@ import { useState } from "react"
 import { StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
-import { CLEF_OPTIONS, Clef } from "@/core/flows"
+import { Clef } from "@/core/flows"
 
 import SelectableButton from "@/components/SelectableButton"
 import TopBar from "@/components/TopBar"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
-
-const CLEFS = CLEF_OPTIONS
 
 export default function ChooseClef() {
   const router = useRouter()
@@ -19,6 +17,17 @@ export default function ChooseClef() {
   const toggleClef = (clef: Clef) => {
     setSelectedClef((current) => (current === clef ? null : clef))
   }
+
+  const clefOptions: { label: string; value: Clef }[] = [
+    {
+      label: "\uE050",
+      value: "Treble Clef",
+    },
+    {
+      label: "\uE062",
+      value: "Bass Clef",
+    },
+  ]
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -42,12 +51,12 @@ export default function ChooseClef() {
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
           <View style={{ flexDirection: "row", gap: 12 }}>
-            {CLEFS.map((clef) => (
+            {clefOptions.map((clef) => (
               <SelectableButton
-                key={clef}
-                label={clef}
-                selected={selectedClef === clef}
-                onPress={() => toggleClef(clef)}
+                key={clef.value}
+                label={clef.label}
+                selected={selectedClef === clef.value}
+                onPress={() => toggleClef(clef.value)}
                 style={styles.clefButton}
                 labelStyle={styles.clefLabel}
               />
@@ -61,10 +70,11 @@ export default function ChooseClef() {
 
 const styles = StyleSheet.create({
   clefButton: {
-    width: 130,
-    height: 56,
+    width: 110,
+    height: 100,
   },
   clefLabel: {
-    fontSize: 16,
+    fontSize: 48,
+    fontFamily: "BravuraText",
   },
 })

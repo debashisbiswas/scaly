@@ -1,8 +1,8 @@
-import { CLEF_OPTIONS, KEY_SIGNATURE_OPTIONS } from "./constants"
+import { KEY_SIGNATURE_OPTIONS } from "./constants"
 import { FlowDraft } from "./flow-draft"
 
 export type KeySignature = (typeof KEY_SIGNATURE_OPTIONS)[number]
-export type Clef = (typeof CLEF_OPTIONS)[number]
+export type Clef = "Treble Clef" | "Bass Clef"
 
 export type Flow = {
   id: string

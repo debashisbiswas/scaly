@@ -166,14 +166,14 @@ function AccidentalControls({
         style={buttonStyle(value === 1)}
         onPress={() => onChange(value === 1 ? 0 : 1)}
       >
-        <Text style={{ fontSize: 20 }}>♯</Text>
+        <Text style={{ fontSize: 16, fontFamily: "BravuraText" }}>♯</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={buttonStyle(value === -1)}
         onPress={() => onChange(value === -1 ? 0 : -1)}
       >
-        <Text style={{ fontSize: 20 }}>♭</Text>
+        <Text style={{ fontSize: 16, fontFamily: "BravuraText" }}>♭</Text>
       </TouchableOpacity>
     </View>
   )
@@ -387,12 +387,8 @@ export default function ChooseRange() {
                 paddingHorizontal: 4,
               }}
             >
-              <Text style={{ fontWeight: "600" }}>
-                Low: {formatDisplayPitchLabel(leftPitchLabel)}
-              </Text>
-              <Text style={{ fontWeight: "600" }}>
-                High: {formatDisplayPitchLabel(rightPitchLabel)}
-              </Text>
+              <Text>Low: {formatDisplayPitchLabel(leftPitchLabel)}</Text>
+              <Text>High: {formatDisplayPitchLabel(rightPitchLabel)}</Text>
             </View>
           </View>
 

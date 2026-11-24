@@ -15,6 +15,9 @@ SplashScreen.preventAutoHideAsync()
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     Inter_600SemiBold,
+
+    // TODO: 3mb to display a few icons? Maybe find an alternative...
+    BravuraText: require("./assets/fonts/BravuraText.otf"),
   })
   const { success, error } = useDbMigrations()
   useLogDbBootStatus({ success, error })
