@@ -3,7 +3,8 @@ import { useState } from "react"
 import { StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
-import { Clef } from "@/core/flows"
+import type { Clef } from "@/core/flows"
+import { CLEF_GLYPHS } from "@/core/music/clefGlyphs"
 
 import SelectableButton from "@/components/SelectableButton"
 import TopBar from "@/components/TopBar"
@@ -20,11 +21,11 @@ export default function ChooseClef() {
 
   const clefOptions: { label: string; value: Clef }[] = [
     {
-      label: "\uE050",
+      label: CLEF_GLYPHS["Treble Clef"],
       value: "Treble Clef",
     },
     {
-      label: "\uE062",
+      label: CLEF_GLYPHS["Bass Clef"],
       value: "Bass Clef",
     },
   ]

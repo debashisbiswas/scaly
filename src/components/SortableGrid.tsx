@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { type ComponentRef, useEffect, useRef, useState } from "react"
 import { LayoutChangeEvent, ScrollView, View } from "react-native"
 import * as Haptics from "expo-haptics"
 import { Gesture, GestureDetector } from "react-native-gesture-handler"
@@ -23,6 +23,8 @@ type SortableGridProps<T extends Identifiable> = {
   itemHeight: number
   columnGap: number
   rowGap: number
+  contentHorizontalPadding?: number
+  contentTopPadding?: number
   contentBottomPadding?: number
   renderItem: (item: T) => React.ReactNode
   onReorder: (orderedIds: string[]) => void
@@ -242,13 +244,15 @@ export function SortableGrid<T extends Identifiable>({
   itemHeight,
   columnGap,
   rowGap,
+  contentHorizontalPadding = 0,
+  contentTopPadding = 0,
   contentBottomPadding = 20,
   renderItem,
   onReorder,
 }: SortableGridProps<T>) {
-  const viewportRef = useRef<View>(null)
+  const viewportRef = useRef<ComponentRef<typeof View>>(null)
   const scrollRef = useAnimatedRef<ScrollView>()
-  const [containerWidth, setContainerWidth] = useState(0)
+  const [viewportWidth, setViewportWidth] = useState(0)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const positions = useSharedValue<Positions>(positionsFor(data))
   const scrollOffset = useSharedValue(0)
@@ -268,11 +272,13 @@ export function SortableGrid<T extends Identifiable>({
   const rows = Math.ceil(data.length / 2)
   const gridHeight =
     rows === 0 ? 0 : rows * itemHeight + Math.max(0, rows - 1) * rowGap
+  const containerWidth = viewportWidth - 2 * contentHorizontalPadding
   const itemWidth = (containerWidth - columnGap) / 2
+  const contentHeight = contentTopPadding + gridHeight + contentBottomPadding
 
   function measureViewport(event: LayoutChangeEvent) {
     const { width, height } = event.nativeEvent.layout
-    setContainerWidth(width)
+    setViewportWidth(width)
     viewportHeight.value = height
     viewportRef.current?.measureInWindow((_x, y) => {
       viewportTop.value = y
@@ -300,12 +306,14 @@ export function SortableGrid<T extends Identifiable>({
         removeClippedSubviews={false}
         style={{ overflow: draggingId ? "visible" : "hidden" }}
         contentContainerStyle={{
+          paddingHorizontal: contentHorizontalPadding,
+          paddingTop: contentTopPadding,
           paddingBottom: contentBottomPadding,
           overflow: draggingId ? "visible" : "hidden",
         }}
       >
         <View style={{ height: gridHeight, overflow: "visible" }}>
-          {containerWidth > 0
+          {itemWidth > 0
             ? data.map((item, index) => (
                 <SortableGridItem
                   key={item.id}
@@ -322,7 +330,7 @@ export function SortableGrid<T extends Identifiable>({
                   scrollRef={scrollRef}
                   viewportTop={viewportTop}
                   viewportHeight={viewportHeight}
-                  contentHeight={gridHeight + contentBottomPadding}
+                  contentHeight={contentHeight}
                   enabled={enabled}
                   onDragStart={setDraggingId}
                   onDragEnd={() => setDraggingId(null)}

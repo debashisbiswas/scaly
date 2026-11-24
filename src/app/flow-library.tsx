@@ -6,16 +6,19 @@ import { LinearGradient } from "expo-linear-gradient"
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect"
 import { SymbolView } from "expo-symbols"
 import { MenuView } from "@expo/ui/community/menu"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 
 import { Flow } from "@/core/flows"
 import { Exercise } from "@/core/flows/exercise"
 import { ExercisePracticeStats } from "@/core/flows/exercisePracticeStats"
+import {
+  FlowLibraryCard,
+  type FlowMasterySummary,
+} from "@/components/FlowLibraryCard"
 import { SortableGrid } from "@/components/SortableGrid"
 import { useFlowStore } from "@/providers/FlowStoreProvider"
 
 type LibraryTab = "saved" | "premade"
-type FlowMasterySummary = { kind: "new" } | { kind: "graded"; percent: number }
 
 const RATING_SCORES: Record<ExercisePracticeStats.Rating, number> = {
   easy: 100,
@@ -54,8 +57,6 @@ function PanelIconButton({
           : filled
             ? "#636366" // fill color
             : "rgba(255, 255, 255, 0.78)", // non-liquid glass background
-        borderWidth: 0,
-        borderColor: "rgba(107, 122, 143, 0.24)",
       }}
     >
       <Pressable
@@ -86,20 +87,19 @@ async function loadFlowMastery(flow: Flow): Promise<FlowMasterySummary> {
   const stats = await ExercisePracticeStats.listByExerciseIDs(
     exercises.map((exercise) => exercise.id),
   )
-  const practicedStats = stats.filter((stat) => stat.lastRating !== null)
+  const ratings = stats
+    .map((stat) => stat.lastRating)
+    .filter((rating) => rating !== null)
 
-  if (practicedStats.length === 0) {
+  if (ratings.length === 0) {
     return { kind: "new" }
   }
 
-  const totalScore = practicedStats.reduce((sum, stat) => {
-    if (!stat.lastRating) {
-      return sum
-    }
-
-    return sum + RATING_SCORES[stat.lastRating]
-  }, 0)
-  const percent = Math.round(totalScore / practicedStats.length)
+  const totalScore = ratings.reduce(
+    (sum, rating) => sum + RATING_SCORES[rating],
+    0,
+  )
+  const percent = Math.round(totalScore / ratings.length)
 
   return {
     kind: "graded",
@@ -107,44 +107,9 @@ async function loadFlowMastery(flow: Flow): Promise<FlowMasterySummary> {
   }
 }
 
-function ActionButton({
-  label,
-  primary,
-  destructive,
-  onPress,
-}: {
-  label: string
-  primary?: boolean
-  destructive?: boolean
-  onPress: () => void
-}) {
-  const backgroundColor = primary
-    ? "#3f83ef"
-    : destructive
-      ? "#ef4444"
-      : "#d1d5db"
-  const color = primary || destructive ? "#fff" : "#5e6772"
-
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        flex: 1,
-        minWidth: 88,
-        alignItems: "center",
-        borderRadius: 8,
-        paddingVertical: 9,
-        paddingHorizontal: 14,
-        backgroundColor,
-      }}
-    >
-      <Text style={{ color, fontWeight: "600" }}>{label}</Text>
-    </Pressable>
-  )
-}
-
 export default function FlowLibrary() {
   const router = useRouter()
+  const { bottom: bottomInset } = useSafeAreaInsets()
   const {
     flows,
     premadeFlows,
@@ -164,7 +129,7 @@ export default function FlowLibrary() {
   >({})
 
   const panelPadding = 16
-  const gap = 10
+  const gap = 14
   const displayedFlows = activeTab === "saved" ? flows : premadeFlows
   const selectedCount = selectedFlowIds.size
 
@@ -219,18 +184,27 @@ export default function FlowLibrary() {
 
   useFocusEffect(
     useCallback(() => {
+      let active = true
+
       async function loadDisplayedFlowMastery() {
         const summaries = await Promise.all(
-          displayedFlows.map(async (flow) => [
-            flow.id,
-            await loadFlowMastery(flow),
-          ]),
+          displayedFlows.map(async (flow) => {
+            try {
+              return [flow.id, await loadFlowMastery(flow)] as const
+            } catch (error) {
+              console.error("[db] failed to load flow mastery:", error)
+              return [flow.id, { kind: "unavailable" }] as const
+            }
+          }),
         )
 
-        setMasteryByFlowId(Object.fromEntries(summaries))
+        if (active) setMasteryByFlowId(Object.fromEntries(summaries))
       }
 
-      loadDisplayedFlowMastery()
+      void loadDisplayedFlowMastery()
+      return () => {
+        active = false
+      }
     }, [displayedFlows]),
   )
 
@@ -242,19 +216,14 @@ export default function FlowLibrary() {
       style={{ flex: 1 }}
     >
       <SafeAreaView
-        style={{
-          flex: 1,
-          paddingHorizontal: 16,
-          paddingTop: 6,
-          paddingBottom: 12,
-        }}
+        edges={["top", "left", "right"]}
+        style={{ flex: 1, paddingTop: 6 }}
       >
         <View
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "flex-end",
-            marginBottom: -1,
           }}
         >
           <View style={{ width: 42, height: 42, marginBottom: 5 }}>
@@ -376,175 +345,71 @@ export default function FlowLibrary() {
             flex: 1,
             position: "relative",
             backgroundColor: "#ebeef3",
-            borderWidth: 1,
-            borderColor: "#d4dce6",
-            borderRadius: 4,
-            paddingHorizontal: panelPadding,
-            paddingTop: 16,
-            paddingBottom: 16,
+            borderTopLeftRadius: 12,
+            borderTopRightRadius: 12,
+            overflow: "hidden",
           }}
         >
           <SortableGrid
             data={displayedFlows}
             enabled={activeTab === "saved" && !selectMode}
-            itemHeight={selectMode ? 70 : 110}
+            itemHeight={selectMode ? 72 : 184}
             columnGap={gap}
             rowGap={gap}
-            contentBottomPadding={selectMode ? 64 : 20}
+            contentHorizontalPadding={panelPadding}
+            contentTopPadding={14}
+            contentBottomPadding={bottomInset + (selectMode ? 64 : 20)}
             onReorder={reorderSavedFlows}
             renderItem={(flow) => {
-              const mastery = masteryByFlowId[flow.id] ?? { kind: "new" }
-              const masteryPercent =
-                mastery.kind === "graded" ? mastery.percent : 0
-              const selected = selectedFlowIds.has(flow.id)
-
-              const cardContents = (
-                <>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <Text
-                      style={{ fontWeight: "700", color: "#202633", flex: 1 }}
-                      numberOfLines={1}
-                    >
-                      {flow.name}
-                    </Text>
-                    {selectMode ? (
-                      <View
-                        style={{
-                          width: 21,
-                          height: 21,
-                          marginLeft: 8,
-                          borderRadius: 11,
-                          alignItems: "center",
-                          justifyContent: "center",
-                          borderWidth: selected ? 0 : 2,
-                          borderColor: "#98a2b3",
-                          backgroundColor: selected ? "#636366" : "transparent",
-                        }}
-                      >
-                        {selected ? (
-                          <Text
-                            style={{
-                              color: "#fff",
-                              fontSize: 14,
-                              fontWeight: "800",
-                              lineHeight: 17,
-                            }}
-                          >
-                            ✓
-                          </Text>
-                        ) : null}
-                      </View>
-                    ) : null}
-                  </View>
-
-                  <View
-                    style={{
-                      height: 18,
-                      borderRadius: 6,
-                      backgroundColor: "#d2d6dc",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <View
-                      style={{
-                        height: "100%",
-                        width: `${masteryPercent}%`,
-                        backgroundColor: "#1fb785",
-                        justifyContent: "center",
-                        paddingLeft: 8,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: "#fff",
-                          fontWeight: "700",
-                          fontSize: 12,
-                        }}
-                      >
-                        {masteryPercent}%
-                      </Text>
-                    </View>
-                  </View>
-
-                  {!selectMode ? (
-                    <View style={{ flexDirection: "row", gap: 8 }}>
-                      <ActionButton
-                        label="Play"
-                        primary
-                        onPress={() => router.push(`/practice/${flow.id}`)}
-                      />
-                      {activeTab === "saved" ? (
-                        <>
-                          <ActionButton
-                            label="Edit"
-                            onPress={() => {
-                              startEditingFlow(flow)
-                              router.push("/choose-keys")
-                            }}
-                          />
-                          <ActionButton
-                            label="Delete"
-                            destructive
-                            onPress={() => {
-                              Alert.alert(
-                                `Delete “${flow.name}”?`,
-                                "This can’t be undone.",
-                                [
-                                  { text: "Cancel", style: "cancel" },
-                                  {
-                                    text: "Delete",
-                                    style: "destructive",
-                                    onPress: () => void deleteFlow(flow.id),
-                                  },
-                                ],
-                              )
-                            }}
-                          />
-                        </>
-                      ) : null}
-                    </View>
-                  ) : null}
-                </>
-              )
+              const cardProps = {
+                flow,
+                mastery: masteryByFlowId[flow.id],
+              }
 
               return selectMode ? (
-                <Pressable
-                  key={`${activeTab}-${flow.id}`}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: selected }}
-                  accessibilityLabel={`${flow.name}, ${selected ? "selected" : "not selected"}`}
-                  onPress={() => toggleFlowSelection(flow.id)}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    borderRadius: 12,
-                    borderWidth: 2,
-                    borderColor: selected ? "#636366" : "transparent",
-                    backgroundColor: selected ? "#d7d9dd" : "#e0e4ea",
-                    padding: 10,
-                    gap: 10,
-                  }}
-                >
-                  {cardContents}
-                </Pressable>
+                <FlowLibraryCard
+                  {...cardProps}
+                  selected={selectedFlowIds.has(flow.id)}
+                  onSelect={() => toggleFlowSelection(flow.id)}
+                />
               ) : (
-                <View
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    borderRadius: 12,
-                    backgroundColor: "#e0e4ea",
-                    padding: 10,
-                    gap: 10,
-                  }}
-                >
-                  {cardContents}
-                </View>
+                <FlowLibraryCard
+                  {...cardProps}
+                  onPlay={() => router.push(`/practice/${flow.id}`)}
+                  {...(activeTab === "saved"
+                    ? {
+                        onEdit: () => {
+                          startEditingFlow(flow)
+                          router.push("/choose-keys")
+                        },
+                        onDelete: () => {
+                          Alert.alert(
+                            `Delete “${flow.name}”?`,
+                            "This can’t be undone.",
+                            [
+                              { text: "Cancel", style: "cancel" },
+                              {
+                                text: "Delete",
+                                style: "destructive",
+                                onPress: () => {
+                                  void deleteFlow(flow.id).catch((error) => {
+                                    console.error(
+                                      "[db] failed to delete flow:",
+                                      error,
+                                    )
+                                    Alert.alert(
+                                      "Couldn’t delete flow",
+                                      "Please try again.",
+                                    )
+                                  })
+                                },
+                              },
+                            ],
+                          )
+                        },
+                      }
+                    : {})}
+                />
               )
             }}
           />
@@ -573,7 +438,7 @@ export default function FlowLibrary() {
               style={{
                 position: "absolute",
                 right: 12,
-                bottom: 12,
+                bottom: bottomInset + 12,
                 zIndex: 2,
               }}
             >
